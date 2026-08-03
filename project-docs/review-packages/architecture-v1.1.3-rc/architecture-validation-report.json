@@ -1,0 +1,21 @@
+{
+  "document": "architecture-v1.1.3-RC.md",
+  "requirementsVersion": "1.2.2",
+  "requirementReferenceCount": 181,
+  "invalidReferences": [],
+  "requirementsVersionValid": true,
+  "semanticChecks": {
+    "dependency_distribution_table_present": true,
+    "portable_shared_forbidden": true,
+    "dist_hosted_defined": true,
+    "dist_portable_defined": true,
+    "manifest004_referenced": true,
+    "cat002_referenced": true,
+    "cat006_referenced": true,
+    "two_three_rule_non_must": true
+  },
+  "errors": 0,
+  "warnings": 0,
+  "result": "PASS",
+  "validationDate": "2026-08-03"
+}
