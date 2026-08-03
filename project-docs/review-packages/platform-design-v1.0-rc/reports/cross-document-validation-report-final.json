@@ -1,0 +1,22 @@
+{
+  "checks": {
+    "req_version": true,
+    "arch_version": true,
+    "gov_version": true,
+    "req_to_arch": true,
+    "req_to_gov": true,
+    "arch_to_req": true,
+    "arch_to_gov": true,
+    "gov_to_req": true,
+    "gov_to_arch": true,
+    "adr_exists": true,
+    "arch_refers_adr": true,
+    "gov_refers_adr": true,
+    "thresholds": true,
+    "forced_c": true
+  },
+  "errorItems": [],
+  "errors": 0,
+  "warnings": 0,
+  "result": "PASS"
+}
