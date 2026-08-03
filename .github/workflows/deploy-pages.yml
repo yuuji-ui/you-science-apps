@@ -1,0 +1,70 @@
+name: Validate and Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "catalog-source/**"
+      - "platform/manifest/**"
+      - "platform/catalog/**"
+      - "platform/portal/**"
+      - "platform/pipeline/**"
+      - "platform/automation/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install validation dependency
+        run: python -m pip install --disable-pip-version-check jsonschema==4.25.1
+      - name: Validate platform and generate catalog
+        run: python platform/automation/tools/run-ci.py --repo .
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-validation-report
+          path: |
+            platform/automation/docs/ci-report.json
+            platform/automation/docs/catalog-generation-report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
