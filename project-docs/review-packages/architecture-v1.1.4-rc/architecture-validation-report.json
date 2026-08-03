@@ -1,0 +1,43 @@
+{
+  "document": "architecture-v1.1.4-RC.md",
+  "requirementsVersion": "1.2.2",
+  "automatedValidation": {
+    "requirementReferenceCount": 181,
+    "invalidReferences": [],
+    "checks": {
+      "requirements_references_valid": true,
+      "requirements_version_valid": true,
+      "section12_source_mode_present": true,
+      "section12_distribution_mode_present": true,
+      "portable_shared_forbidden_section12": true,
+      "section12_refers_27_4": true,
+      "dist_hosted_in_tree": true,
+      "schema_implementation_status_clear": true
+    },
+    "errors": 0,
+    "warnings": 0,
+    "result": "PASS"
+  },
+  "manualReview": [
+    {
+      "item": "第12章と第27.4章の概念整合",
+      "status": "MANUAL_REVIEW_COMPLETED",
+      "result": "PASS",
+      "note": "Source時点と成果物時点のDependency Modeを同一モデルで記述"
+    },
+    {
+      "item": "DistributionとDependency Modeの責任分離",
+      "status": "MANUAL_REVIEW_COMPLETED",
+      "result": "PASS",
+      "note": "第12章は概念定義、第27.4章は許容組み合わせと禁則を正本化"
+    },
+    {
+      "item": "Schema実装状態の表現",
+      "status": "MANUAL_REVIEW_COMPLETED",
+      "result": "PASS",
+      "note": "設計済み・実装未了を明記"
+    }
+  ],
+  "overallResult": "PASS",
+  "validationDate": "2026-08-03"
+}
