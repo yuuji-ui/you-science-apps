@@ -1,0 +1,639 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://you-science-apps.example/schemas/app-manifest.schema.json",
+  "title": "You Science Apps App Manifest",
+  "description": "Manifest schema for You Science Apps educational web applications.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "appId",
+    "title",
+    "version",
+    "status",
+    "education",
+    "platform",
+    "distribution",
+    "privacy",
+    "license"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "appId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposal",
+        "design",
+        "development",
+        "review",
+        "pilot",
+        "active",
+        "maintenance",
+        "deprecated",
+        "retired",
+        "archived"
+      ]
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "education": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schoolStage",
+        "subjects",
+        "grades",
+        "units",
+        "appTypes",
+        "learningGoals",
+        "useCases"
+      ],
+      "properties": {
+        "schoolStage": {
+          "type": "string",
+          "enum": [
+            "junior-high",
+            "senior-high",
+            "mixed"
+          ]
+        },
+        "subjects": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "science",
+              "chemistry",
+              "physics",
+              "biology",
+              "earth-science"
+            ]
+          }
+        },
+        "grades": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "JH1",
+              "JH2",
+              "JH3",
+              "SH1",
+              "SH2",
+              "SH3",
+              "other"
+            ]
+          }
+        },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z0-9][A-Z0-9._-]{2,80}$"
+          }
+        },
+        "appTypes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "calculation",
+              "simulation",
+              "drag",
+              "experiment",
+              "visualization",
+              "quiz",
+              "reference"
+            ]
+          }
+        },
+        "learningGoals": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 240
+          }
+        },
+        "useCases": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "lesson-introduction",
+              "lesson-practice",
+              "experiment-prep",
+              "experiment-review",
+              "home-study",
+              "homework",
+              "test-prep",
+              "teacher-demo"
+            ]
+          }
+        },
+        "modelLimitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          }
+        }
+      }
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceDependencyMode"
+      ],
+      "properties": {
+        "sourceDependencyMode": {
+          "type": "string",
+          "enum": [
+            "shared",
+            "vendored",
+            "self-contained"
+          ]
+        },
+        "coreVersion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "referenceImplementations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "version",
+              "copiedOn",
+              "modified"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+              },
+              "copiedOn": {
+                "type": "string",
+                "format": "date"
+              },
+              "modified": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hosted",
+        "portable",
+        "standalonePackage"
+      ],
+      "properties": {
+        "hosted": {
+          "$ref": "#/$defs/distributionItem"
+        },
+        "portable": {
+          "$ref": "#/$defs/portableDistributionItem"
+        },
+        "standalonePackage": {
+          "$ref": "#/$defs/standaloneDistributionItem"
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "types",
+        "deletionMethod"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "types": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "localStorage",
+              "sessionStorage",
+              "indexedDB"
+            ]
+          }
+        },
+        "deletionMethod": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "types": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "externalEndpoints"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "externalEndpoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "externalEndpoints": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collectsPersonalData",
+        "usesAnalytics",
+        "usesCookies",
+        "externalTransmission"
+      ],
+      "properties": {
+        "collectsPersonalData": {
+          "const": false
+        },
+        "usesAnalytics": {
+          "const": false
+        },
+        "usesCookies": {
+          "const": false
+        },
+        "externalTransmission": {
+          "const": false
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "keyboardSupported": {
+          "type": "boolean"
+        },
+        "dragAlternativeProvided": {
+          "type": "boolean"
+        },
+        "colorIndependentFeedback": {
+          "type": "boolean"
+        },
+        "reducedMotionSupported": {
+          "type": "boolean"
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "content",
+        "thirdPartyNotices"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "thirdPartyNotices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "license"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "license": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "source": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        }
+      }
+    },
+    "owners": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "appOwnerRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "maintainerRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hostedUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "repositoryPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    }
+  },
+  "$defs": {
+    "distributionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "dependencyMode"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "dependencyMode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "shared",
+            "vendored",
+            "self-contained",
+            null
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyMode": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "portableDistributionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "dependencyMode",
+        "directFileOpen"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "dependencyMode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "shared",
+            "vendored",
+            "self-contained",
+            null
+          ]
+        },
+        "directFileOpen": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyMode": {
+                "type": "null"
+              },
+              "directFileOpen": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyMode": {
+                "enum": [
+                  "vendored",
+                  "self-contained"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "standaloneDistributionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "dependencyMode"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "dependencyMode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "shared",
+            "vendored",
+            "self-contained",
+            null
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyMode": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "dependencyMode": {
+                "enum": [
+                  "vendored",
+                  "self-contained"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
