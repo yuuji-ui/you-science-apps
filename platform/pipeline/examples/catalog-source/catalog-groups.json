@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "groups": [
+    {
+      "groupId": "featured",
+      "title": "おすすめ教材",
+      "description": "授業や家庭学習で使いやすい教材",
+      "appIds": [
+        "mole-calculation",
+        "neutralization-simulator"
+      ],
+      "sortOrder": 10
+    }
+  ]
+}

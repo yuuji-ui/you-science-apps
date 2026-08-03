@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0.0",
+  "appId": "neutralization-simulator",
+  "title": "酸・アルカリ・中和シミュレーター",
+  "version": "1.0.0",
+  "status": "maintenance",
+  "level": "C",
+  "education": {
+    "schoolStage": "mixed",
+    "subjects": [
+      "science",
+      "chemistry"
+    ],
+    "grades": [
+      "JH3",
+      "SH1"
+    ],
+    "units": [
+      "JH3.CHEM.NEUTRALIZATION",
+      "CHEM.ACIDBASE.001"
+    ],
+    "appTypes": [
+      "simulation",
+      "experiment",
+      "visualization"
+    ],
+    "learningGoals": [
+      "酸とアルカリの中和を条件変更と可視化を通して理解する。"
+    ],
+    "useCases": [
+      "teacher-demo",
+      "experiment-prep",
+      "home-study"
+    ]
+  },
+  "platform": {
+    "sourceDependencyMode": "self-contained",
+    "coreVersion": null
+  },
+  "distribution": {
+    "hosted": {
+      "enabled": true,
+      "dependencyMode": "self-contained"
+    },
+    "portable": {
+      "enabled": true,
+      "dependencyMode": "self-contained",
+      "directFileOpen": true
+    },
+    "standalonePackage": {
+      "enabled": true,
+      "dependencyMode": "self-contained"
+    }
+  },
+  "storage": {
+    "enabled": false,
+    "types": [],
+    "deletionMethod": "保存データなし"
+  },
+  "network": {
+    "required": false,
+    "externalEndpoints": []
+  },
+  "privacy": {
+    "collectsPersonalData": false,
+    "usesAnalytics": false,
+    "usesCookies": false,
+    "externalTransmission": false
+  },
+  "accessibility": {
+    "keyboardSupported": true,
+    "dragAlternativeProvided": true,
+    "colorIndependentFeedback": true,
+    "reducedMotionSupported": true
+  },
+  "license": {
+    "code": "TBD",
+    "content": "TBD",
+    "thirdPartyNotices": []
+  },
+  "links": {
+    "hostedUrl": "./apps/junior-high/chemistry/neutralization-simulator/",
+    "repositoryPath": "site/apps/junior-high/chemistry/neutralization-simulator"
+  }
+}

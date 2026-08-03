@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0.0",
+  "appId": "mole-calculation",
+  "title": "物質量計算トレーナー",
+  "version": "1.2.0",
+  "status": "active",
+  "level": "B",
+  "education": {
+    "schoolStage": "senior-high",
+    "subjects": [
+      "chemistry"
+    ],
+    "grades": [
+      "SH1"
+    ],
+    "units": [
+      "CHEM.MOLE.001"
+    ],
+    "appTypes": [
+      "calculation"
+    ],
+    "learningGoals": [
+      "物質量・質量・粒子数の関係を使って計算できる。"
+    ],
+    "useCases": [
+      "lesson-practice",
+      "home-study"
+    ]
+  },
+  "platform": {
+    "sourceDependencyMode": "shared",
+    "coreVersion": "1.0.0"
+  },
+  "distribution": {
+    "hosted": {
+      "enabled": true,
+      "dependencyMode": "shared"
+    },
+    "portable": {
+      "enabled": true,
+      "dependencyMode": "vendored",
+      "directFileOpen": true
+    },
+    "standalonePackage": {
+      "enabled": false,
+      "dependencyMode": null
+    }
+  },
+  "storage": {
+    "enabled": false,
+    "types": [],
+    "deletionMethod": "保存データなし"
+  },
+  "network": {
+    "required": false,
+    "externalEndpoints": []
+  },
+  "privacy": {
+    "collectsPersonalData": false,
+    "usesAnalytics": false,
+    "usesCookies": false,
+    "externalTransmission": false
+  },
+  "accessibility": {
+    "keyboardSupported": true,
+    "dragAlternativeProvided": true,
+    "colorIndependentFeedback": true,
+    "reducedMotionSupported": true
+  },
+  "license": {
+    "code": "TBD",
+    "content": "TBD",
+    "thirdPartyNotices": []
+  },
+  "links": {
+    "hostedUrl": "./apps/senior-high/chemistry/mole-calculation/",
+    "repositoryPath": "site/apps/senior-high/chemistry/mole-calculation"
+  }
+}
