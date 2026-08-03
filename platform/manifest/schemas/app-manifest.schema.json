@@ -450,7 +450,14 @@
       "properties": {
         "hostedUrl": {
           "type": "string",
-          "format": "uri"
+          "anyOf": [
+            {
+              "format": "uri"
+            },
+            {
+              "pattern": "^(?:\\./|\\.\\./|/)[^\\s]*$"
+            }
+          ]
         },
         "repositoryPath": {
           "type": "string",
