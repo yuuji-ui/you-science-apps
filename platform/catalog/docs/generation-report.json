@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "apps": 2,
+  "groups": 1,
+  "output": "/mnt/data/you_science_apps_catalog_generator_v1_0/examples/expected/catalog.json"
+}

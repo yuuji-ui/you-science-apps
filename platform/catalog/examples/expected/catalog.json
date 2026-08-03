@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-03T08:16:16.853853Z",
+  "apps": [
+    {
+      "appId": "mole-calculation",
+      "title": "物質量計算トレーナー",
+      "version": "1.2.0",
+      "status": "active",
+      "level": "B",
+      "schoolStage": "senior-high",
+      "subjects": [
+        "chemistry"
+      ],
+      "grades": [
+        "SH1"
+      ],
+      "units": [
+        "CHEM.MOLE.001"
+      ],
+      "appTypes": [
+        "calculation"
+      ],
+      "learningGoals": [
+        "物質量・質量・粒子数の関係を使って計算できる。"
+      ],
+      "useCases": [
+        "lesson-practice",
+        "home-study"
+      ],
+      "hostedUrl": "https://example.github.io/you-science-apps/apps/senior-high/chemistry/mole-calculation/",
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 10,
+      "labels": [
+        "高校化学",
+        "計算"
+      ],
+      "deprecatedMessage": null
+    },
+    {
+      "appId": "neutralization-simulator",
+      "title": "酸・アルカリ・中和シミュレーター",
+      "version": "1.0.0",
+      "status": "maintenance",
+      "level": "C",
+      "schoolStage": "mixed",
+      "subjects": [
+        "science",
+        "chemistry"
+      ],
+      "grades": [
+        "JH3",
+        "SH1"
+      ],
+      "units": [
+        "JH3.CHEM.NEUTRALIZATION",
+        "CHEM.ACIDBASE.001"
+      ],
+      "appTypes": [
+        "simulation",
+        "experiment",
+        "visualization"
+      ],
+      "learningGoals": [
+        "酸とアルカリの中和を条件変更と可視化を通して理解する。"
+      ],
+      "useCases": [
+        "teacher-demo",
+        "experiment-prep",
+        "home-study"
+      ],
+      "hostedUrl": "https://example.github.io/you-science-apps/apps/junior-high/chemistry/neutralization-simulator/",
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 20,
+      "labels": [
+        "中3",
+        "高校化学",
+        "実験"
+      ],
+      "deprecatedMessage": null
+    }
+  ],
+  "groups": [
+    {
+      "groupId": "featured",
+      "title": "おすすめ教材",
+      "description": "授業や家庭学習で使いやすい教材",
+      "appIds": [
+        "mole-calculation",
+        "neutralization-simulator"
+      ],
+      "sortOrder": 10
+    }
+  ]
+}

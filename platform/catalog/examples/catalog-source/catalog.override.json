@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "apps": {
+    "mole-calculation": {
+      "featured": true,
+      "sortOrder": 10,
+      "labels": [
+        "高校化学",
+        "計算"
+      ]
+    },
+    "neutralization-simulator": {
+      "featured": true,
+      "sortOrder": 20,
+      "labels": [
+        "中3",
+        "高校化学",
+        "実験"
+      ]
+    }
+  }
+}
