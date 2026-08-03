@@ -1,0 +1,46 @@
+{
+  "document": "governance-v1.1.1-RC.md",
+  "requirementsVersion": "1.2.2",
+  "architectureVersion": "1.1.4",
+  "automatedValidation": {
+    "requirementReferenceCount": 116,
+    "invalidReferences": [],
+    "checks": {
+      "requirements_version_present": true,
+      "architecture_version_present": true,
+      "organization_ownership_present": true,
+      "self_approval_prevention_present": true,
+      "catalog_authority_present": true,
+      "automated_manual_separation_present": true,
+      "distribution_approval_present": true,
+      "joint_document_approval_present": true
+    },
+    "errors": 0,
+    "warnings": 0,
+    "result": "PASS"
+  },
+  "manualReview": [
+    {
+      "item": "GovernanceとArchitectureのDistribution用語整合",
+      "result": "PASS",
+      "status": "MANUAL_REVIEW_COMPLETED"
+    },
+    {
+      "item": "Owner／Deputy権限境界",
+      "result": "PASS",
+      "status": "MANUAL_REVIEW_COMPLETED"
+    },
+    {
+      "item": "Level A自己承認防止の実効性",
+      "result": "PASS",
+      "status": "MANUAL_REVIEW_COMPLETED"
+    },
+    {
+      "item": "Catalog利益相反防止",
+      "result": "PASS",
+      "status": "MANUAL_REVIEW_COMPLETED"
+    }
+  ],
+  "overallResult": "PASS",
+  "validationDate": "2026-08-03"
+}
