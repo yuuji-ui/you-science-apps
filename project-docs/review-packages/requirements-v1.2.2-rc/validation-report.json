@@ -1,0 +1,14 @@
+{
+  "documentId": "YSA-REQ-001",
+  "documentVersion": "1.2.2",
+  "validatorVersion": "1.0.0",
+  "checkedFiles": [
+    "requirements-v1.2.2-RC.md",
+    "requirement-index.json"
+  ],
+  "markdownRequirementCount": 277,
+  "indexRequirementCount": 277,
+  "errors": [],
+  "warnings": [],
+  "result": "PASS"
+}
