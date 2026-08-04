@@ -1,10 +1,1430 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <title>電流マスター</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理科小テスト：電流マスター オンラインランキング対応版</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #2980b9;
+            --danger: #c0392b;
+            --success: #27ae60;
+            --warning: #e67e22;
+            --bg: #f5f7fa;
+            --panel: #ffffff;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .pseudo-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            background-color: var(--bg) !important;
+            box-sizing: border-box !important;
+            padding: 20px !important;
+            overflow-y: auto !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+        .container {
+            background: var(--panel);
+            border: 2px solid #bdc3c7;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 685px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        h1, h2 { text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 10px;}
+        .top-nav-bar {
+            width: 100%;
+            max-width: 685px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .btn-fs { background-color: #7f8c8d; color: white; border: none; padding: 8px 14px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-reset-top { background-color: #e2e8f0; color: #4a5568; border: 1px solid #cbd5e0; padding: 8px 14px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-reset-top:hover { background-color: #edf2f7; }
+        .fullscreen-exit { position:fixed; top:10px; right:10px; z-index:100001; background:var(--danger); color:#fff; border:none; border-radius:7px; padding:9px 13px; font-weight:bold; cursor:pointer; display:none; }
+        .pseudo-fullscreen .fullscreen-exit { display:block; }
+        .btn-giveup { background:#64748b; color:#fff; font-size:15px; }
+        .ranking-period-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 10px; }
+        .ranking-period-tabs button { flex:1; min-width:110px; border:1px solid #cbd5e0; background:#fff; padding:8px; border-radius:6px; cursor:pointer; font-weight:bold; }
+        .ranking-period-tabs button.active { background:#ebf8ff; border-color:var(--accent); color:var(--accent); }
+        .my-rank { margin-top:7px; padding:6px 8px; background:#fff8db; border-radius:5px; font-weight:bold; font-size:13px; }
+        .setting-section { background: #edf2f7; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .setting-group { margin-bottom: 15px; }
+        .setting-group label { font-weight: bold; display: block; margin-bottom: 6px; color: var(--primary); }
+        .radio-box { display: flex; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+        .radio-box label { background: #fff; border: 2px solid #cbd5e0; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; min-width: 140px; text-align: center; font-size: 14px; transition: all 0.2s; }
+        .radio-box input[type="radio"] { display: none; }
+        .radio-box input[type="radio"]:checked + label { border-color: var(--accent); background: #ebf8ff; color: var(--accent); font-weight: bold; }
+        .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-2x2 label { margin: 0; min-width: auto; }
+        .grid-2x2 input[type="radio"]#diff-oni:checked + label { border-color: var(--danger); background: #fff5f5; color: var(--danger); }
+        .grid-2x2 input[type="radio"]#diff-superoni:checked + label { border-color: #6b21a8; background: #faf5ff; color: #6b21a8; }
+        .ranking-panel { background:#fff; border:1px solid #cbd5e0; border-radius:8px; padding:12px; margin-top:12px; }
+        .ranking-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+        .ranking-card { border:1px solid #e2e8f0; border-radius:7px; padding:9px; background:#f8fafc; }
+        .ranking-card h4 { margin:0 0 6px; color:var(--primary); }
+        .ranking-card ol { margin:0; padding-left:24px; font-size:13px; line-height:1.7; }
+        .name-input { width:100%; box-sizing:border-box; font-size:17px; padding:9px 10px; border:2px solid #cbd5e0; border-radius:6px; }
+        .privacy-notice { background:#fff8db; border-left:5px solid var(--warning); padding:10px 12px; border-radius:6px; font-size:13px; line-height:1.65; margin:8px 0 10px; }
+        .rank-empty { color:#94a3b8; font-style:normal; }
+        .ranking-error { grid-column:1/-1; text-align:center; color:var(--danger); padding:12px; background:#fff5f5; border-radius:7px; }
+        @media (max-width:560px) { .ranking-grid { grid-template-columns:1fr; } }
+        .sub-time-box { background: #ffffff; border: 1px dashed #cbd5e0; padding: 10px; border-radius: 6px; margin-top: 8px; display: flex; gap: 10px; justify-content: center; }
+        .sub-time-box label { padding: 6px 12px; font-size: 13px; }
+        .btn { background-color: var(--accent); color: white; border: none; padding: 14px 20px; font-size: 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn:hover { opacity: 0.9; }
+        .btn-main { width: 100%; padding: 16px; font-size: 20px; }
+        .btn-action-group { display: flex; gap: 15px; margin-top: 15px; width: 100%; }
+        .btn-submit { flex: 2; background-color: var(--success); font-size: 20px; }
+        .btn-pass { flex: 1; background-color: var(--warning); font-size: 15px; }
+        .hidden { display: none !important; }
+        .status-bar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; font-size: 16px; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+        .status-bar .mistakes { color: var(--warning); }
+        .timer { color: var(--danger); }
+        .circuit-view { background: #fff; border: 1px solid #ddd; border-radius: 6px; display: flex; justify-content: center; padding: 15px; margin-bottom: 15px; }
+        .input-view { position: relative; display: flex; flex-direction: column; align-items: center; margin: 15px 0; gap: 10px; width: 100%; min-height: 150px; }
+        .input-row { display: flex; align-items: center; gap: 5px; }
+        .ans-input { font-size: 32px; width: 150px; text-align: center; padding: 6px; border: 3px solid var(--accent); border-radius: 8px; background-color: #fff; color: #000; }
+        .keypad { position: absolute; right: 0; top: -5px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 150px; margin-top: 0; }
+        .key { background: #f8fafc; border: 2px solid #cbd5e0; font-size: 18px; font-weight: bold; padding: 8px 0; border-radius: 8px; cursor: pointer; text-align: center; user-select: none; }
+        .key-wide { grid-column: span 2; }
+        @media (max-width: 620px) {
+            .input-view { min-height: auto; }
+            .keypad { position: static; width: 100%; max-width: 220px; gap: 8px; }
+            .key { font-size: 22px; padding: 12px 0; }
+        }
+        .key:active { background: #cbd5e0; }
+        .key-clear { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .q-text { font-size: 19px; font-weight: bold; background: #fff8db; padding: 12px; border-radius: 6px; border-left: 5px solid #f1c40f; margin-bottom: 10px; text-align: center; white-space: pre-line; }
+        .feedback-area { text-align: center; min-height: 24px; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .feedback-wrong { color: var(--danger); animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        .score-display { font-size: 28px; text-align: center; color: var(--success); font-weight: bold; margin: 15px 0; }
+        .time-display { font-size: 18px; text-align: center; margin-bottom: 20px; font-weight: bold; color: var(--primary); }
+        .review-item { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; background: #fff; border-radius: 6px; }
+        .badge { display: inline-block; padding: 3px 8px; font-size: 12px; border-radius: 4px; color: white; margin-left: 10px; }
+        .badge-pass { background-color: var(--warning); }
+        .badge-miss { background-color: var(--danger); }
+        .badge-retry { background-color: #8e44ad; }
+        .badge-timeout { background-color: #7f8c8d; }
+        .review-explanation { background: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 14px; color: #555; line-height: 1.5; white-space: pre-line; }
+    </style>
 </head>
 <body>
-  <p>準備中です。</p>
+
+<div class="top-nav-bar">
+    <button id="fullscreen-btn" class="btn-fs" onclick="toggleFullscreen()">全画面にする ⛶</button>
+    <button id="reset-top-btn" class="btn-reset-top" onclick="confirmBackToSetup()">最初からやり直す ↩</button>
+</div>
+
+<div class="container" id="quiz-container">
+    <button id="fullscreen-exit-btn" class="fullscreen-exit" onclick="exitFullscreenMode()">全画面を終了 ✖</button>
+    <div id="screen-setup">
+        <h1>🔌 理科小テスト：電流マスター 改良版 ⚡</h1>
+        <div class="setting-section">
+            <div class="setting-group">
+                <label>【1】テストモードをえらぶ</label>
+                <div class="radio-box">
+                    <input type="radio" id="mode-res" name="test-mode" value="resistance" checked>
+                    <label for="mode-res">🧩 合成抵抗アタック</label>
+                    <input type="radio" id="mode-tri" name="test-mode" value="triathlon">
+                    <label for="mode-tri">🏃‍♂️ オームの法則 トライアスロン</label>
+                    <input type="radio" id="mode-rand" name="test-mode" value="random">
+                    <label for="mode-rand">🎲 ランダムチャレンジ</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>【2】難易度をえらぶ</label>
+                <div class="radio-box grid-2x2">
+                    <input type="radio" id="diff-easy" name="diff-level" value="easy" checked onclick="toggleOniSettings(false)">
+                    <label for="diff-easy">🟢 初級（5問）<br><small>抵抗の数：1〜2個<br>パスの数：0回</small></label>
+                    <input type="radio" id="diff-normal" name="diff-level" value="normal" onclick="toggleOniSettings(false)">
+                    <label for="diff-normal">🟡 中級（10問）<br><small>抵抗の数：2〜3個／パス3回</small></label>
+                    <input type="radio" id="diff-hard" name="diff-level" value="hard" onclick="toggleOniSettings(false)">
+                    <label for="diff-hard">🔴 上級（15問）<br><small>抵抗の数：2〜4個／パス1回</small></label>
+                    <input type="radio" id="diff-oni" name="diff-level" value="oni" onclick="toggleOniSettings(true)">
+                    <label for="diff-oni" style="color:#c0392b; font-weight: bold;">😈 鬼（30問）<br><small>抵抗の数：3〜4個<br>パスなし・1ミスで終了</small></label>
+                    <input type="radio" id="diff-superoni" name="diff-level" value="superoni" onclick="toggleOniSettings(true)">
+                    <label for="diff-superoni" style="color:#6b21a8; font-weight:bold;">👹 無双（エンドレス）<br><small>抵抗の数：3〜5個<br>パスなし・1ミスで終了</small></label>
+                </div>
+            </div>
+
+            <div class="setting-group" id="time-rule-group">
+                <label>【3】時間ルールをえらぶ</label>
+                <div class="radio-box">
+                    <input type="radio" id="time-ta" name="time-rule-type" value="ta" checked onclick="toggleTimeDetail(false)">
+                    <label for="time-ta">⏱️ タイムアタック<br><small>(1問60秒以内)</small></label>
+                    <input type="radio" id="time-cd" name="time-rule-type" value="cd" onclick="toggleTimeDetail(true)">
+                    <label for="time-cd">⏳ カウントダウン<br><small>(制限時間あり)</small></label>
+                    <input type="radio" id="time-practice" name="time-rule-type" value="practice" onclick="toggleTimeDetail(false)">
+                    <label for="time-practice">✍️ じっくり練習<br><small>(時間制限なし・段階練習)</small></label>
+                </div>
+                <div id="countdown-options" class="sub-time-box hidden">
+                    <input type="radio" id="cd-1m" name="countdown-val" value="60" onchange="renderRankings()">
+                    <label for="cd-1m">1分</label>
+                    <input type="radio" id="cd-3m" name="countdown-val" value="180" onchange="renderRankings()">
+                    <label for="cd-3m">3分</label>
+                    <input type="radio" id="cd-5m" name="countdown-val" value="300" onchange="renderRankings()" checked>
+                    <label for="cd-5m">5分</label>
+                    <input type="radio" id="cd-7m" name="countdown-val" value="420" onchange="renderRankings()">
+                    <label for="cd-7m">7分</label>
+                    <input type="radio" id="cd-10m" name="countdown-val" value="600" onchange="renderRankings()">
+                    <label for="cd-10m">10分</label>
+                </div>
+            </div>
+            <div class="setting-group">
+                <label>【4】弱点克服メニュー（出題を少し偏らせる）</label>
+                <div class="radio-box">
+                    <input type="radio" id="focus-balanced" name="focus-type" value="balanced" checked>
+                    <label for="focus-balanced">バランスよく</label>
+                    <input type="radio" id="focus-parallel" name="focus-type" value="parallel">
+                    <label for="focus-parallel">並列回路多め</label>
+                    <input type="radio" id="focus-mixed" name="focus-type" value="mixed">
+                    <label for="focus-mixed">混合回路多め</label>
+                </div>
+            </div>
+
+            <div class="ranking-panel">
+                <h3 style="margin:0 0 4px;color:var(--primary);">🏆 スコアランキング（上位3人）</h3>
+                <small style="color:#64748b;">上級・鬼・無双を表示します。無双のカウントダウンは、現在選択中の制限時間ごとに集計します。</small>
+                <div class="ranking-period-tabs">
+                    <button type="button" id="period-today" class="active" onclick="setRankingPeriod('today')">今日</button>
+                    <button type="button" id="period-week" onclick="setRankingPeriod('week')">今週</button>
+                    <button type="button" id="period-all" onclick="setRankingPeriod('all')">歴代</button>
+                </div>
+                <div class="ranking-period-tabs" id="ranking-class-tabs"></div>
+                <div id="ranking-grid" class="ranking-grid"></div>
+                <button type="button" class="btn-reset-top" style="margin-top:10px;" onclick="renderRankings()">ランキングを更新 🔄</button>
+            </div>
+
+        </div>
+        <button class="btn btn-main" onclick="startQuiz()">小テストをはじめる ➔</button>
+    </div>
+
+    <div id="screen-test" class="hidden">
+        <div class="status-bar">
+            <div>進行: <span id="info-progress">1/10</span> 問</div>
+            <div class="mistakes">まちがい: <span id="info-mistakes">0</span> 回</div>
+            <div class="timer" id="timer-box"><span id="timer-label">すすんだ時間</span>: <span id="info-timer">00:00</span></div>
+        </div>
+        <div class="circuit-view" id="circuit-area"></div>
+        <p class="q-text" id="question-text">指示された値を求めなさい。</p>
+        <div id="practice-work-area" class="hidden" style="width:100%;background:#f8fafc;border:1px solid #cbd5e0;border-radius:8px;padding:12px;box-sizing:border-box;margin-bottom:10px;">
+            <div style="font-weight:bold;color:var(--primary);margin-bottom:8px;">段階ごとに回路を整理しよう</div>
+            <div id="practice-step-list"></div>
+            <div id="practice-step-feedback" class="feedback-area" style="margin:8px 0 0;"></div>
+        </div>
+        <div class="feedback-area" id="feedback-msg"></div>
+        <div class="input-view">
+            <div class="input-row">
+                <input type="number" step="0.1" inputmode="decimal" id="student-ans" class="ans-input" placeholder="?" onkeydown="if(event.key==='Enter')submitAnswer()">
+                <span style="font-size: 32px; font-weight: bold;" id="unit-display"> Ω</span>
+            </div>
+            <div class="keypad">
+                <div class="key" onclick="pressKey('1')">1</div>
+                <div class="key" onclick="pressKey('2')">2</div>
+                <div class="key" onclick="pressKey('3')">3</div>
+                <div class="key" onclick="pressKey('4')">4</div>
+                <div class="key" onclick="pressKey('5')">5</div>
+                <div class="key" onclick="pressKey('6')">6</div>
+                <div class="key" onclick="pressKey('7')">7</div>
+                <div class="key" onclick="pressKey('8')">8</div>
+                <div class="key" onclick="pressKey('9')">9</div>
+                <div class="key key-clear" onclick="pressKey('clear')">けす</div>
+                <div class="key" onclick="pressKey('0')">0</div>
+                <div class="key" onclick="pressKey('.')">.</div>
+                <div class="key key-wide" onclick="pressKey('back')">⌫</div>
+            </div>
+        </div>
+        <div class="btn-action-group">
+            <button class="btn btn-giveup" onclick="abandonQuiz()">途中で諦める</button>
+            <button class="btn btn-pass" id="pass-btn" onclick="passQuestion()">わからないから飛ばす ↩</button>
+            <button class="btn btn-submit" onclick="submitAnswer()">こたえあわせ (Enter) ➔</button>
+        </div>
+    </div>
+
+    <div id="screen-result" class="hidden">
+        <h2 id="res-title">📊 テスト結果</h2>
+        <div class="score-display" id="res-score">目標クリア！</div>
+        <div class="time-display" id="res-time">タイム: --:--</div>
+        <div id="rank-entry" class="ranking-panel hidden">
+            <h3 style="margin:0 0 6px;color:var(--primary);">🏆 ランキングに登録</h3>
+            <p style="margin:0 0 6px;font-size:14px;">ランキング登録は任意です。登録しなくても結果や解説は確認できます。</p>
+            <div class="privacy-notice">
+                <strong>ニックネーム入力時の注意</strong><br>
+                ・本名や、個人を特定できる名前は入力しないでください。<br>
+                ・不適切な言葉、他人を傷つける言葉、他人になりすます名前は使用できません。<br>
+                ・入力したニックネーム、学年区分、記録はランキング上に表示されます。
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <select id="result-player-class" class="name-input" style="flex:0 0 145px;"></select>
+                <input id="result-player-name" class="name-input" type="text" maxlength="12" placeholder="例：オームくん" autocomplete="off" style="flex:1;min-width:140px;">
+                <button id="rank-submit-btn" class="btn" type="button" onclick="registerCurrentRanking()" style="margin:0;font-size:15px;padding:10px 14px;">登録する</button>
+                <button class="btn-reset-top" type="button" onclick="skipRankingRegistration()">登録しない</button>
+            </div>
+            <div id="rank-entry-msg" style="margin-top:7px;font-weight:bold;color:var(--danger);"></div>
+        </div>
+        <div id="rank-result" class="ranking-panel hidden"></div>
+        <div id="weakness-analysis" class="ranking-panel hidden"></div>
+        <div id="review-section" class="hidden">
+            <h3 style="border-left: 5px solid var(--danger); padding-left:10px; margin-top:25px; color: var(--danger);">⚠️ 見直しておきたい問題の解説</h3>
+            <p style="font-size:13px; color:#666; margin-top:-5px;">（まちがえた問題／パスした問題／時間切れの問題／やり直して正解した問題）</p>
+            <div id="review-list"></div>
+        </div>
+        <button class="btn btn-main hidden" id="retry-missed-btn" style="background-color: var(--warning);">まちがえた問題だけもう一度解く 🔄</button>
+        <button class="btn btn-main" style="background-color: var(--primary); margin-top:10px;" onclick="backToSetup()">もういちど最初から遊ぶ</button>
+    </div>
+</div>
+
+<script>
+// 並列計算が綺麗に整数になる厳選されたペア(R1, R2, 合成抵抗値)
+const PERFECT_PARALLELS = [
+    {r1:6, r2:3, a:2}, {r1:12, r2:4, a:3}, {r1:10, r2:10, a:5}, {r1:20, r2:5, a:4},
+    {r1:30, r2:15, a:10}, {r1:12, r2:6, a:4}, {r1:20, r2:20, a:10}, {r1:15, r2:10, a:6},
+    {r1:8, r2:8, a:4}, {r1:24, r2:8, a:6}
+];
+
+// 上級・鬼用：小数第1位までで割り切れる並列ペア
+const DECIMAL_PARALLELS = [
+    {r1:2, r2:3, a:1.2}, {r1:3, r2:15, a:2.5}, {r1:4, r2:6, a:2.4},
+    {r1:5, r2:5, a:2.5}, {r1:6, r2:9, a:3.6}, {r1:6, r2:18, a:4.5},
+    {r1:8, r2:12, a:4.8}, {r1:10, r2:15, a:6.0}, {r1:12, r2:18, a:7.2}
+];
+
+// 2本の直列枝を並列につないだ回路用（各枝の合計と全体が整数または小数第1位）
+const SERIES_BRANCH_PARALLELS = [
+    {r:[2,4,3,3], a:3}, {r:[3,5,4,4], a:4}, {r:[4,8,6,6], a:6},
+    {r:[5,10,5,10], a:7.5}, {r:[2,8,5,5], a:5}, {r:[3,9,4,8], a:6},
+    {r:[5,7,2,2], a:3}
+];
+
+
+function fmt(n) {
+    return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+let questions = [];
+let currentIdx = 0;
+let studentAnswers = []; 
+let timerSeconds = 0;
+let timerId = null;
+let selectedMode = "";
+let selectedDiff = "";
+let selectedFocus = "balanced";
+let playerName = "";
+let timeType = "ta";
+let isEndless = false;
+let countdownStartSeconds = 0;
+let currentCorrectCount = 0;  
+let maxPassCount = 0;
+let usedPassCount = 0;
+let initialTotalQuestions = 5;
+let isFullscreenMode = false;
+let mistakeCounts = {};   // 問題ごとの間違えた回数（タイムアタックのやり直し分も記録）
+let shownFlags = {};      // その問題を実際に画面に表示したかどうか（時間切れ未回答の判定に使用）
+let totalMistakes = 0;    // 累計ミス回数（ステータスバー表示用）
+let questionElapsedSeconds = 0; // タイムアタック時の1問ごとの経過時間（画面には表示しない）
+let rankingPeriod = 'today';
+let rankingClass = 'all';
+let pendingRankingRecord = null;
+let quizAbandoned = false;
+let currentStreak = 0;
+let bestStreak = 0;
+let questionStats = {};
+
+function toggleFullscreen() {
+    if (isFullscreenMode) exitFullscreenMode();
+    else enterFullscreenMode();
+}
+
+function enterFullscreenMode() {
+    const container = document.getElementById('quiz-container');
+    const btn = document.getElementById('fullscreen-btn');
+    isFullscreenMode = true;
+    container.classList.add('pseudo-fullscreen');
+    btn.innerText = '全画面を終了 ✖';
+    btn.style.backgroundColor = 'var(--danger)';
+}
+
+function exitFullscreenMode() {
+    const container = document.getElementById('quiz-container');
+    const btn = document.getElementById('fullscreen-btn');
+    isFullscreenMode = false;
+    container.classList.remove('pseudo-fullscreen');
+    btn.innerText = '全画面にする ⛶';
+    btn.style.backgroundColor = '#7f8c8d';
+}
+
+function confirmBackToSetup() {
+    if (!document.getElementById('screen-test').classList.contains('hidden')) {
+        if (confirm("途中のデータが消えますが、設定画面にもどりますか？")) { backToSetup(); }
+    } else { backToSetup(); }
+}
+
+function toggleOniSettings(isOni) {
+    document.getElementById('time-rule-group').style.opacity = "1";
+    document.getElementById('time-rule-group').style.pointerEvents = "auto";
+    const isMusou = document.getElementById('diff-superoni').checked;
+    const practice = document.getElementById('time-practice');
+    practice.disabled = isMusou;
+    const practiceLabel = document.querySelector('label[for="time-practice"]');
+    if (practiceLabel) practiceLabel.style.opacity = isMusou ? '0.4' : '1';
+    if (isMusou && practice.checked) {
+        document.getElementById('time-ta').checked = true;
+        toggleTimeDetail(false);
+    } else if (isOni && !practice.checked) {
+        document.getElementById('time-cd').checked = true;
+        document.getElementById('cd-7m').checked = true;
+        toggleTimeDetail(true);
+    }
+}
+
+function toggleTimeDetail(show) {
+    let box = document.getElementById('countdown-options');
+    if (show) { box.classList.remove('hidden'); } else { box.classList.add('hidden'); }
+}
+
+function pressKey(num) {
+    let inputEl = document.getElementById('student-ans');
+    if (num === 'clear') { inputEl.value = ''; }
+    else if (num === 'back') { inputEl.value = inputEl.value.slice(0, -1); }
+    else {
+        if (num === '.' && inputEl.value.includes('.')) return;
+        inputEl.value += num;
+    }
+    inputEl.focus();
+}
+
+function startQuiz() {
+    selectedMode = document.querySelector('input[name="test-mode"]:checked').value;
+    selectedDiff = document.querySelector('input[name="diff-level"]:checked').value;
+    selectedFocus = document.querySelector('input[name="focus-type"]:checked').value;
+    timeType = document.querySelector('input[name="time-rule-type"]:checked').value;
+    if (selectedDiff === 'superoni' && timeType === 'practice') { alert('無双（エンドレス）では、じっくり練習モードは選べません。'); return; }
+    playerName = '';
+    pendingRankingRecord = null;
+
+    isEndless = selectedDiff === 'superoni';
+    if (selectedDiff === 'easy') { initialTotalQuestions = 5; maxPassCount = 0; }
+    else if (selectedDiff === 'normal') { initialTotalQuestions = 10; maxPassCount = 3; }
+    else if (selectedDiff === 'hard') { initialTotalQuestions = 15; maxPassCount = 1; }
+    else if (selectedDiff === 'oni') { initialTotalQuestions = 30; maxPassCount = 0; }
+    else if (selectedDiff === 'superoni') { initialTotalQuestions = Infinity; maxPassCount = 0; }
+
+    usedPassCount = 0; currentCorrectCount = 0; currentIdx = 0;
+    quizAbandoned = false; questionElapsedSeconds = 0; currentStreak = 0; bestStreak = 0; questionStats = {};
+    studentAnswers = []; questions = [];
+    mistakeCounts = {}; shownFlags = {}; totalMistakes = 0;
+    document.getElementById('info-mistakes').innerText = '0';
+
+    const firstBatch = isEndless ? 1 : initialTotalQuestions;
+    for (let i = 0; i < firstBatch; i++) {
+        questions.push(generateUniqueQuestion(selectedMode, selectedDiff, i));
+    }
+
+    updatePassButtonText();
+
+    if (timeType === 'ta') {
+        timerSeconds = 0;
+        document.getElementById('timer-label').innerText = "すすんだ時間";
+    } else if (timeType === 'cd') {
+        let cdVal = document.querySelector('input[name="countdown-val"]:checked').value;
+        timerSeconds = parseInt(cdVal);
+        countdownStartSeconds = timerSeconds;
+        document.getElementById('timer-label').innerText = "のこり時間";
+    } else {
+        timerSeconds = 0;
+        document.getElementById('timer-label').innerText = "練習時間";
+    }
+
+    document.getElementById('screen-setup').classList.add('hidden');
+    document.getElementById('screen-result').classList.add('hidden');
+    document.getElementById('rank-entry')?.classList.add('hidden');
+    document.getElementById('rank-result')?.classList.add('hidden');
+    document.getElementById('screen-test').classList.remove('hidden');
+    
+    updateTimerDisplay();
+    clearInterval(timerId);
+    timerId = setInterval(handleTimer, 1000);
+    showQuestion();
+}
+
+function updatePassButtonText() {
+    let passBtn = document.getElementById('pass-btn');
+    if (selectedDiff === 'oni' || selectedDiff === 'superoni' || maxPassCount === 0) {
+        passBtn.innerText = "パス不可 ✖";
+        passBtn.style.opacity = "0.4";
+        passBtn.disabled = true;
+    } else {
+        passBtn.innerText = `パスする (のこり ${maxPassCount - usedPassCount}回)`;
+        passBtn.style.opacity = "1";
+        passBtn.disabled = false;
+    }
+}
+
+// 刷新された完璧な一元管理問題生成エンジン（AI）
+function pickParallel(diff) {
+    // 上級・鬼では約35%だけ小数第1位の並列を混ぜる。
+    const useDecimal = (diff === 'hard' || diff === 'oni' || diff === 'superoni') && Math.random() < 0.35;
+    const list = useDecimal ? DECIMAL_PARALLELS : PERFECT_PARALLELS;
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+// 同じ構成・数値の連続を防ぐ。初級・中級は直前1問、それ以外は直前3問を比較する。
+function questionSignature(q) {
+    return [q.type, q.mode, q.target, (q.r || []).join(','), q.hiddenIndex ?? '', fmt(q.ans)].join('|');
+}
+function generateUniqueQuestion(mode, diff, idx) {
+    const lookBack = (diff === 'easy' || diff === 'normal') ? 1 : 3;
+    const recent = questions.slice(-lookBack).map(questionSignature);
+    let candidate;
+    for (let attempt = 0; attempt < 40; attempt++) {
+        candidate = generateQuestionData(mode, diff, idx);
+        if (!recent.includes(questionSignature(candidate))) return candidate;
+    }
+    return candidate;
+}
+
+// 刷新された一元管理問題生成エンジン
+function generateQuestionData(mode, diff, idx) {
+    // 1. 難易度・弱点メニューから回路形状を決定
+    let type = 's1';
+    const roll = Math.random();
+    if (selectedFocus === 'parallel') {
+        if (diff === 'easy') type = roll < 0.78 ? 'p2' : 's2';
+        else type = roll < 0.45 ? 'p2' : (roll < 0.78 ? 'm3a' : 'm4b');
+    } else if (selectedFocus === 'mixed') {
+        if (diff === 'easy') type = roll < 0.55 ? 'p2' : 's2';
+        else if (diff === 'normal') type = roll < 0.55 ? 'm3a' : (roll < 0.78 ? 'm4b' : 'p2');
+        else type = roll < 0.38 ? 'm3a' : (roll < 0.72 ? 'm4a' : (roll < 0.90 ? 'm4b' : 'm5a'));
+    } else if (diff === 'easy') {
+        type = roll < 0.30 ? 's1' : (roll < 0.65 ? 's2' : 'p2');
+    } else if (diff === 'normal') {
+        type = roll < 0.28 ? 's2' : (roll < 0.58 ? 'p2' : (roll < 0.86 ? 'm3a' : 'm4b'));
+    } else if (diff === 'hard') {
+        type = roll < 0.15 ? 's2' : (roll < 0.30 ? 'p2' : (roll < 0.57 ? 'm3a' : (roll < 0.82 ? 'm4a' : 'm4b')));
+    } else if (diff === 'oni') {
+        type = roll < 0.35 ? 'm3a' : (roll < 0.68 ? 'm4a' : (roll < 0.88 ? 'm4b' : 'm5a'));
+    } else if (diff === 'superoni') {
+        type = roll < 0.25 ? 'm3a' : (roll < 0.55 ? 'm4a' : (roll < 0.78 ? 'm4b' : 'm5a'));
+    }
+
+    let r = [], Rt = 0, expRes = '';
+    if (type === 's1') {
+        const r1 = [2,3,4,5,6,8,10,12,15,20][Math.floor(Math.random()*10)];
+        r=[r1]; Rt=r1;
+        expRes=`この回路は抵抗が1つだけなので、全体の抵抗はそのまま ${fmt(Rt)} Ω となります。`;
+    } else if (type === 's2') {
+        const r1=Math.floor(Math.random()*12)+2, r2=Math.floor(Math.random()*12)+2;
+        r=[r1,r2]; Rt=r1+r2;
+        expRes=`直列回路の全体の抵抗は、各抵抗の和になります。\n【計算】 ${r1} + ${r2} = ${fmt(Rt)} Ω`;
+    } else if (type === 'p2') {
+        const p=pickParallel(diff); r=[p.r1,p.r2]; Rt=p.a;
+        expRes=`並列回路の全体の抵抗は、「和分の積」で求められます。\n【計算】 (${p.r1} × ${p.r2}) ÷ (${p.r1} + ${p.r2}) = ${fmt(Rt)} Ω`;
+    } else if (type === 'm3a') {
+        const p=pickParallel(diff), r1=Math.floor(Math.random()*10)+2;
+        r=[r1,p.r1,p.r2]; Rt=Math.round((r1+p.a)*10)/10;
+        expRes=`まず並列部分（${p.r1} Ω と ${p.r2} Ω）の合成抵抗を求めると ${fmt(p.a)} Ω です。\nそれが ${r1} Ω と直列なので足します。\n【計算】 ${r1} + ${fmt(p.a)} = ${fmt(Rt)} Ω`;
+    } else if (type === 'm4a') {
+        const p1=pickParallel(diff), p2=pickParallel(diff);
+        r=[p1.r1,p1.r2,p2.r1,p2.r2]; Rt=Math.round((p1.a+p2.a)*10)/10;
+        expRes=`2つの並列ブロックに分けます。\n・左：${fmt(p1.a)} Ω\n・右：${fmt(p2.a)} Ω\nこの2ブロックは直列です。\n【計算】 ${fmt(p1.a)} + ${fmt(p2.a)} = ${fmt(Rt)} Ω`;
+    } else if (type === 'm4b') {
+        const d=SERIES_BRANCH_PARALLELS[Math.floor(Math.random()*SERIES_BRANCH_PARALLELS.length)];
+        r=d.r.slice(); const upper=r[0]+r[1], lower=r[2]+r[3]; Rt=Math.round(d.a*10)/10;
+        expRes=`まず、上の枝と下の枝をそれぞれ直列合成します。\n・上の枝：${r[0]} + ${r[1]} = ${fmt(upper)} Ω\n・下の枝：${r[2]} + ${r[3]} = ${fmt(lower)} Ω\n次に、この2本の枝を並列合成します。\n【計算】 (${fmt(upper)} × ${fmt(lower)}) ÷ (${fmt(upper)} + ${fmt(lower)}) = ${fmt(Rt)} Ω`;
+    } else if (type === 'm5a') {
+        const p1=pickParallel(diff), p2=pickParallel(diff), rs=[2,3,4,5,6,8][Math.floor(Math.random()*6)];
+        r=[rs,p1.r1,p1.r2,p2.r1,p2.r2]; Rt=Math.round((rs+p1.a+p2.a)*10)/10;
+        expRes=`5個の抵抗を3ブロックに分けます。\n・単独の直列抵抗：${rs} Ω\n・中央の並列部分：${fmt(p1.a)} Ω\n・右の並列部分：${fmt(p2.a)} Ω\n【計算】 ${rs} + ${fmt(p1.a)} + ${fmt(p2.a)} = ${fmt(Rt)} Ω`;
+    }
+
+    const I=[1,2,3,4][Math.floor(Math.random()*4)];
+    const V=Math.round(I*Rt*10)/10;
+    let qMode=mode;
+    if (mode==='random') qMode=Math.random()<0.5?'resistance':'triathlon';
+
+    // 混合回路では、一定割合で「未知の1抵抗」を逆算する問題を出す
+    const canMissing=['m3a','m4a','m4b'].includes(type) && diff!=='easy';
+    const missingChance = timeType === 'practice' ? 0 : (selectedFocus==='mixed' ? 0.28 : (diff==='normal'?0.08:0.16));
+    if (canMissing && qMode!=='resistance' && Math.random()<missingChance) {
+        const hiddenIndex=Math.floor(Math.random()*r.length);
+        return {
+            mode:'missing', type, r, Rt, I, V, target:'Rx', hiddenIndex, ans:r[hiddenIndex], unit:'Ω', category:'missing',
+            qText:`回路全体の合成抵抗は ${fmt(Rt)} Ω です。\n「？」で隠された抵抗の値を求めなさい。`,
+            exp:`【解説】\nまず、わかっている部分から順に合成し、全体の ${fmt(Rt)} Ω から逆算します。\n\n${expRes}\n\n元の回路を満たす「？」の抵抗は ${fmt(r[hiddenIndex])} Ω です。`
+        };
+    }
+
+    if (qMode==='resistance') {
+        return {mode:'res',type,r,Rt,I,V,target:'Rt',ans:Rt,qText:'この回路全体の「全体の抵抗（合成抵抗）」を求めなさい。',unit:'Ω',category:type,exp:`【解説】\n${expRes}`};
+    }
+
+    // オームの法則から合成抵抗を直接求める問題は10%に抑える
+    const tr=Math.random();
+    const target=tr<0.45?'I':(tr<0.90?'V':'R');
+    let qText='',unit='',ans=0,exp='';
+    if(target==='I'){
+        qText='回路全体を流れる電流 I を求めなさい。'; unit='A'; ans=I;
+        exp=`【解説】\nまず合成抵抗を求めます。\n${expRes}\n\n次に、電流＝電圧÷抵抗です。\n【計算】 ${fmt(V)} ÷ ${fmt(Rt)} = ${fmt(ans)} A`;
+    }else if(target==='V'){
+        qText='電源の電圧 V を求めなさい。'; unit='V'; ans=V;
+        exp=`【解説】\nまず合成抵抗を求めます。\n${expRes}\n\n次に、電圧＝電流×抵抗です。\n【計算】 ${fmt(I)} × ${fmt(Rt)} = ${fmt(ans)} V`;
+    }else{
+        qText='回路全体の合成抵抗 R を、電圧と電流から求めなさい。'; unit='Ω'; ans=Rt;
+        exp=`【解説】\n抵抗＝電圧÷電流です。\n【計算】 ${fmt(V)} ÷ ${fmt(I)} = ${fmt(ans)} Ω`;
+    }
+    return {mode:'tri',type,r,Rt,I,V,target,ans,qText,unit,category:target,exp};
+}
+
+function showQuestion() {
+    questionElapsedSeconds = 0;
+    shownFlags[currentIdx] = true; // タイムアップ時に「未回答」として解説対象にするための記録
+    document.getElementById('info-progress').innerText = isEndless ? `正解 ${currentCorrectCount}（挑戦中）` : `${currentCorrectCount + 1} / ${initialTotalQuestions}`;
+    let q = questions[currentIdx];
+    document.getElementById('question-text').innerText = q.qText;
+    document.getElementById('unit-display').innerText = " " + q.unit;
+    const practiceArea = document.getElementById('practice-work-area');
+    practiceArea.classList.toggle('hidden', timeType !== 'practice');
+    if (timeType === 'practice') setupPracticeSteps(q);
+    
+    let fb = document.getElementById('feedback-msg');
+    fb.innerText = ""; fb.className = "feedback-area";
+
+    document.getElementById('circuit-area').innerHTML = drawSVG(q);
+    
+    let inputEl = document.getElementById('student-ans');
+    inputEl.value = '';
+    inputEl.disabled = false;
+    const submitBtn = document.querySelector('.btn-submit');
+    submitBtn.disabled = false; submitBtn.style.opacity = '1'; inputEl.style.opacity = '1';
+    if (timeType !== 'practice' || practiceSteps.length === 0) inputEl.focus();
+}
+
+let practiceSteps = [];
+let currentPracticeStep = 0;
+
+function parallelValue(a, b) {
+    return Math.round(((a * b) / (a + b)) * 10) / 10;
+}
+
+function buildPracticeSteps(q) {
+    const steps = [];
+    const add = (label, answer, unit='Ω') => steps.push({label, answer:Math.round(answer*10)/10, unit});
+
+    if (q.type === 's2') {
+        add(`2つの抵抗 ${fmt(q.r[0])} Ω と ${fmt(q.r[1])} Ω を直列合成すると？`, q.Rt);
+    } else if (q.type === 'p2') {
+        add(`2つの抵抗 ${fmt(q.r[0])} Ω と ${fmt(q.r[1])} Ω を並列合成すると？`, q.Rt);
+    } else if (q.type === 'm3a') {
+        const p = parallelValue(q.r[1], q.r[2]);
+        add(`並列部分（${fmt(q.r[1])} Ω と ${fmt(q.r[2])} Ω）の合成抵抗は？`, p);
+        add(`その値と ${fmt(q.r[0])} Ω を直列合成した、回路全体の合成抵抗は？`, q.Rt);
+    } else if (q.type === 'm4a') {
+        const left = parallelValue(q.r[0], q.r[1]);
+        const right = parallelValue(q.r[2], q.r[3]);
+        add(`左の並列部分（${fmt(q.r[0])} Ω と ${fmt(q.r[1])} Ω）の合成抵抗は？`, left);
+        add(`右の並列部分（${fmt(q.r[2])} Ω と ${fmt(q.r[3])} Ω）の合成抵抗は？`, right);
+        add(`左右の合成抵抗を直列につないだ、回路全体の合成抵抗は？`, q.Rt);
+    } else if (q.type === 'm4b') {
+        const upper = q.r[0] + q.r[1];
+        const lower = q.r[2] + q.r[3];
+        add(`上の枝（${fmt(q.r[0])} Ω と ${fmt(q.r[1])} Ω）を直列合成すると？`, upper);
+        add(`下の枝（${fmt(q.r[2])} Ω と ${fmt(q.r[3])} Ω）を直列合成すると？`, lower);
+        add(`上の枝と下の枝を並列合成した、回路全体の合成抵抗は？`, q.Rt);
+    } else if (q.type === 'm5a') {
+        const middle = parallelValue(q.r[1], q.r[2]);
+        const right = parallelValue(q.r[3], q.r[4]);
+        add(`中央の並列部分（${fmt(q.r[1])} Ω と ${fmt(q.r[2])} Ω）の合成抵抗は？`, middle);
+        add(`右の並列部分（${fmt(q.r[3])} Ω と ${fmt(q.r[4])} Ω）の合成抵抗は？`, right);
+        add(`単独の ${fmt(q.r[0])} Ω と2つの合成抵抗を直列合成すると？`, q.Rt);
+    }
+
+    if (q.target === 'I') add(`合成抵抗 ${fmt(q.Rt)} Ω と電圧 ${fmt(q.V)} V から、電流 I は？`, q.I, 'A');
+    else if (q.target === 'V') add(`合成抵抗 ${fmt(q.Rt)} Ω と電流 ${fmt(q.I)} A から、電源電圧 V は？`, q.V, 'V');
+
+    return steps;
+}
+
+function setupPracticeSteps(q) {
+    practiceSteps = buildPracticeSteps(q);
+    currentPracticeStep = 0;
+    renderPracticeSteps();
+}
+
+function renderPracticeSteps() {
+    const list = document.getElementById('practice-step-list');
+    const feedback = document.getElementById('practice-step-feedback');
+    feedback.innerText = '';
+    feedback.className = 'feedback-area';
+
+    if (!practiceSteps.length) {
+        list.innerHTML = '<div style="padding:8px;background:white;border-radius:6px;">この問題は途中の合成がありません。下の解答欄に答えを入力しましょう。</div>';
+        return;
+    }
+
+    list.innerHTML = practiceSteps.map((step, i) => {
+        const done = i < currentPracticeStep;
+        const active = i === currentPracticeStep;
+        const locked = i > currentPracticeStep;
+        return `<div style="margin:8px 0;padding:10px;background:${done?'#ecfdf5':'white'};border:1px solid ${active?'#2980b9':'#cbd5e0'};border-radius:7px;opacity:${locked?'0.55':'1'};">
+            <div style="font-weight:bold;margin-bottom:6px;">${done?'✅ ':active?'▶ ':''}段階 ${i+1}：${step.label}</div>
+            ${done ? `<div style="color:#15803d;font-weight:bold;">${fmt(step.answer)} ${step.unit}</div>` : active ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><input id="practice-step-input" type="number" step="0.1" inputmode="decimal" class="ans-input" style="font-size:22px;width:120px;padding:5px;" onkeydown="if(event.key==='Enter')checkPracticeStep()"><span style="font-weight:bold;">${step.unit}</span><button type="button" class="btn" style="font-size:14px;padding:8px 12px;margin:0;" onclick="checkPracticeStep()">この段階を確認</button></div>` : '<div>前の段階を正解すると入力できます。</div>'}
+        </div>`;
+    }).join('');
+
+    const finalInput = document.getElementById('student-ans');
+    const submitBtn = document.querySelector('.btn-submit');
+    const completed = currentPracticeStep >= practiceSteps.length;
+    finalInput.disabled = !completed;
+    submitBtn.disabled = !completed;
+    finalInput.style.opacity = completed ? '1' : '0.45';
+    submitBtn.style.opacity = completed ? '1' : '0.45';
+    if (completed) {
+        feedback.innerText = '段階計算が完了しました。最後に、下の解答欄へ答えを入力してください。';
+        finalInput.focus();
+    } else {
+        setTimeout(() => document.getElementById('practice-step-input')?.focus(), 0);
+    }
+}
+
+function checkPracticeStep() {
+    if (currentPracticeStep >= practiceSteps.length) return;
+    const input = document.getElementById('practice-step-input');
+    const feedback = document.getElementById('practice-step-feedback');
+    const value = parseFloat(input?.value);
+    if (Number.isNaN(value)) {
+        feedback.innerText = '数値を入力してください。';
+        feedback.className = 'feedback-area feedback-wrong';
+        return;
+    }
+    const step = practiceSteps[currentPracticeStep];
+    if (Math.abs(value - step.answer) < 0.01) {
+        currentPracticeStep++;
+        renderPracticeSteps();
+    } else {
+        feedback.innerText = 'この段階の計算が違います。回路のつながり方をもう一度確認しましょう。';
+        feedback.className = 'feedback-area feedback-wrong';
+        input.select();
+    }
+}
+
+function recordQuestionStat(q, correct, mistakeAdded = false) {
+    const key = q.category || q.type || 'other';
+    if (!questionStats[key]) questionStats[key] = {shown:0, correct:0, mistakes:0};
+    if (correct) questionStats[key].correct++;
+    if (mistakeAdded) questionStats[key].mistakes++;
+}
+
+function submitAnswer() {
+    let inputEl = document.getElementById('student-ans');
+    let val = parseFloat(inputEl.value);
+    let q = questions[currentIdx];
+    let fb = document.getElementById('feedback-msg');
+
+    if (isNaN(val)) {
+        fb.innerText = "数字を入力してください！";
+        fb.className = "feedback-area feedback-wrong";
+        inputEl.focus(); return;
+    }
+
+    // 丸め誤差を考慮した厳密な判定
+    if (Math.abs(val - q.ans) < 0.01) {
+        studentAnswers[currentIdx] = 'correct';
+        recordQuestionStat(q, true, false);
+        currentCorrectCount++;
+        if (isEndless) {
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+        }
+        currentIdx++;
+        if (isEndless) {
+            questions.push(generateUniqueQuestion(selectedMode, 'superoni', questions.length));
+            showQuestion();
+        } else if (currentCorrectCount < initialTotalQuestions) {
+            showQuestion();
+        } else {
+            endQuiz(true);
+        }
+    } else {
+        // ★この問題で間違えたことを記録（タイムアタックでやり直して最終的に正解しても、
+        //   一度つまずいたという事実は結果画面の解説に残す）
+        mistakeCounts[currentIdx] = (mistakeCounts[currentIdx] || 0) + 1;
+        recordQuestionStat(q, false, true);
+        totalMistakes++;
+        document.getElementById('info-mistakes').innerText = totalMistakes;
+
+        if (selectedDiff === 'oni' || selectedDiff === 'superoni') {
+            clearInterval(timerId);
+            studentAnswers[currentIdx] = 'miss_dead';
+            const msg = selectedDiff === 'superoni'
+                ? `無双：${currentCorrectCount}問連続正解で終了！`
+                : "鬼モード：1回ミスしたため終了！";
+            endQuiz(false, msg);
+            return;
+        }
+        fb.innerText = `ちがいます。もういちど計算しなおしてみよう。`;
+        fb.className = "feedback-area feedback-wrong";
+        fb.style.animation = 'none'; fb.offsetHeight; fb.style.animation = null;
+        inputEl.focus(); inputEl.select();
+    }
+}
+
+function abandonQuiz() {
+    if (!confirm('ここで終了しますか？今回の記録はランキングにも学習記録にも残りません。')) return;
+    quizAbandoned = true;
+    clearInterval(timerId);
+    alert('今回の挑戦を終了しました。記録は保存されません。');
+    backToSetup();
+}
+
+function passQuestion() {
+    if(selectedDiff === 'oni' || selectedDiff === 'superoni' || usedPassCount >= maxPassCount) return;
+    usedPassCount++;
+    studentAnswers[currentIdx] = 'passed'; 
+    questions.push(generateUniqueQuestion(selectedMode, selectedDiff, questions.length));
+    currentIdx++;
+    updatePassButtonText();
+    showQuestion();
+}
+
+function handleTimer() {
+    if (timeType === 'ta') {
+        timerSeconds++;
+        questionElapsedSeconds++;
+        if (questionElapsedSeconds >= 60) {
+            clearInterval(timerId);
+            studentAnswers[currentIdx] = 'question_timeout';
+            endQuiz(false, 'そこまで！この問題の制限時間1分を超えました。', { skipRanking: true });
+            return;
+        }
+    } else if (timeType === 'cd') {
+        timerSeconds--;
+        if (timerSeconds <= 0) {
+            timerSeconds = 0; clearInterval(timerId);
+            if (isEndless) endQuiz(true, `無双 カウントダウン：合計${currentCorrectCount}問正解・最大${bestStreak}問連続正解！`);
+            else endQuiz(false, "タイムアップ！時間切れです。");
+            return;
+        }
+    } else {
+        timerSeconds++;
+    }
+    updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+    let m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+    let s = (timerSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('info-timer').innerText = `${m}:${s}`;
+}
+
+function endQuiz(isSuccess, message = "", options = {}) {
+    clearInterval(timerId);
+    document.getElementById('screen-test').classList.add('hidden');
+    document.getElementById('screen-result').classList.remove('hidden');
+    
+    let titleEl = document.getElementById('res-title');
+    let scoreEl = document.getElementById('res-score');
+    let timeEl = document.getElementById('res-time');
+    
+    if (isEndless) {
+        titleEl.innerText = timeType === 'ta' ? "👹 無双 タイムアタック終了" : "👹 無双 カウントダウン終了";
+        scoreEl.innerText = message || `${currentCorrectCount}問正解しました。`;
+        scoreEl.style.color = "#6b21a8";
+    } else if(isSuccess) {
+        titleEl.innerText = "🎉 テスト完全クリア！";
+        scoreEl.innerText = `素晴らしい！目標の ${initialTotalQuestions}問をすべて正解しました。`;
+        scoreEl.style.color = "var(--success)";
+    } else {
+        titleEl.innerText = "❌ 終了";
+        scoreEl.innerText = message ? message : "目標クリアならず！";
+        scoreEl.style.color = "var(--danger)";
+    }
+
+    if (timeType === 'ta') {
+        timeEl.innerText = `かかった時間: ${Math.floor(timerSeconds/60)}分 ${timerSeconds%60}秒 ／ パス使用: ${usedPassCount}回 ／ 累計ミス: ${totalMistakes}回`;
+    } else if (timeType === 'cd') {
+        let baseTime = countdownStartSeconds || parseInt(document.querySelector('input[name="countdown-val"]:checked').value);
+        let used = baseTime - timerSeconds;
+        timeEl.innerText = `消費時間: ${Math.floor(used/60)}分 ${used%60}秒 (のこり ${Math.floor(timerSeconds/60)}分 ${timerSeconds%60}秒) ／ 累計ミス: ${totalMistakes}回`;
+    } else {
+        timeEl.innerText = `じっくり練習時間: ${Math.floor(timerSeconds/60)}分 ${timerSeconds%60}秒 ／ 累計ミス: ${totalMistakes}回`;
+    }
+
+    if (!options.skipRanking && !quizAbandoned && timeType !== 'practice') prepareRankingRegistration(isSuccess);
+    renderWeaknessAnalysis();
+
+    // ★見直し対象の判定を拡張：
+    //  ・パスした問題
+    //  ・鬼モードでミスして即終了した問題
+    //  ・カウントダウンの時間切れで未回答だった問題（実際に画面に表示されたもののみ）
+    //  ・タイムアタックなどでやり直して最終的に正解した問題（間違えた事実は記録して見せる）
+    let reviewHtml = '';
+    let missedQuestions = [];
+    for (let i = 0; i < questions.length; i++) {
+        let q = questions[i];
+        let status = studentAnswers[i] || 'unanswered';
+        let mistakes = mistakeCounts[i] || 0;
+        let wasShown = !!shownFlags[i];
+        let badgeHtml = '';
+        let shouldShow = false;
+
+        if (status === 'passed') {
+            shouldShow = true;
+            badgeHtml = `<span class="badge badge-pass">飛ばした</span>`;
+        } else if (status === 'miss_dead') {
+            shouldShow = true;
+            badgeHtml = `<span class="badge badge-miss">ミス</span>`;
+        } else if ((status === 'unanswered' && wasShown) || status === 'question_timeout') {
+            shouldShow = true;
+            badgeHtml = `<span class="badge badge-timeout">1問の制限時間切れ</span>`;
+        } else if (status === 'correct' && mistakes > 0) {
+            shouldShow = true;
+            badgeHtml = `<span class="badge badge-retry">${mistakes}回まちがえて正解</span>`;
+        }
+
+        if (shouldShow) {
+            missedQuestions.push(q);
+            reviewHtml += `
+                <div class="review-item">
+                    <div>${badgeHtml} <b>問題 ${i+1}:</b> ${q.qText}</div>
+                    <div style="display:flex; justify-content:center; background:#fff; padding:10px; margin:10px 0;">${drawSVG(q, true)}</div>
+                    <div>正解: <b style="color:var(--success);">${fmt(q.ans)} ${q.unit}</b></div>
+                    <div class="review-explanation">${q.exp}</div>
+                </div>`;
+        }
+    }
+
+    if (reviewHtml) {
+        document.getElementById('review-section').classList.remove('hidden');
+        document.getElementById('review-list').innerHTML = reviewHtml;
+    } else {
+        document.getElementById('review-section').classList.add('hidden');
+    }
+
+    // 「まちがえた問題だけもう一度解く」ボタンの表示切り替え
+    let retryBtn = document.getElementById('retry-missed-btn');
+    if (missedQuestions.length > 0) {
+        retryBtn.classList.remove('hidden');
+        retryBtn.innerText = `まちがえた問題だけもう一度解く 🔄 (${missedQuestions.length}問)`;
+        retryBtn.onclick = function () { startReviewSession(missedQuestions); };
+    } else {
+        retryBtn.classList.add('hidden');
+    }
+}
+
+
+const APP_ID = 'electric_current_master';
+const SUPABASE_URL = 'https://vngcvtpjvarompzhnkye.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_P1EXRA6zhNjwgXUNPYngdA_0fmNHYSr';
+const SUPABASE_TABLE = 'rankings';
+
+const CLASS_OPTIONS = [
+    {value:'all', label:'総合', registration:false},
+    {value:'junior_1', label:'中１', registration:true},
+    {value:'junior_2', label:'中２', registration:true},
+    {value:'junior_3', label:'中３', registration:true},
+    {value:'high_school_plus', label:'高校以上', registration:true}
+];
+const CLASS_LABELS = Object.fromEntries(CLASS_OPTIONS.map(item => [item.value, item.label]));
+
+function renderClassControls() {
+    const tabs = document.getElementById('ranking-class-tabs');
+    if (tabs) {
+        tabs.innerHTML = CLASS_OPTIONS.map(item =>
+            `<button type="button" id="class-${item.value}" class="${item.value === rankingClass ? 'active' : ''}" onclick="setRankingClass('${item.value}')">${item.label}</button>`
+        ).join('');
+    }
+    const select = document.getElementById('result-player-class');
+    if (select) {
+        select.innerHTML = '<option value="">学年区分を選択</option>' + CLASS_OPTIONS
+            .filter(item => item.registration)
+            .map(item => `<option value="${item.value}">${item.label}</option>`)
+            .join('');
+    }
+}
+
+function renderWeaknessAnalysis() {
+    const box = document.getElementById('weakness-analysis');
+    if (!['easy','normal','hard'].includes(selectedDiff)) { box.classList.add('hidden'); return; }
+    const groups = [
+        {name:'直列回路', keys:['s1','s2']},
+        {name:'並列回路', keys:['p2']},
+        {name:'混合回路', keys:['m3a','m4a','m4b','m5a']},
+        {name:'オームの法則', keys:['I','V','R']},
+        {name:'未知の抵抗', keys:['missing']}
+    ];
+    const rows = groups.map(g => {
+        let correct=0, mistakes=0;
+        g.keys.forEach(k=>{ const st=questionStats[k]; if(st){correct+=st.correct; mistakes+=st.mistakes;} });
+        const attempts=correct+mistakes;
+        if(!attempts) return '';
+        const rate=Math.round(correct/attempts*100);
+        const judge=rate>=85?'よくできています':rate>=70?'おおむねできています':'もう一度練習しよう';
+        return `<tr><td>${g.name}</td><td>${rate}%</td><td>${judge}</td></tr>`;
+    }).join('');
+    if(!rows){ box.classList.add('hidden'); return; }
+    box.innerHTML=`<h3 style="margin:0 0 8px;color:var(--primary);">📊 弱点分析</h3><table style="width:100%;border-collapse:collapse;"><tr><th style="text-align:left;border-bottom:1px solid #cbd5e0;">分野</th><th style="border-bottom:1px solid #cbd5e0;">正答率</th><th style="border-bottom:1px solid #cbd5e0;">判定</th></tr>${rows}</table><p style="font-size:13px;color:#64748b;">誤答した回数も含めて算出しています。次回の弱点克服メニュー選択の参考にしてください。</p>`;
+    box.classList.remove('hidden');
+}
+
+const DIFF_LABELS = {hard:'上級', oni:'鬼', superoni:'無双'};
+
+async function loadRankings() {
+    try {
+        const query = new URLSearchParams({
+            select:'id,app_id,nickname,category,score,time_seconds,class_code,created_at',
+            app_id:`eq.${APP_ID}`,
+            order:'created_at.desc',
+            limit:'1000'
+        });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?${query}`, {
+            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+        });
+        if (!res.ok) throw new Error('取得に失敗しました: ' + res.status);
+        const rows = await res.json();
+        console.info(`[ranking] fetched=${rows.length}, app_id=${APP_ID}`);
+        return rows.map(r => ({
+            id:r.id,
+            name:r.nickname,
+            category:r.category,
+            score:Number(r.score),
+            time:Number(r.time_seconds),
+            class_name:r.class_code,
+            savedAt:new Date(r.created_at).getTime()
+        }));
+    } catch (e) {
+        console.warn('ランキングを取得できませんでした。', e);
+        return null;
+    }
+}
+
+async function saveRankingRecord(record) {
+    const challengeId = record.challenge_id || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
+        method:'POST',
+        headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:`Bearer ${SUPABASE_KEY}`,
+            'Content-Type':'application/json',
+            Prefer:'return=representation'
+        },
+        body:JSON.stringify({
+            app_id:APP_ID,
+            nickname:record.name,
+            category:record.category,
+            score:record.score,
+            time_seconds:record.time,
+            class_code:record.class_name,
+            device_id:record.device_id,
+            challenge_id:challengeId
+        })
+    });
+    if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        if (res.status === 409 || body.includes('challenge_id')) throw new Error('DUPLICATE');
+        if (body.includes('連続投稿') || res.status === 429) throw new Error('SPAM_BLOCKED');
+        throw new Error(`送信に失敗しました: ${res.status}`);
+    }
+    const rows=await res.json();
+    return rows?.[0] || null;
+}
+
+function getDeviceId() {
+    let id = localStorage.getItem('scienceAppsDeviceId');
+    if (!id) {
+        id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem('scienceAppsDeviceId', id);
+    }
+    return id;
+}
+
+const NG_WORDS = ['ばか','あほ','しね','うざい','きもい','ちんこ','うんこ'];
+function validateNickname(value) {
+    const name = value.trim().replace(/\s+/g, ' ');
+    if (!name) return 'ニックネームを入力してください。';
+    if (name.length < 2 || name.length > 12) return 'ニックネームは2～12文字で入力してください。';
+    const lower = name.toLowerCase();
+    if (NG_WORDS.some(word => lower.includes(word))) return '使用できない言葉が含まれています。ニックネームを見直してください。';
+    if (/https?:\/\/|www\.|@|\.com|\.jp/i.test(name)) return 'URLやメールアドレスは入力できません。';
+    if (/\d{6,}/.test(name)) return '学籍番号など、長い数字は入力できません。';
+    if (/(.)\1{5,}/u.test(name)) return '同じ文字を繰り返しすぎています。';
+    if (/[<>"'`]/.test(name)) return '使用できない記号が含まれています。';
+    return '';
+}
+
+function formatTime(sec) {
+    const safe = Math.max(0, Number(sec) || 0);
+    const m = Math.floor(safe / 60);
+    const s = Math.floor(safe % 60);
+    return `${m}分${String(s).padStart(2,'0')}秒`;
+}
+function escapeHtml(str) {
+    return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+function startOfToday(now = new Date()) { return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); }
+function startOfWeek(now = new Date()) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const day = d.getDay();
+    d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+    return d.getTime();
+}
+function filterByPeriod(records, period) {
+    if (period === 'all') return records;
+    const boundary = period === 'today' ? startOfToday() : startOfWeek();
+    return records.filter(r => r.savedAt >= boundary);
+}
+function filterByClass(records, cls) {
+    if (cls === 'all') return records;
+    return records.filter(r => r.class_name === cls);
+}
+function setRankingPeriod(period) {
+    rankingPeriod = period;
+    ['today','week','all'].forEach(p => document.getElementById(`period-${p}`)?.classList.toggle('active', p === period));
+    renderRankings();
+}
+function setRankingClass(cls) {
+    rankingClass = cls;
+    CLASS_OPTIONS.forEach(item => document.getElementById(`class-${item.value}`)?.classList.toggle('active', item.value === cls));
+    renderRankings();
+}
+function selectedCountdownSeconds() {
+    const selected=document.querySelector('input[name="countdown-val"]:checked');
+    return selected ? parseInt(selected.value,10) : 300;
+}
+function rankingCategory(record) {
+    if (record.diff === 'hard' && record.timeType === 'ta') return 'hard-ta';
+    if (record.diff === 'oni' && record.timeType === 'ta') return 'oni-ta';
+    if (record.diff === 'superoni' && record.timeType === 'ta') return 'superoni-ta';
+    if (record.diff === 'superoni' && record.timeType === 'cd') return `superoni-cd-${record.duration}`;
+    return '';
+}
+function getCategoryInfo() {
+    const cd=selectedCountdownSeconds();
+    return [
+        {key:'hard-ta',title:'上級・タイムアタック',scoreType:'time'},
+        {key:'oni-ta',title:'鬼・タイムアタック',scoreType:'time'},
+        {key:'superoni-ta',title:'無双・タイムアタック',scoreType:'score'},
+        {key:`superoni-cd-${cd}`,title:`無双・カウントダウン（${Math.floor(cd/60)}分）`,scoreType:'score'}
+    ];
+}
+function sortCategory(records, scoreType) {
+    return records.slice().sort((a,b) => scoreType === 'time'
+        ? (a.time-b.time)||(a.savedAt-b.savedAt)
+        : (b.score-a.score)||(a.time-b.time)||(a.savedAt-b.savedAt));
+}
+function formatRankRecord(r, scoreType) {
+    const classLabel=CLASS_LABELS[r.class_name] || '区分不明';
+    const label=rankingClass === 'all' ? `${escapeHtml(r.name)}（${classLabel}）` : escapeHtml(r.name);
+    return scoreType === 'time' ? `${label}：${formatTime(r.time)}` : `${label}：${r.score}問（${formatTime(r.time)}）`;
+}
+function renderTopThree(rows, scoreType) {
+    const medals=['🥇','🥈','🥉'];
+    return [0,1,2].map(i => rows[i]
+        ? `<li>${medals[i]} ${i+1}位　${formatRankRecord(rows[i],scoreType)}</li>`
+        : `<li class="rank-empty">${medals[i]} ${i+1}位　まだ記録がありません</li>`
+    ).join('');
+}
+async function renderRankings() {
+    const grid=document.getElementById('ranking-grid');
+    if(!grid) return;
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:10px;">読み込み中…</div>';
+    const raw=await loadRankings();
+    if(raw === null) {
+        grid.innerHTML='<div class="ranking-error">ランキングを取得できませんでした。通信環境を確認して、更新してください。</div>';
+        return;
+    }
+    const all=filterByClass(filterByPeriod(raw,rankingPeriod),rankingClass);
+    grid.innerHTML=getCategoryInfo().map(cat => {
+        const rows=sortCategory(all.filter(r=>r.category===cat.key),cat.scoreType).slice(0,3);
+        return `<div class="ranking-card"><h4>${cat.title}</h4><ol>${renderTopThree(rows,cat.scoreType)}</ol></div>`;
+    }).join('');
+}
+
+function buildEligibleRankingRecord(isSuccess) {
+    if (selectedDiff === 'review') return null;
+    const eligibleTA=timeType==='ta' && ['hard','oni','superoni'].includes(selectedDiff);
+    const eligibleCD=timeType==='cd' && selectedDiff==='superoni';
+    if(!eligibleTA && !eligibleCD) return null;
+    if(selectedDiff!=='superoni' && !isSuccess) return null;
+    return {
+        id:`${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        challenge_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        name:'',class_name:'',
+        time:timeType==='ta'?timerSeconds:(countdownStartSeconds-timerSeconds),
+        score:currentCorrectCount,totalCorrect:currentCorrectCount,
+        diff:selectedDiff,timeType,
+        duration:timeType==='cd'?countdownStartSeconds:null,
+        mode:selectedMode,savedAt:Date.now()
+    };
+}
+function prepareRankingRegistration(isSuccess) {
+    pendingRankingRecord=buildEligibleRankingRecord(isSuccess);
+    const entry=document.getElementById('rank-entry');
+    const result=document.getElementById('rank-result');
+    entry.classList.add('hidden'); result.classList.add('hidden'); result.innerHTML='';
+    if(!pendingRankingRecord) return;
+    document.getElementById('result-player-name').value='';
+    const classSelect=document.getElementById('result-player-class');
+    if(classSelect) classSelect.value=localStorage.getItem('scienceAppsLastClass') || '';
+    document.getElementById('rank-entry-msg').innerText='';
+    entry.classList.remove('hidden');
+}
+async function registerCurrentRanking() {
+    if(!pendingRankingRecord) return;
+    const input=document.getElementById('result-player-name');
+    const classSelect=document.getElementById('result-player-class');
+    const name=input.value.trim().replace(/\s+/g,' ');
+    const cls=classSelect?.value || '';
+    const msgBox=document.getElementById('rank-entry-msg');
+    if(!CLASS_OPTIONS.some(item=>item.registration && item.value===cls)) {
+        msgBox.style.color='var(--danger)'; msgBox.innerText='学年区分を選んでください。'; return;
+    }
+    const validationError=validateNickname(name);
+    if(validationError) {
+        msgBox.style.color='var(--danger)'; msgBox.innerText=validationError; input.focus(); return;
+    }
+    pendingRankingRecord.name=name;
+    pendingRankingRecord.class_name=cls;
+    pendingRankingRecord.device_id=getDeviceId();
+    pendingRankingRecord.category=rankingCategory(pendingRankingRecord);
+    const record=pendingRankingRecord;
+    const submitBtn=document.getElementById('rank-submit-btn');
+    msgBox.style.color='#4a5568'; msgBox.innerText='登録しています…';
+    if(submitBtn) { submitBtn.disabled=true; submitBtn.style.opacity='0.6'; }
+    let inserted;
+    try { inserted=await saveRankingRecord(record); }
+    catch(e) {
+        if(submitBtn) { submitBtn.disabled=false; submitBtn.style.opacity='1'; }
+        msgBox.style.color='var(--danger)';
+        msgBox.innerText=e.message==='SPAM_BLOCKED'
+            ? '短い間隔での連続登録は制限されています。少し待ってからお試しください。'
+            : e.message==='DUPLICATE' ? 'この記録はすでに登録されています。' : '送信に失敗しました。通信環境を確認してください。';
+        return;
+    }
+    if(submitBtn) { submitBtn.disabled=false; submitBtn.style.opacity='1'; }
+    record.id=inserted.id;
+    record.savedAt=new Date(inserted.created_at).getTime();
+    localStorage.setItem('scienceAppsLastClass',cls);
+    await renderRankings();
+    const allRecords=await loadRankings();
+    if(allRecords === null) {
+        msgBox.style.color='var(--success)'; msgBox.innerText='登録は完了しましたが、ランキングの再取得に失敗しました。'; return;
+    }
+    const scoreType=(record.diff==='hard'||record.diff==='oni')?'time':'score';
+    const periodLabels={today:'今日',week:'今週',all:'歴代'};
+    const sections=['today','week','all'].map(period => {
+        const rows=sortCategory(filterByPeriod(allRecords,period).filter(r=>r.category===record.category),scoreType);
+        const rank=rows.findIndex(r=>r.id===record.id)+1;
+        const mine=rank>0?`<div class="my-rank">あなた：${rank}位　${formatRankRecord(record,scoreType)}</div>`:'';
+        return `<div style="margin-top:10px;"><b>${periodLabels[period]}の総合ランキング</b><ol style="line-height:1.8;">${renderTopThree(rows.slice(0,3),scoreType)}</ol>${mine}</div>`;
+    }).join('');
+    document.getElementById('rank-entry').classList.add('hidden');
+    const box=document.getElementById('rank-result');
+    box.classList.remove('hidden');
+    box.innerHTML=`<h3 style="margin:0;color:var(--primary);">🏆 今回のランキング</h3>${sections}`;
+    pendingRankingRecord=null;
+}
+
+function skipRankingRegistration(){
+    pendingRankingRecord=null;
+    document.getElementById('rank-entry').classList.add('hidden');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    renderClassControls();
+    setRankingPeriod('today');
+    setRankingClass('all');
+});
+
+// 見直し専用の再挑戦セッション（パスなし・タイムアタック・鬼判定なしの練習モード）
+function startReviewSession(missedList) {
+    clearInterval(timerId);
+    questions = missedList.slice();
+    initialTotalQuestions = questions.length;
+    studentAnswers = [];
+    mistakeCounts = {}; shownFlags = {}; totalMistakes = 0;
+    currentCorrectCount = 0; currentIdx = 0;
+    usedPassCount = 0; maxPassCount = 0;
+    selectedDiff = 'review'; isEndless = false;
+    quizAbandoned = false; questionElapsedSeconds = 0; currentStreak = 0; bestStreak = 0; questionStats = {}; // 鬼モードの即終了判定などを無効化するため
+    timeType = 'ta'; timerSeconds = 0;
+
+    document.getElementById('timer-label').innerText = "すすんだ時間";
+    document.getElementById('info-mistakes').innerText = '0';
+    updatePassButtonText();
+
+    document.getElementById('screen-result').classList.add('hidden');
+    document.getElementById('screen-test').classList.remove('hidden');
+
+    updateTimerDisplay();
+    timerId = setInterval(handleTimer, 1000);
+    showQuestion();
+}
+
+function backToSetup() {
+    clearInterval(timerId);
+    if (isFullscreenMode) exitFullscreenMode();
+    document.getElementById('screen-result').classList.add('hidden');
+    document.getElementById('screen-test').classList.add('hidden');
+    document.getElementById('screen-setup').classList.remove('hidden');
+    renderRankings();
+}
+
+// 刷新された完全連動型高品質SVG生成エンジン
+function drawSVG(q, isReview = false) {
+    let type = q.type;
+    
+    let r1 = "?? Ω", r2 = "?? Ω", r3 = "?? Ω", r4 = "?? Ω", r5 = "?? Ω";
+    let vStr = "電源";
+    let iStr = "";
+
+    // 抵抗値の表示・非表示の制御
+    if (q.mode === 'res' || q.mode === 'missing' || (q.mode === 'tri' && q.target !== 'R') || isReview) {
+        r1 = q.r[0] !== undefined ? fmt(q.r[0]) + "Ω" : "";
+        r2 = q.r[1] !== undefined ? fmt(q.r[1]) + "Ω" : "";
+        r3 = q.r[2] !== undefined ? fmt(q.r[2]) + "Ω" : "";
+        r4 = q.r[3] !== undefined ? fmt(q.r[3]) + "Ω" : "";
+        r5 = q.r[4] !== undefined ? fmt(q.r[4]) + "Ω" : "";
+        if (q.mode === 'missing' && !isReview) {
+            const labels = [r1,r2,r3,r4,r5]; labels[q.hiddenIndex] = "？ Ω";
+            [r1,r2,r3,r4,r5] = labels;
+        }
+    } else {
+        // オームの法則で全体抵抗 R を求める問題かつ演習中の場合のみ、ヒントにならないよう個別の値を隠す
+        r1 = "?? Ω";
+        r2 = q.r[1] ? "?? Ω" : "";
+        r3 = q.r[2] ? "?? Ω" : "";
+        r4 = q.r[3] !== undefined ? "?? Ω" : "";
+        r5 = q.r[4] !== undefined ? "?? Ω" : "";
+    }
+
+    // 電圧・電流の表示制御
+    if (q.mode === 'res' || q.mode === 'missing') {
+        vStr = "電源";
+        iStr = ""; 
+    } else {
+        vStr = (q.target === 'V' && !isReview) ? "電源: ? V" : `電源: ${fmt(q.V)}V`;
+        iStr = (q.target === 'I' && !isReview) ? "全体: ? A" : `全体: ${fmt(q.I)}A`;
+    }
+
+    const box = (x, y, txt) => `<rect x="${x}" y="${y}" width="42" height="20" fill="white" stroke="black" stroke-width="2"/><text x="${x+21}" y="${y+14}" font-size="10" font-weight="bold" text-anchor="middle">${txt}</text>`;
+    
+    let inner = "";
+    // 基本の外枠回路（電源と電流計）
+    inner += `<line x1="30" y1="50" x2="30" y2="140" stroke="black" stroke-width="2"/>`;
+    inner += `<line x1="290" y1="50" x2="290" y2="140" stroke="black" stroke-width="2"/>`;
+    inner += `<line x1="30" y1="140" x2="135" y2="140" stroke="black" stroke-width="2"/>`;
+    inner += `<line x1="165" y1="140" x2="290" y2="140" stroke="black" stroke-width="2"/>`;
+    // 電源マーク
+    inner += `<line x1="145" y1="125" x2="145" y2="155" stroke="black" stroke-width="2"/>`;
+    inner += `<line x1="155" y1="133" x2="155" y2="147" stroke="black" stroke-width="4"/>`;
+    inner += `<text x="150" y="172" font-size="12" font-weight="bold" text-anchor="middle">${vStr}</text>`;
+    // 電流計マーク
+    inner += `<circle cx="30" cy="95" r="10" fill="white" stroke="black" stroke-width="2"/>`;
+    inner += `<text x="30" y="99" font-size="11" font-weight="bold" text-anchor="middle">A</text>`;
+    if (iStr) {
+        inner += `<text x="55" y="100" font-size="11" font-weight="bold">${iStr}</text>`;
+    }
+    if (q.mode === 'missing' && !isReview) {
+        inner += `<text x="160" y="112" font-size="12" font-weight="bold" text-anchor="middle">全体の合成抵抗：${fmt(q.Rt)} Ω</text>`;
+    }
+
+    // 回路タイプごとの中身分岐
+    if (type === 's1') {
+        inner += `<line x1="30" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += box(139, 40, r1);
+    } else if (type === 's2') {
+        inner += `<line x1="30" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += box(80, 40, r1); inner += box(190, 40, r2);
+    } else if (type === 'p2') {
+        inner += `<line x1="30" y1="50" x2="100" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="220" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="100" y1="25" x2="100" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="220" y1="25" x2="220" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="100" y1="25" x2="139" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="181" y1="25" x2="220" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="100" y1="75" x2="139" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="181" y1="75" x2="220" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += box(139, 15, r1); inner += box(139, 65, r2);
+    } else if (type === 'm3a') {
+        inner += `<line x1="30" y1="50" x2="140" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += box(65, 40, r1);
+        inner += `<line x1="140" y1="25" x2="140" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="240" y1="25" x2="240" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="140" y1="25" x2="165" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="207" y1="25" x2="240" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="140" y1="75" x2="165" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="207" y1="75" x2="240" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="240" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += box(165, 15, r2); inner += box(165, 65, r3);
+    } else if (type === 'm4a') {
+        inner += `<line x1="30" y1="50" x2="50" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="50" y1="25" x2="50" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += box(75, 15, r1); inner += box(75, 65, r2);
+        inner += `<line x1="50" y1="25" x2="75" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="117" y1="25" x2="140" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="50" y1="75" x2="75" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="117" y1="75" x2="140" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="140" y1="25" x2="140" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="140" y1="50" x2="170" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="170" y1="25" x2="170" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += box(195, 15, r3); inner += box(195, 65, r4);
+        inner += `<line x1="170" y1="25" x2="195" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="237" y1="25" x2="260" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="170" y1="75" x2="195" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="237" y1="75" x2="260" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="260" y1="25" x2="260" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="260" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+    } else if (type === 'm4b') {
+        inner += `<line x1="30" y1="50" x2="70" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="250" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="70" y1="20" x2="70" y2="80" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="250" y1="20" x2="250" y2="80" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="70" y1="20" x2="90" y2="20" stroke="black" stroke-width="2"/>`;
+        inner += box(90,10,r1); inner += `<line x1="132" y1="20" x2="158" y2="20" stroke="black" stroke-width="2"/>`; inner += box(158,10,r2); inner += `<line x1="200" y1="20" x2="250" y2="20" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="70" y1="80" x2="90" y2="80" stroke="black" stroke-width="2"/>`;
+        inner += box(90,70,r3); inner += `<line x1="132" y1="80" x2="158" y2="80" stroke="black" stroke-width="2"/>`; inner += box(158,70,r4); inner += `<line x1="200" y1="80" x2="250" y2="80" stroke="black" stroke-width="2"/>`;
+    } else if (type === 'm5a') {
+        inner += `<line x1="30" y1="50" x2="55" y2="50" stroke="black" stroke-width="2"/>`; inner += box(55,40,r1);
+        inner += `<line x1="97" y1="50" x2="115" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="115" y1="25" x2="115" y2="75" stroke="black" stroke-width="2"/>`; inner += `<line x1="185" y1="25" x2="185" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="115" y1="25" x2="129" y2="25" stroke="black" stroke-width="2"/>`; inner += box(129,15,r2); inner += `<line x1="171" y1="25" x2="185" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="115" y1="75" x2="129" y2="75" stroke="black" stroke-width="2"/>`; inner += box(129,65,r3); inner += `<line x1="171" y1="75" x2="185" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="185" y1="50" x2="198" y2="50" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="198" y1="25" x2="198" y2="75" stroke="black" stroke-width="2"/>`; inner += `<line x1="268" y1="25" x2="268" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="198" y1="25" x2="212" y2="25" stroke="black" stroke-width="2"/>`; inner += box(212,15,r4); inner += `<line x1="254" y1="25" x2="268" y2="25" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="198" y1="75" x2="212" y2="75" stroke="black" stroke-width="2"/>`; inner += box(212,65,r5); inner += `<line x1="254" y1="75" x2="268" y2="75" stroke="black" stroke-width="2"/>`;
+        inner += `<line x1="268" y1="50" x2="290" y2="50" stroke="black" stroke-width="2"/>`;
+    }
+
+    return `<svg width="100%" height="auto" viewBox="0 0 320 185" xmlns="http://www.w3.org/2000/svg" style="max-width:380px;">${inner}</svg>`;
+}
+</script>
 </body>
 </html>
