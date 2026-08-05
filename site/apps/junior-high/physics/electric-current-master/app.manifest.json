@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "1.0.0",
+  "appId": "electric-current-master",
+  "title": "電流マスター",
+  "version": "1.1.0",
+  "updatedOn": "2026-08-05",
+  "status": "active",
+  "level": "C",
+  "education": {
+    "schoolStage": "junior-high",
+    "subjects": [
+      "science"
+    ],
+    "grades": [
+      "JH2"
+    ],
+    "portalGroups": [
+      "junior-high-science"
+    ],
+    "audiences": [
+      "JH2"
+    ],
+    "categories": [
+      "電流と回路",
+      "オームの法則",
+      "合成抵抗"
+    ],
+    "tags": [
+      "電流",
+      "電圧",
+      "抵抗",
+      "直列回路",
+      "並列回路",
+      "計算練習"
+    ],
+    "learningDifficulty": 3,
+    "units": [
+      "JH2.PHYS.ELECTRIC-CIRCUITS"
+    ],
+    "appTypes": [
+      "calculation",
+      "quiz",
+      "visualization"
+    ],
+    "learningGoals": [
+      "直列回路・並列回路・混合回路の合成抵抗を求められる。",
+      "オームの法則を用いて電圧・電流・抵抗を計算できる。",
+      "誤答や途中計算を振り返り、自分の弱点を確認できる。"
+    ],
+    "useCases": [
+      "lesson-practice",
+      "home-study",
+      "homework",
+      "test-prep"
+    ],
+    "modelLimitations": [
+      "回路図は計算練習用に単純化した模式図である。",
+      "実際の内部抵抗や測定誤差は扱わない。"
+    ]
+  },
+  "platform": {
+    "sourceDependencyMode": "self-contained",
+    "coreVersion": null,
+    "referenceImplementations": []
+  },
+  "distribution": {
+    "hosted": {
+      "enabled": true,
+      "dependencyMode": "self-contained"
+    },
+    "portable": {
+      "enabled": true,
+      "dependencyMode": "self-contained",
+      "directFileOpen": true
+    },
+    "standalonePackage": {
+      "enabled": true,
+      "dependencyMode": "self-contained"
+    }
+  },
+  "storage": {
+    "enabled": false,
+    "types": [],
+    "deletionMethod": "教材本体は保存データを使用しません。"
+  },
+  "network": {
+    "required": false,
+    "externalEndpoints": []
+  },
+  "privacy": {
+    "collectsPersonalData": false,
+    "usesAnalytics": false,
+    "usesCookies": false,
+    "externalTransmission": false
+  },
+  "accessibility": {
+    "keyboardSupported": true,
+    "dragAlternativeProvided": true,
+    "colorIndependentFeedback": true,
+    "reducedMotionSupported": false
+  },
+  "license": {
+    "code": "TBD",
+    "content": "TBD",
+    "thirdPartyNotices": []
+  },
+  "owners": {
+    "appOwnerRole": "Electric Current Master App Owner",
+    "maintainerRole": "You Science Apps Platform Maintainer"
+  },
+  "links": {
+    "hostedUrl": "./apps/junior-high/physics/electric-current-master/",
+    "repositoryPath": "site/apps/junior-high/physics/electric-current-master"
+  }
+}
