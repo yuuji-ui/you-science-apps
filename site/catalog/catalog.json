@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "1.1.0",
+  "generatedAt": "2026-08-05T07:10:10.805088Z",
+  "apps": [
+    {
+      "appId": "electric-current-master",
+      "title": "電流マスター",
+      "version": "1.1.0",
+      "updatedOn": "2026-08-05",
+      "status": "active",
+      "schoolStage": "junior-high",
+      "subjects": [
+        "science"
+      ],
+      "grades": [
+        "JH2"
+      ],
+      "portalGroups": [
+        "junior-high-science"
+      ],
+      "audiences": [
+        "JH2"
+      ],
+      "categories": [
+        "電流と回路",
+        "オームの法則",
+        "合成抵抗"
+      ],
+      "tags": [
+        "電流",
+        "電圧",
+        "抵抗",
+        "直列回路",
+        "並列回路",
+        "計算練習"
+      ],
+      "learningDifficulty": 3,
+      "units": [
+        "JH2.PHYS.ELECTRIC-CIRCUITS"
+      ],
+      "appTypes": [
+        "calculation",
+        "quiz",
+        "visualization"
+      ],
+      "learningGoals": [
+        "直列回路・並列回路・混合回路の合成抵抗を求められる。",
+        "オームの法則を用いて電圧・電流・抵抗を計算できる。",
+        "誤答や途中計算を振り返り、自分の弱点を確認できる。"
+      ],
+      "useCases": [
+        "lesson-practice",
+        "home-study",
+        "homework",
+        "test-prep"
+      ],
+      "hostedUrl": "./apps/junior-high/physics/electric-current-master/",
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 10,
+      "labels": [
+        "中2",
+        "電流",
+        "計算練習"
+      ],
+      "deprecatedMessage": null
+    },
+    {
+      "appId": "neutralization-simulator",
+      "title": "酸・アルカリ・中和シミュレーター",
+      "version": "1.1.0",
+      "updatedOn": "2026-08-05",
+      "status": "active",
+      "schoolStage": "mixed",
+      "subjects": [
+        "science",
+        "chemistry"
+      ],
+      "grades": [
+        "JH3",
+        "SH1"
+      ],
+      "portalGroups": [
+        "junior-high-science",
+        "senior-high-chemistry"
+      ],
+      "audiences": [
+        "JH3",
+        "chemistry-basic"
+      ],
+      "categories": [
+        "酸・アルカリ",
+        "中和",
+        "酸・塩基滴定"
+      ],
+      "tags": [
+        "pH",
+        "指示薬",
+        "滴定曲線",
+        "粒子モデル",
+        "沈殿",
+        "実験"
+      ],
+      "learningDifficulty": 4,
+      "units": [
+        "JH3.CHEM.ACID-BASE-NEUTRALIZATION",
+        "SH1.CHEM.ACID-BASE-TITRATION"
+      ],
+      "appTypes": [
+        "simulation",
+        "experiment",
+        "visualization"
+      ],
+      "learningGoals": [
+        "酸性・アルカリ性の水溶液を混合したときのpH変化を説明できる。",
+        "酸と塩基の種類、濃度、体積を変えて中和の条件を比較できる。",
+        "粒子モデルと滴定曲線を関連付けて反応の進行を理解できる。"
+      ],
+      "useCases": [
+        "lesson-introduction",
+        "lesson-practice",
+        "experiment-prep",
+        "experiment-review",
+        "home-study",
+        "teacher-demo"
+      ],
+      "hostedUrl": "./apps/junior-high/chemistry/neutralization-simulator/",
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 20,
+      "labels": [
+        "中3",
+        "化学基礎",
+        "実験"
+      ],
+      "deprecatedMessage": null
+    }
+  ],
+  "groups": [
+    {
+      "groupId": "junior-high-electricity",
+      "title": "中学校・電流と回路",
+      "description": "電流、電圧、抵抗、合成抵抗を学ぶ教材",
+      "appIds": [
+        "electric-current-master"
+      ],
+      "sortOrder": 20
+    },
+    {
+      "groupId": "acid-base-neutralization",
+      "title": "酸・アルカリ・中和",
+      "description": "酸性・アルカリ性、中和、滴定を学ぶ教材",
+      "appIds": [
+        "neutralization-simulator"
+      ],
+      "sortOrder": 30
+    }
+  ]
+}
