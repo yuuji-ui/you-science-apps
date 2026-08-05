@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "apps": {
+    "electric-current-master": {
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 10,
+      "labels": [
+        "中2",
+        "電流",
+        "計算練習"
+      ],
+      "deprecatedMessage": null
+    },
+    "neutralization-simulator": {
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 20,
+      "labels": [
+        "中3",
+        "化学基礎",
+        "実験"
+      ],
+      "deprecatedMessage": null
+    }
+  }
+}
