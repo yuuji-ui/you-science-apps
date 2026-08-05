@@ -1,4 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "groups": []
+  "groups": [
+    {
+      "groupId": "junior-high-electricity",
+      "title": "中学校・電流と回路",
+      "description": "電流、電圧、抵抗、合成抵抗を学ぶ教材",
+      "appIds": [
+        "electric-current-master"
+      ],
+      "sortOrder": 20
+    }
+  ]
 }
