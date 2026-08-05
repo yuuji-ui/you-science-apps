@@ -1,31 +1,41 @@
-# You Science Apps Platform
+# You Science Apps 共通機能 Ver.1.1.1
 
-中学校理科・高校化学向けの教育用Webアプリを、
-10年以上、可能であれば30年以上継続して運営するための
-プラットフォーム開発プロジェクトです。
+## 実装済み
 
-## Current status
+- 検索拡張
+- 大分類・対象・単元・形式・難易度Filter
+- お気に入り
+- 最近使った教材（最大3件）
+- 端末内データ一括消去
+- 学習難易度（基本・標準・応用）
+- LevelのPortal非表示
+- 高校の科目分類
+- 教材追加ウィザード
+- Manifest Schema・Catalog Schema・Generator更新
+- 既存2教材のManifest更新
 
-現在はPlatform設計段階です。
+## GitHub反映前
 
-Requirements、Architecture、Governanceの各仕様書は、
-まだ正式なActive版ではなく、レビュー中のDraft／Release Candidateです。
+Claudeによる第三者レビューで採用・GitHub反映可と判定済みです。
+レビューで必須修正がなければ、完成版として一括反映します。
 
-## Current Requirements Review Package
 
-`project-docs/review-packages/requirements-v1.2.2-rc/`
+## Claude初回レビュー後の修正
 
-収録内容：
+- 外部通信と`privacy.externalTransmission`を分離
+- 外部通信先URL入力を追加
+- ウィザード生成ManifestをNode.jsで実行しSchema検証
+- `requirements.txt`を追加
+- Catalog GeneratorとSchemaの単一正本化
+- 公開CatalogからLevelを削除
+- 共有端末で次の利用者に保存内容が見える可能性を明示
+- `categories`と`units`の役割を文書化
 
-- Requirements Specification Ver.1.2.2 RC
-- requirement-index.json
-- validation reports
-- requirement validator
-- validator tests
+## ローカル検証
 
-## Important
+```text
+python -m pip install -r requirements.txt
+python run-tests.py
+```
 
-- 教材本体の正式公開はまだ行っていません。
-- GitHub Pagesはまだ有効化しません。
-- ライセンス方針は未確定です。
-- 現在の設計文書はレビュー中です。
+ウィザード検証にはNode.jsが必要です。
