@@ -13,6 +13,21 @@
         "オームの法則"
       ],
       "deprecatedMessage": null
+    },
+    "neutralization-simulator": {
+      "featured": true,
+      "hidden": false,
+      "sortOrder": 20,
+      "labels": [
+        "中3",
+        "高校化学基礎",
+        "化学",
+        "酸・アルカリ",
+        "中和",
+        "滴定曲線",
+        "粒子モデル"
+      ],
+      "deprecatedMessage": null
     }
   }
 }
