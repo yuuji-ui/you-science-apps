@@ -9,6 +9,15 @@
         "electric-current-master"
       ],
       "sortOrder": 20
+    },
+    {
+      "groupId": "acid-base-neutralization",
+      "title": "酸・アルカリ・中和",
+      "description": "酸性・アルカリ性、中和、滴定を学ぶ教材",
+      "appIds": [
+        "neutralization-simulator"
+      ],
+      "sortOrder": 30
     }
   ]
 }
