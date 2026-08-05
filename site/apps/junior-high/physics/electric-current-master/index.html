@@ -2,9 +2,9 @@
 You Science Apps 教材
 教材名: 電流マスター
 対象: 中学2年 理科・電流と回路
-Platform移行版: 1.0.0
+Platform移行版: 1.1.0
 移行日: 2026-08-05
-変更: Supabase通信・オンラインランキング・名前入力を停止
+変更: Supabase通信・オンラインランキング・名前入力を停止／教材一覧へ戻る導線を追加
 -->
 <!DOCTYPE html>
 <html lang="ja">
@@ -140,9 +140,54 @@ Platform移行版: 1.0.0
         .badge-retry { background-color: #8e44ad; }
         .badge-timeout { background-color: #7f8c8d; }
         .review-explanation { background: #f9f9f9; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 14px; color: #555; line-height: 1.5; white-space: pre-line; }
-    </style>
+    
+.portal-return-bar{
+  width:min(1180px,calc(100% - 24px));
+  margin:12px auto 4px;
+  display:flex;
+  justify-content:flex-start;
+}
+.portal-return-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:48px;
+  padding:10px 16px;
+  border:2px solid #1d4ed8;
+  border-radius:12px;
+  background:#ffffff;
+  color:#1d4ed8;
+  font-weight:800;
+  text-decoration:none;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.portal-return-link:hover{
+  background:#eff6ff;
+}
+.portal-return-link:focus-visible{
+  outline:3px solid #f59e0b;
+  outline-offset:3px;
+}
+@media(max-width:600px){
+  .portal-return-bar{
+    width:calc(100% - 16px);
+    margin-top:8px;
+  }
+  .portal-return-link{
+    width:100%;
+  }
+}
+
+</style>
 </head>
 <body>
+
+<div class="portal-return-bar">
+  <a class="portal-return-link" href="../../../../" aria-label="You Science Appsの教材一覧へ戻る">
+    ← 教材一覧へ戻る
+  </a>
+</div>
+
 
 <div class="top-nav-bar">
     <button id="fullscreen-btn" class="btn-fs" onclick="toggleFullscreen()">全画面にする ⛶</button>
