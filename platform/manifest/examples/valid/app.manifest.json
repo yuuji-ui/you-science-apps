@@ -1,68 +1,87 @@
 {
   "schemaVersion": "1.0.0",
-  "appId": "mole-calculation",
-  "title": "物質量計算トレーナー",
-  "version": "1.2.0",
+  "appId": "electric-current-master",
+  "title": "電流マスター",
+  "version": "1.1.0",
+  "updatedOn": "2026-08-05",
   "status": "active",
-  "level": "B",
+  "level": "C",
   "education": {
-    "schoolStage": "senior-high",
+    "schoolStage": "junior-high",
     "subjects": [
-      "chemistry"
+      "science"
     ],
     "grades": [
-      "SH1"
+      "JH2"
     ],
+    "portalGroups": [
+      "junior-high-science"
+    ],
+    "audiences": [
+      "JH2"
+    ],
+    "categories": [
+      "電流と回路",
+      "オームの法則",
+      "合成抵抗"
+    ],
+    "tags": [
+      "電流",
+      "電圧",
+      "抵抗",
+      "直列回路",
+      "並列回路",
+      "計算練習"
+    ],
+    "learningDifficulty": 3,
     "units": [
-      "CHEM.MOLE.001"
+      "JH2.PHYS.ELECTRIC-CIRCUITS"
     ],
     "appTypes": [
-      "calculation"
+      "calculation",
+      "quiz",
+      "visualization"
     ],
     "learningGoals": [
-      "質量・物質量・粒子数の関係を用いて計算できる。",
-      "単位と有効数字を確認しながら解答できる。"
+      "直列回路・並列回路・混合回路の合成抵抗を求められる。",
+      "オームの法則を用いて電圧・電流・抵抗を計算できる。",
+      "誤答や途中計算を振り返り、自分の弱点を確認できる。"
     ],
     "useCases": [
       "lesson-practice",
       "home-study",
+      "homework",
       "test-prep"
     ],
-    "modelLimitations": []
+    "modelLimitations": [
+      "回路図は計算練習用に単純化した模式図である。",
+      "実際の内部抵抗や測定誤差は扱わない。"
+    ]
   },
   "platform": {
-    "sourceDependencyMode": "shared",
-    "coreVersion": "1.0.0",
-    "referenceImplementations": [
-      {
-        "name": "accessible-form",
-        "version": "1.0.0",
-        "copiedOn": "2026-08-03",
-        "modified": true
-      }
-    ]
+    "sourceDependencyMode": "self-contained",
+    "coreVersion": null,
+    "referenceImplementations": []
   },
   "distribution": {
     "hosted": {
       "enabled": true,
-      "dependencyMode": "shared"
+      "dependencyMode": "self-contained"
     },
     "portable": {
       "enabled": true,
-      "dependencyMode": "vendored",
+      "dependencyMode": "self-contained",
       "directFileOpen": true
     },
     "standalonePackage": {
-      "enabled": false,
-      "dependencyMode": null
+      "enabled": true,
+      "dependencyMode": "self-contained"
     }
   },
   "storage": {
-    "enabled": true,
-    "types": [
-      "localStorage"
-    ],
-    "deletionMethod": "設定画面の「学習データを削除」ボタンから削除する。"
+    "enabled": false,
+    "types": [],
+    "deletionMethod": "教材本体は保存データを使用しません。"
   },
   "network": {
     "required": false,
@@ -78,7 +97,7 @@
     "keyboardSupported": true,
     "dragAlternativeProvided": true,
     "colorIndependentFeedback": true,
-    "reducedMotionSupported": true
+    "reducedMotionSupported": false
   },
   "license": {
     "code": "TBD",
@@ -86,11 +105,11 @@
     "thirdPartyNotices": []
   },
   "owners": {
-    "appOwnerRole": "Chemistry App Owner",
-    "maintainerRole": "Platform Maintainer"
+    "appOwnerRole": "Electric Current Master App Owner",
+    "maintainerRole": "You Science Apps Platform Maintainer"
   },
   "links": {
-    "hostedUrl": "https://example.github.io/you-science-apps/apps/senior-high/chemistry/mole-calculation/",
-    "repositoryPath": "site/apps/senior-high/chemistry/mole-calculation"
+    "hostedUrl": "./apps/junior-high/physics/electric-current-master/",
+    "repositoryPath": "site/apps/junior-high/physics/electric-current-master"
   }
 }
