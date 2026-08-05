@@ -1,9 +1,17 @@
+<!--
+You Science Apps 教材
+教材名: 電流マスター
+対象: 中学2年 理科・電流と回路
+Platform移行版: 1.0.0
+移行日: 2026-08-05
+変更: Supabase通信・オンラインランキング・名前入力を停止
+-->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理科小テスト：電流マスター オンラインランキング対応版</title>
+    <title>電流マスター | You Science Apps</title>
     <style>
         :root {
             --primary: #2c3e50;
@@ -141,10 +149,16 @@
     <button id="reset-top-btn" class="btn-reset-top" onclick="confirmBackToSetup()">最初からやり直す ↩</button>
 </div>
 
+<div class="container" style="background:#eef6ff;border-color:#93c5fd;">
+<strong>You Science Apps Platform版</strong><br>
+この版はログイン不要で、個人情報・ニックネーム・学習記録を外部へ送信しません。
+オンラインランキング機能は使用していません。
+</div>
+
 <div class="container" id="quiz-container">
     <button id="fullscreen-exit-btn" class="fullscreen-exit" onclick="exitFullscreenMode()">全画面を終了 ✖</button>
     <div id="screen-setup">
-        <h1>🔌 理科小テスト：電流マスター 改良版 ⚡</h1>
+        <h1>🔌 電流マスター ⚡</h1>
         <div class="setting-section">
             <div class="setting-group">
                 <label>【1】テストモードをえらぶ</label>
@@ -185,15 +199,15 @@
                     <label for="time-practice">✍️ じっくり練習<br><small>(時間制限なし・段階練習)</small></label>
                 </div>
                 <div id="countdown-options" class="sub-time-box hidden">
-                    <input type="radio" id="cd-1m" name="countdown-val" value="60" onchange="renderRankings()">
+                    <input type="radio" id="cd-1m" name="countdown-val" value="60">
                     <label for="cd-1m">1分</label>
-                    <input type="radio" id="cd-3m" name="countdown-val" value="180" onchange="renderRankings()">
+                    <input type="radio" id="cd-3m" name="countdown-val" value="180">
                     <label for="cd-3m">3分</label>
-                    <input type="radio" id="cd-5m" name="countdown-val" value="300" onchange="renderRankings()" checked>
+                    <input type="radio" id="cd-5m" name="countdown-val" value="300" checked>
                     <label for="cd-5m">5分</label>
-                    <input type="radio" id="cd-7m" name="countdown-val" value="420" onchange="renderRankings()">
+                    <input type="radio" id="cd-7m" name="countdown-val" value="420">
                     <label for="cd-7m">7分</label>
-                    <input type="radio" id="cd-10m" name="countdown-val" value="600" onchange="renderRankings()">
+                    <input type="radio" id="cd-10m" name="countdown-val" value="600">
                     <label for="cd-10m">10分</label>
                 </div>
             </div>
@@ -209,19 +223,7 @@
                 </div>
             </div>
 
-            <div class="ranking-panel">
-                <h3 style="margin:0 0 4px;color:var(--primary);">🏆 スコアランキング（上位3人）</h3>
-                <small style="color:#64748b;">上級・鬼・無双を表示します。無双のカウントダウンは、現在選択中の制限時間ごとに集計します。</small>
-                <div class="ranking-period-tabs">
-                    <button type="button" id="period-today" class="active" onclick="setRankingPeriod('today')">今日</button>
-                    <button type="button" id="period-week" onclick="setRankingPeriod('week')">今週</button>
-                    <button type="button" id="period-all" onclick="setRankingPeriod('all')">歴代</button>
-                </div>
-                <div class="ranking-period-tabs" id="ranking-class-tabs"></div>
-                <div id="ranking-grid" class="ranking-grid"></div>
-                <button type="button" class="btn-reset-top" style="margin-top:10px;" onclick="renderRankings()">ランキングを更新 🔄</button>
-            </div>
-
+            
         </div>
         <button class="btn btn-main" onclick="startQuiz()">小テストをはじめる ➔</button>
     </div>
@@ -272,24 +274,8 @@
         <h2 id="res-title">📊 テスト結果</h2>
         <div class="score-display" id="res-score">目標クリア！</div>
         <div class="time-display" id="res-time">タイム: --:--</div>
-        <div id="rank-entry" class="ranking-panel hidden">
-            <h3 style="margin:0 0 6px;color:var(--primary);">🏆 ランキングに登録</h3>
-            <p style="margin:0 0 6px;font-size:14px;">ランキング登録は任意です。登録しなくても結果や解説は確認できます。</p>
-            <div class="privacy-notice">
-                <strong>ニックネーム入力時の注意</strong><br>
-                ・本名や、個人を特定できる名前は入力しないでください。<br>
-                ・不適切な言葉、他人を傷つける言葉、他人になりすます名前は使用できません。<br>
-                ・入力したニックネーム、学年区分、記録はランキング上に表示されます。
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <select id="result-player-class" class="name-input" style="flex:0 0 145px;"></select>
-                <input id="result-player-name" class="name-input" type="text" maxlength="12" placeholder="例：オームくん" autocomplete="off" style="flex:1;min-width:140px;">
-                <button id="rank-submit-btn" class="btn" type="button" onclick="registerCurrentRanking()" style="margin:0;font-size:15px;padding:10px 14px;">登録する</button>
-                <button class="btn-reset-top" type="button" onclick="skipRankingRegistration()">登録しない</button>
-            </div>
-            <div id="rank-entry-msg" style="margin-top:7px;font-weight:bold;color:var(--danger);"></div>
-        </div>
-        <div id="rank-result" class="ranking-panel hidden"></div>
+        
+        
         <div id="weakness-analysis" class="ranking-panel hidden"></div>
         <div id="review-section" class="hidden">
             <h3 style="border-left: 5px solid var(--danger); padding-left:10px; margin-top:25px; color: var(--danger);">⚠️ 見直しておきたい問題の解説</h3>
@@ -336,7 +322,6 @@ let timerId = null;
 let selectedMode = "";
 let selectedDiff = "";
 let selectedFocus = "balanced";
-let playerName = "";
 let timeType = "ta";
 let isEndless = false;
 let countdownStartSeconds = 0;
@@ -349,9 +334,6 @@ let mistakeCounts = {};   // 問題ごとの間違えた回数（タイムアタ
 let shownFlags = {};      // その問題を実際に画面に表示したかどうか（時間切れ未回答の判定に使用）
 let totalMistakes = 0;    // 累計ミス回数（ステータスバー表示用）
 let questionElapsedSeconds = 0; // タイムアタック時の1問ごとの経過時間（画面には表示しない）
-let rankingPeriod = 'today';
-let rankingClass = 'all';
-let pendingRankingRecord = null;
 let quizAbandoned = false;
 let currentStreak = 0;
 let bestStreak = 0;
@@ -426,8 +408,6 @@ function startQuiz() {
     selectedFocus = document.querySelector('input[name="focus-type"]:checked').value;
     timeType = document.querySelector('input[name="time-rule-type"]:checked').value;
     if (selectedDiff === 'superoni' && timeType === 'practice') { alert('無双（エンドレス）では、じっくり練習モードは選べません。'); return; }
-    playerName = '';
-    pendingRankingRecord = null;
 
     isEndless = selectedDiff === 'superoni';
     if (selectedDiff === 'easy') { initialTotalQuestions = 5; maxPassCount = 0; }
@@ -464,8 +444,6 @@ function startQuiz() {
 
     document.getElementById('screen-setup').classList.add('hidden');
     document.getElementById('screen-result').classList.add('hidden');
-    document.getElementById('rank-entry')?.classList.add('hidden');
-    document.getElementById('rank-result')?.classList.add('hidden');
     document.getElementById('screen-test').classList.remove('hidden');
     
     updateTimerDisplay();
@@ -876,7 +854,6 @@ function endQuiz(isSuccess, message = "", options = {}) {
         timeEl.innerText = `じっくり練習時間: ${Math.floor(timerSeconds/60)}分 ${timerSeconds%60}秒 ／ 累計ミス: ${totalMistakes}回`;
     }
 
-    if (!options.skipRanking && !quizAbandoned && timeType !== 'practice') prepareRankingRegistration(isSuccess);
     renderWeaknessAnalysis();
 
     // ★見直し対象の判定を拡張：
@@ -939,328 +916,7 @@ function endQuiz(isSuccess, message = "", options = {}) {
 }
 
 
-const APP_ID = 'electric_current_master';
-const SUPABASE_URL = 'https://vngcvtpjvarompzhnkye.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_P1EXRA6zhNjwgXUNPYngdA_0fmNHYSr';
-const SUPABASE_TABLE = 'rankings';
 
-const CLASS_OPTIONS = [
-    {value:'all', label:'総合', registration:false},
-    {value:'junior_1', label:'中１', registration:true},
-    {value:'junior_2', label:'中２', registration:true},
-    {value:'junior_3', label:'中３', registration:true},
-    {value:'high_school_plus', label:'高校以上', registration:true}
-];
-const CLASS_LABELS = Object.fromEntries(CLASS_OPTIONS.map(item => [item.value, item.label]));
-
-function renderClassControls() {
-    const tabs = document.getElementById('ranking-class-tabs');
-    if (tabs) {
-        tabs.innerHTML = CLASS_OPTIONS.map(item =>
-            `<button type="button" id="class-${item.value}" class="${item.value === rankingClass ? 'active' : ''}" onclick="setRankingClass('${item.value}')">${item.label}</button>`
-        ).join('');
-    }
-    const select = document.getElementById('result-player-class');
-    if (select) {
-        select.innerHTML = '<option value="">学年区分を選択</option>' + CLASS_OPTIONS
-            .filter(item => item.registration)
-            .map(item => `<option value="${item.value}">${item.label}</option>`)
-            .join('');
-    }
-}
-
-function renderWeaknessAnalysis() {
-    const box = document.getElementById('weakness-analysis');
-    if (!['easy','normal','hard'].includes(selectedDiff)) { box.classList.add('hidden'); return; }
-    const groups = [
-        {name:'直列回路', keys:['s1','s2']},
-        {name:'並列回路', keys:['p2']},
-        {name:'混合回路', keys:['m3a','m4a','m4b','m5a']},
-        {name:'オームの法則', keys:['I','V','R']},
-        {name:'未知の抵抗', keys:['missing']}
-    ];
-    const rows = groups.map(g => {
-        let correct=0, mistakes=0;
-        g.keys.forEach(k=>{ const st=questionStats[k]; if(st){correct+=st.correct; mistakes+=st.mistakes;} });
-        const attempts=correct+mistakes;
-        if(!attempts) return '';
-        const rate=Math.round(correct/attempts*100);
-        const judge=rate>=85?'よくできています':rate>=70?'おおむねできています':'もう一度練習しよう';
-        return `<tr><td>${g.name}</td><td>${rate}%</td><td>${judge}</td></tr>`;
-    }).join('');
-    if(!rows){ box.classList.add('hidden'); return; }
-    box.innerHTML=`<h3 style="margin:0 0 8px;color:var(--primary);">📊 弱点分析</h3><table style="width:100%;border-collapse:collapse;"><tr><th style="text-align:left;border-bottom:1px solid #cbd5e0;">分野</th><th style="border-bottom:1px solid #cbd5e0;">正答率</th><th style="border-bottom:1px solid #cbd5e0;">判定</th></tr>${rows}</table><p style="font-size:13px;color:#64748b;">誤答した回数も含めて算出しています。次回の弱点克服メニュー選択の参考にしてください。</p>`;
-    box.classList.remove('hidden');
-}
-
-const DIFF_LABELS = {hard:'上級', oni:'鬼', superoni:'無双'};
-
-async function loadRankings() {
-    try {
-        const query = new URLSearchParams({
-            select:'id,app_id,nickname,category,score,time_seconds,class_code,created_at',
-            app_id:`eq.${APP_ID}`,
-            order:'created_at.desc',
-            limit:'1000'
-        });
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?${query}`, {
-            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-        });
-        if (!res.ok) throw new Error('取得に失敗しました: ' + res.status);
-        const rows = await res.json();
-        console.info(`[ranking] fetched=${rows.length}, app_id=${APP_ID}`);
-        return rows.map(r => ({
-            id:r.id,
-            name:r.nickname,
-            category:r.category,
-            score:Number(r.score),
-            time:Number(r.time_seconds),
-            class_name:r.class_code,
-            savedAt:new Date(r.created_at).getTime()
-        }));
-    } catch (e) {
-        console.warn('ランキングを取得できませんでした。', e);
-        return null;
-    }
-}
-
-async function saveRankingRecord(record) {
-    const challengeId = record.challenge_id || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
-        method:'POST',
-        headers:{
-            apikey:SUPABASE_KEY,
-            Authorization:`Bearer ${SUPABASE_KEY}`,
-            'Content-Type':'application/json',
-            Prefer:'return=representation'
-        },
-        body:JSON.stringify({
-            app_id:APP_ID,
-            nickname:record.name,
-            category:record.category,
-            score:record.score,
-            time_seconds:record.time,
-            class_code:record.class_name,
-            device_id:record.device_id,
-            challenge_id:challengeId
-        })
-    });
-    if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        if (res.status === 409 || body.includes('challenge_id')) throw new Error('DUPLICATE');
-        if (body.includes('連続投稿') || res.status === 429) throw new Error('SPAM_BLOCKED');
-        throw new Error(`送信に失敗しました: ${res.status}`);
-    }
-    const rows=await res.json();
-    return rows?.[0] || null;
-}
-
-function getDeviceId() {
-    let id = localStorage.getItem('scienceAppsDeviceId');
-    if (!id) {
-        id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        localStorage.setItem('scienceAppsDeviceId', id);
-    }
-    return id;
-}
-
-const NG_WORDS = ['ばか','あほ','しね','うざい','きもい','ちんこ','うんこ'];
-function validateNickname(value) {
-    const name = value.trim().replace(/\s+/g, ' ');
-    if (!name) return 'ニックネームを入力してください。';
-    if (name.length < 2 || name.length > 12) return 'ニックネームは2～12文字で入力してください。';
-    const lower = name.toLowerCase();
-    if (NG_WORDS.some(word => lower.includes(word))) return '使用できない言葉が含まれています。ニックネームを見直してください。';
-    if (/https?:\/\/|www\.|@|\.com|\.jp/i.test(name)) return 'URLやメールアドレスは入力できません。';
-    if (/\d{6,}/.test(name)) return '学籍番号など、長い数字は入力できません。';
-    if (/(.)\1{5,}/u.test(name)) return '同じ文字を繰り返しすぎています。';
-    if (/[<>"'`]/.test(name)) return '使用できない記号が含まれています。';
-    return '';
-}
-
-function formatTime(sec) {
-    const safe = Math.max(0, Number(sec) || 0);
-    const m = Math.floor(safe / 60);
-    const s = Math.floor(safe % 60);
-    return `${m}分${String(s).padStart(2,'0')}秒`;
-}
-function escapeHtml(str) {
-    return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-}
-function startOfToday(now = new Date()) { return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); }
-function startOfWeek(now = new Date()) {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const day = d.getDay();
-    d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
-    return d.getTime();
-}
-function filterByPeriod(records, period) {
-    if (period === 'all') return records;
-    const boundary = period === 'today' ? startOfToday() : startOfWeek();
-    return records.filter(r => r.savedAt >= boundary);
-}
-function filterByClass(records, cls) {
-    if (cls === 'all') return records;
-    return records.filter(r => r.class_name === cls);
-}
-function setRankingPeriod(period) {
-    rankingPeriod = period;
-    ['today','week','all'].forEach(p => document.getElementById(`period-${p}`)?.classList.toggle('active', p === period));
-    renderRankings();
-}
-function setRankingClass(cls) {
-    rankingClass = cls;
-    CLASS_OPTIONS.forEach(item => document.getElementById(`class-${item.value}`)?.classList.toggle('active', item.value === cls));
-    renderRankings();
-}
-function selectedCountdownSeconds() {
-    const selected=document.querySelector('input[name="countdown-val"]:checked');
-    return selected ? parseInt(selected.value,10) : 300;
-}
-function rankingCategory(record) {
-    if (record.diff === 'hard' && record.timeType === 'ta') return 'hard-ta';
-    if (record.diff === 'oni' && record.timeType === 'ta') return 'oni-ta';
-    if (record.diff === 'superoni' && record.timeType === 'ta') return 'superoni-ta';
-    if (record.diff === 'superoni' && record.timeType === 'cd') return `superoni-cd-${record.duration}`;
-    return '';
-}
-function getCategoryInfo() {
-    const cd=selectedCountdownSeconds();
-    return [
-        {key:'hard-ta',title:'上級・タイムアタック',scoreType:'time'},
-        {key:'oni-ta',title:'鬼・タイムアタック',scoreType:'time'},
-        {key:'superoni-ta',title:'無双・タイムアタック',scoreType:'score'},
-        {key:`superoni-cd-${cd}`,title:`無双・カウントダウン（${Math.floor(cd/60)}分）`,scoreType:'score'}
-    ];
-}
-function sortCategory(records, scoreType) {
-    return records.slice().sort((a,b) => scoreType === 'time'
-        ? (a.time-b.time)||(a.savedAt-b.savedAt)
-        : (b.score-a.score)||(a.time-b.time)||(a.savedAt-b.savedAt));
-}
-function formatRankRecord(r, scoreType) {
-    const classLabel=CLASS_LABELS[r.class_name] || '区分不明';
-    const label=rankingClass === 'all' ? `${escapeHtml(r.name)}（${classLabel}）` : escapeHtml(r.name);
-    return scoreType === 'time' ? `${label}：${formatTime(r.time)}` : `${label}：${r.score}問（${formatTime(r.time)}）`;
-}
-function renderTopThree(rows, scoreType) {
-    const medals=['🥇','🥈','🥉'];
-    return [0,1,2].map(i => rows[i]
-        ? `<li>${medals[i]} ${i+1}位　${formatRankRecord(rows[i],scoreType)}</li>`
-        : `<li class="rank-empty">${medals[i]} ${i+1}位　まだ記録がありません</li>`
-    ).join('');
-}
-async function renderRankings() {
-    const grid=document.getElementById('ranking-grid');
-    if(!grid) return;
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:10px;">読み込み中…</div>';
-    const raw=await loadRankings();
-    if(raw === null) {
-        grid.innerHTML='<div class="ranking-error">ランキングを取得できませんでした。通信環境を確認して、更新してください。</div>';
-        return;
-    }
-    const all=filterByClass(filterByPeriod(raw,rankingPeriod),rankingClass);
-    grid.innerHTML=getCategoryInfo().map(cat => {
-        const rows=sortCategory(all.filter(r=>r.category===cat.key),cat.scoreType).slice(0,3);
-        return `<div class="ranking-card"><h4>${cat.title}</h4><ol>${renderTopThree(rows,cat.scoreType)}</ol></div>`;
-    }).join('');
-}
-
-function buildEligibleRankingRecord(isSuccess) {
-    if (selectedDiff === 'review') return null;
-    const eligibleTA=timeType==='ta' && ['hard','oni','superoni'].includes(selectedDiff);
-    const eligibleCD=timeType==='cd' && selectedDiff==='superoni';
-    if(!eligibleTA && !eligibleCD) return null;
-    if(selectedDiff!=='superoni' && !isSuccess) return null;
-    return {
-        id:`${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        challenge_id:crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        name:'',class_name:'',
-        time:timeType==='ta'?timerSeconds:(countdownStartSeconds-timerSeconds),
-        score:currentCorrectCount,totalCorrect:currentCorrectCount,
-        diff:selectedDiff,timeType,
-        duration:timeType==='cd'?countdownStartSeconds:null,
-        mode:selectedMode,savedAt:Date.now()
-    };
-}
-function prepareRankingRegistration(isSuccess) {
-    pendingRankingRecord=buildEligibleRankingRecord(isSuccess);
-    const entry=document.getElementById('rank-entry');
-    const result=document.getElementById('rank-result');
-    entry.classList.add('hidden'); result.classList.add('hidden'); result.innerHTML='';
-    if(!pendingRankingRecord) return;
-    document.getElementById('result-player-name').value='';
-    const classSelect=document.getElementById('result-player-class');
-    if(classSelect) classSelect.value=localStorage.getItem('scienceAppsLastClass') || '';
-    document.getElementById('rank-entry-msg').innerText='';
-    entry.classList.remove('hidden');
-}
-async function registerCurrentRanking() {
-    if(!pendingRankingRecord) return;
-    const input=document.getElementById('result-player-name');
-    const classSelect=document.getElementById('result-player-class');
-    const name=input.value.trim().replace(/\s+/g,' ');
-    const cls=classSelect?.value || '';
-    const msgBox=document.getElementById('rank-entry-msg');
-    if(!CLASS_OPTIONS.some(item=>item.registration && item.value===cls)) {
-        msgBox.style.color='var(--danger)'; msgBox.innerText='学年区分を選んでください。'; return;
-    }
-    const validationError=validateNickname(name);
-    if(validationError) {
-        msgBox.style.color='var(--danger)'; msgBox.innerText=validationError; input.focus(); return;
-    }
-    pendingRankingRecord.name=name;
-    pendingRankingRecord.class_name=cls;
-    pendingRankingRecord.device_id=getDeviceId();
-    pendingRankingRecord.category=rankingCategory(pendingRankingRecord);
-    const record=pendingRankingRecord;
-    const submitBtn=document.getElementById('rank-submit-btn');
-    msgBox.style.color='#4a5568'; msgBox.innerText='登録しています…';
-    if(submitBtn) { submitBtn.disabled=true; submitBtn.style.opacity='0.6'; }
-    let inserted;
-    try { inserted=await saveRankingRecord(record); }
-    catch(e) {
-        if(submitBtn) { submitBtn.disabled=false; submitBtn.style.opacity='1'; }
-        msgBox.style.color='var(--danger)';
-        msgBox.innerText=e.message==='SPAM_BLOCKED'
-            ? '短い間隔での連続登録は制限されています。少し待ってからお試しください。'
-            : e.message==='DUPLICATE' ? 'この記録はすでに登録されています。' : '送信に失敗しました。通信環境を確認してください。';
-        return;
-    }
-    if(submitBtn) { submitBtn.disabled=false; submitBtn.style.opacity='1'; }
-    record.id=inserted.id;
-    record.savedAt=new Date(inserted.created_at).getTime();
-    localStorage.setItem('scienceAppsLastClass',cls);
-    await renderRankings();
-    const allRecords=await loadRankings();
-    if(allRecords === null) {
-        msgBox.style.color='var(--success)'; msgBox.innerText='登録は完了しましたが、ランキングの再取得に失敗しました。'; return;
-    }
-    const scoreType=(record.diff==='hard'||record.diff==='oni')?'time':'score';
-    const periodLabels={today:'今日',week:'今週',all:'歴代'};
-    const sections=['today','week','all'].map(period => {
-        const rows=sortCategory(filterByPeriod(allRecords,period).filter(r=>r.category===record.category),scoreType);
-        const rank=rows.findIndex(r=>r.id===record.id)+1;
-        const mine=rank>0?`<div class="my-rank">あなた：${rank}位　${formatRankRecord(record,scoreType)}</div>`:'';
-        return `<div style="margin-top:10px;"><b>${periodLabels[period]}の総合ランキング</b><ol style="line-height:1.8;">${renderTopThree(rows.slice(0,3),scoreType)}</ol>${mine}</div>`;
-    }).join('');
-    document.getElementById('rank-entry').classList.add('hidden');
-    const box=document.getElementById('rank-result');
-    box.classList.remove('hidden');
-    box.innerHTML=`<h3 style="margin:0;color:var(--primary);">🏆 今回のランキング</h3>${sections}`;
-    pendingRankingRecord=null;
-}
-
-function skipRankingRegistration(){
-    pendingRankingRecord=null;
-    document.getElementById('rank-entry').classList.add('hidden');
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    renderClassControls();
-    setRankingPeriod('today');
-    setRankingClass('all');
-});
 
 // 見直し専用の再挑戦セッション（パスなし・タイムアタック・鬼判定なしの練習モード）
 function startReviewSession(missedList) {
@@ -1293,7 +949,6 @@ function backToSetup() {
     document.getElementById('screen-result').classList.add('hidden');
     document.getElementById('screen-test').classList.add('hidden');
     document.getElementById('screen-setup').classList.remove('hidden');
-    renderRankings();
 }
 
 // 刷新された完全連動型高品質SVG生成エンジン
