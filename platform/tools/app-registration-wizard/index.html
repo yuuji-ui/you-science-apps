@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>You Science Apps 教材追加ウィザード</title>
+<style>
+:root{font-family:system-ui,sans-serif;--bg:#f4f7fb;--surface:#fff;--text:#17202a;--line:#cbd5df;--accent:#155eef}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}main{max-width:1080px;margin:auto;padding:20px}
+h1{margin-top:0}.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}label{display:grid;gap:5px;font-weight:700}
+input,select,textarea,button{font:inherit;min-height:48px;border:1px solid var(--line);border-radius:10px;padding:10px}
+textarea{min-height:90px}.full{grid-column:1/-1}.checks{display:flex;gap:12px;flex-wrap:wrap}.checks label{display:flex;align-items:center;gap:5px;font-weight:600}.checks input{min-height:auto}
+button{background:var(--accent);color:#fff;font-weight:800;cursor:pointer}.secondary{background:#fff;color:var(--text)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#111827;color:#f9fafb;padding:14px;border-radius:12px;max-height:420px;overflow:auto}
+.output-actions{display:flex;gap:8px;flex-wrap:wrap}
+.note{color:#52606d}@media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>You Science Apps 教材追加ウィザード</h1>
+<p class="note">GitHubへ自動送信しません。入力内容からManifestとCatalog追加用JSONを生成し、内容を確認してコピーするための管理ツールです。</p>
+
+<section class="panel">
+<h2>1. 基本情報</h2>
+<div class="grid">
+<label>教材名<input id="title" value=""></label>
+<label>appId<input id="appId" placeholder="例: density-trainer"></label>
+<label>Version<input id="version" value="1.0.0"></label>
+<label>更新日<input id="updatedOn" type="date"></label>
+<label>内部管理Level
+<select id="level"><option>A</option><option>B</option><option selected>C</option></select>
+</label>
+<label>学習難易度（内部値）
+<select id="difficulty">
+<option value="1">1（Portal: 基本）</option>
+<option value="2">2（Portal: 基本）</option>
+<option value="3" selected>3（Portal: 標準）</option>
+<option value="4">4（Portal: 標準）</option>
+<option value="5">5（Portal: 応用）</option>
+</select>
+</label>
+</div>
+</section>
+
+<section class="panel">
+<h2>2. 対象と分類</h2>
+<div class="grid">
+<label>大分類
+<select id="group">
+<option value="junior-high-science">中学校理科</option>
+<option value="senior-high-physics">高校物理</option>
+<option value="senior-high-chemistry">高校化学</option>
+<option value="senior-high-biology">高校生物</option>
+<option value="senior-high-earth-science">高校地学</option>
+<option value="other">その他</option>
+</select>
+</label>
+<label>対象
+<select id="audience">
+<option value="JH1">中1</option><option value="JH2">中2</option><option value="JH3">中3</option>
+<option value="physics-basic">物理基礎</option><option value="physics">物理</option>
+<option value="chemistry-basic">化学基礎</option><option value="chemistry">化学</option>
+<option value="biology-basic">生物基礎</option><option value="biology">生物</option>
+<option value="earth-science-basic">地学基礎</option><option value="earth-science">地学</option>
+<option value="other">その他</option>
+</select>
+</label>
+<label>単元（カンマ区切り）<input id="categories" placeholder="例: 電流と回路, オームの法則"></label>
+<label>タグ（カンマ区切り）<input id="tags" placeholder="例: 電流, 計算練習"></label>
+<label>教材形式
+<select id="appType">
+<option value="calculation">計算</option><option value="simulation">シミュレーション</option>
+<option value="drag">ドラッグ</option><option value="experiment">実験</option>
+<option value="visualization">可視化</option><option value="quiz">クイズ</option>
+<option value="reference">資料</option>
+</select>
+</label>
+<label>Unit ID<input id="unit" placeholder="例: JH2.PHYS.ELECTRIC-CIRCUITS"></label>
+<label class="full">学習目標（1行につき1件）<textarea id="goals"></textarea></label>
+</div>
+</section>
+
+<section class="panel">
+<h2>3. 公開・Privacy</h2>
+<div class="grid">
+<label>推奨Folder分類
+<select id="folderField">
+<option value="physics">physics</option><option value="chemistry">chemistry</option>
+<option value="biology">biology</option><option value="earth-science">earth-science</option>
+<option value="other">other</option>
+</select>
+</label>
+<label>Portalでおすすめ
+<select id="featured"><option value="true">はい</option><option value="false">いいえ</option></select>
+</label>
+<label>表示順<input id="sortOrder" type="number" value="100"></label>
+<label>Portalラベル（カンマ区切り）<input id="labels"></label>
+</div>
+<div class="checks">
+<label><input id="network" type="checkbox">外部通信が必要</label>
+<label><input id="storage" type="checkbox">端末内保存を使用</label>
+</div>
+<div class="grid" style="margin-top:12px">
+<label class="full">通信先URL（1行またはカンマ区切り）
+<textarea id="externalEndpoints" placeholder="例: https://api.example.org/data"></textarea>
+</label>
+</div>
+<p class="note">
+「外部通信が必要」は教材が外部のAPIやデータを読み込む場合に使います。
+個人情報や学習記録の外部送信を許可する項目ではありません。
+個人情報・学習記録・行動履歴の外部送信は、この標準ウィザードでは常に無効です。
+</p>
+</section>
+
+<section class="panel">
+<button id="generate" type="button">4. JSONを生成</button>
+</section>
+
+<section class="panel">
+<h2>推奨配置先</h2><pre id="pathOutput">未生成</pre>
+<h2>app.manifest.json</h2>
+<div class="output-actions"><button class="secondary" data-copy="manifestOutput">コピー</button></div>
+<pre id="manifestOutput">未生成</pre>
+<h2>catalog.override.jsonへ追加する項目</h2>
+<div class="output-actions"><button class="secondary" data-copy="overrideOutput">コピー</button></div>
+<pre id="overrideOutput">未生成</pre>
+<h2>catalog-groups.jsonへ追加する項目</h2>
+<div class="output-actions"><button class="secondary" data-copy="groupOutput">コピー</button></div>
+<pre id="groupOutput">未生成</pre>
+</section>
+</main>
+<script src="./wizard-core.js"></script>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+$("updatedOn").value=new Date().toISOString().slice(0,10);
+function collectInput(){
+  return {
+    appId:$("appId").value.trim(),
+    title:$("title").value.trim(),
+    version:$("version").value.trim(),
+    updatedOn:$("updatedOn").value,
+    level:$("level").value,
+    learningDifficulty:Number($("difficulty").value),
+    group:$("group").value,
+    audience:$("audience").value,
+    categories:$("categories").value,
+    tags:$("tags").value,
+    appType:$("appType").value,
+    unit:$("unit").value,
+    learningGoals:$("goals").value,
+    folderField:$("folderField").value,
+    featured:$("featured").value==="true",
+    sortOrder:Number($("sortOrder").value),
+    labels:$("labels").value,
+    networkRequired:$("network").checked,
+    externalEndpoints:$("externalEndpoints").value,
+    storageEnabled:$("storage").checked
+  };
+}
+
+$("generate").addEventListener("click",()=>{
+  const result=YSAWizardCore.generateRegistration(collectInput());
+
+  if(!result.ok){
+    alert(result.errors.join("\n"));
+    return;
+  }
+
+  $("pathOutput").textContent=
+    result.folder+"\n├─ index.html\n└─ app.manifest.json";
+  $("manifestOutput").textContent=JSON.stringify(result.manifest,null,2);
+  $("overrideOutput").textContent=JSON.stringify(result.override,null,2);
+  $("groupOutput").textContent=JSON.stringify(result.groupItem,null,2);
+});
+
+document.querySelectorAll("[data-copy]").forEach(button=>{
+  button.addEventListener("click",async()=>{
+    const text=$(button.dataset.copy).textContent;
+    await navigator.clipboard.writeText(text);
+    button.textContent="コピー済み";
+    setTimeout(()=>button.textContent="コピー",1200);
+  });
+});
+})();
+</script>
+</body>
+</html>
