@@ -17,6 +17,8 @@ tests=[
     ROOT/"platform/catalog/tests/test-catalog-generator.py",
     ROOT/"platform/portal/tests/test-portal.py",
     ROOT/"platform/tools/app-registration-wizard/tests/test-wizard.py",
+    ROOT/"platform/tools/app-update-wizard/tests/test-update-wizard.py",
+    ROOT/"platform/tools/classification-editor/tests/test-classification-editor.py",
 ]
 
 failed=[]

@@ -298,6 +298,18 @@
               }
             }
           }
+        },
+        "structureMode": {
+          "type": "string",
+          "enum": [
+            "single-file",
+            "multi-file"
+          ],
+          "description": "Large new apps should use multi-file."
+        },
+        "structureRuleVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
         }
       }
     },

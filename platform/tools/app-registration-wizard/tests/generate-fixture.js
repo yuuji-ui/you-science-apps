@@ -11,6 +11,8 @@ const base={
   version:"1.0.0",
   updatedOn:"2026-08-05",
   level:"B",
+  projectSize:"small",
+  structureMode:"single-file",
   learningDifficulty:3,
   group:"junior-high-science",
   audience:"JH2",
@@ -36,6 +38,18 @@ if(mode==="network"){
 }
 if(mode==="network-missing-endpoint"){
   base.networkRequired=true;
+  base.externalEndpoints="";
+}
+if(mode==="large-invalid"){
+  base.projectSize="large";
+  base.structureMode="single-file";
+  base.networkRequired=false;
+  base.externalEndpoints="";
+}
+if(mode==="large-valid"){
+  base.projectSize="large";
+  base.structureMode="multi-file";
+  base.networkRequired=false;
   base.externalEndpoints="";
 }
 

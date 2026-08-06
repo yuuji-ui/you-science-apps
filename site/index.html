@@ -155,7 +155,17 @@ footer{padding:2rem 1rem;text-align:center;color:var(--muted)}
       <input id="favorites-only" type="checkbox">
       お気に入りだけ表示
     </label>
-    <div></div>
+    <label>並び替え
+      <select id="sort">
+        <option value="recommended">おすすめ順</option>
+        <option value="newest">更新日の新しい順</option>
+        <option value="audience">対象順</option>
+        <option value="subject">大分類順</option>
+        <option value="name">教材名順</option>
+        <option value="difficulty-asc">難易度：基本から</option>
+        <option value="difficulty-desc">難易度：応用から</option>
+      </select>
+    </label>
   </div>
 
   <p class="privacy-note">
@@ -243,6 +253,7 @@ const E={
   type:document.querySelector("#type"),
   difficulty:document.querySelector("#difficulty"),
   favoritesOnly:document.querySelector("#favorites-only"),
+  sort:document.querySelector("#sort"),
   reset:document.querySelector("#reset"),
   clearLocal:document.querySelector("#clear-local"),
   count:document.querySelector("#count"),
@@ -300,6 +311,58 @@ function fillSelect(select,values,labelGroup=null){
 }
 function unique(values){return [...new Set(values)]}
 function allTags(app){return unique([...(app.tags||[]),...(app.labels||[])])}
+
+const AUDIENCE_ORDER=[
+  "JH1","JH2","JH3",
+  "physics-basic","physics",
+  "chemistry-basic","chemistry",
+  "biology-basic","biology",
+  "earth-science-basic","earth-science","other"
+];
+const GROUP_ORDER=[
+  "junior-high-science","senior-high-physics","senior-high-chemistry",
+  "senior-high-biology","senior-high-earth-science","other"
+];
+
+function firstOrder(values,order){
+  const indexes=(values||[]).map(value=>order.indexOf(value)).filter(index=>index>=0);
+  return indexes.length?Math.min(...indexes):999;
+}
+function dateValue(value){
+  const time=Date.parse(value||"");
+  return Number.isFinite(time)?time:0;
+}
+function sortApps(items){
+  const mode=E.sort.value;
+  return [...items].sort((a,b)=>{
+    if(mode==="newest"){
+      return dateValue(b.updatedOn)-dateValue(a.updatedOn)
+        ||a.title.localeCompare(b.title,"ja");
+    }
+    if(mode==="audience"){
+      return firstOrder(a.audiences,AUDIENCE_ORDER)-firstOrder(b.audiences,AUDIENCE_ORDER)
+        ||a.title.localeCompare(b.title,"ja");
+    }
+    if(mode==="subject"){
+      return firstOrder(a.portalGroups,GROUP_ORDER)-firstOrder(b.portalGroups,GROUP_ORDER)
+        ||a.title.localeCompare(b.title,"ja");
+    }
+    if(mode==="name"){
+      return a.title.localeCompare(b.title,"ja");
+    }
+    if(mode==="difficulty-asc"){
+      return a.learningDifficulty-b.learningDifficulty
+        ||a.title.localeCompare(b.title,"ja");
+    }
+    if(mode==="difficulty-desc"){
+      return b.learningDifficulty-a.learningDifficulty
+        ||a.title.localeCompare(b.title,"ja");
+    }
+    return (a.sortOrder??1000)-(b.sortOrder??1000)
+      ||(a.featured===b.featured?0:a.featured?-1:1)
+      ||a.title.localeCompare(b.title,"ja");
+  });
+}
 
 function toggleFavorite(appId){
   if(favorites.has(appId))favorites.delete(appId);
@@ -387,9 +450,9 @@ function renderRecent(){
 }
 
 function render(){
-  const filtered=apps.filter(matches);
-  const featured=filtered.filter(app=>app.featured);
-  const favoriteApps=apps.filter(app=>favorites.has(app.appId));
+  const filtered=sortApps(apps.filter(matches));
+  const featured=sortApps(filtered.filter(app=>app.featured));
+  const favoriteApps=sortApps(apps.filter(app=>favorites.has(app.appId)));
 
   E.favoriteGrid.replaceChildren(...favoriteApps.map(card));
   E.favoriteSection.hidden=favoriteApps.length===0;
@@ -424,7 +487,7 @@ async function init(){
   }
 }
 
-[E.search,E.group,E.audience,E.category,E.type,E.difficulty,E.favoritesOnly]
+[E.search,E.group,E.audience,E.category,E.type,E.difficulty,E.favoritesOnly,E.sort]
   .forEach(element=>element.addEventListener("input",render));
 
 E.reset.addEventListener("click",()=>{
@@ -435,6 +498,7 @@ E.reset.addEventListener("click",()=>{
   E.type.value="";
   E.difficulty.value="";
   E.favoritesOnly.checked=false;
+  E.sort.value="recommended";
   render();
   E.search.focus();
 });

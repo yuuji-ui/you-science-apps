@@ -22,3 +22,20 @@
 - 公開CatalogからLevelを削除
 - 重複Schemaを削除しGeneratorをWrapper化
 - 共有端末注意表示を補強
+
+
+## 1.3.0 RC — 2026-08-06
+
+- 大型教材の複数ファイル構成標準ルールを追加
+- Portal並び替えを追加
+- 教材追加ウィザードを大型教材対応
+- 教材更新ウィザードを追加
+- タグ・分類編集ツールを追加
+
+## 1.3.1 RC — 2026-08-06
+
+- 古いRelease承認情報を削除
+- Pipeline ValidatorをCanonical Wrapper化
+- 旧版README・反映手順書を整理
+- GitHub ActionsへNode.js 22セットアップを追加
+- 大型教材ルールの運用補足を追加

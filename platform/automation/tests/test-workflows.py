@@ -8,7 +8,8 @@ C = (ROOT/"platform/automation/tools/run-ci.py").read_text(encoding="utf-8")
 checks = {
     "requirements_install": "-r requirements.txt" in D and "-r requirements.txt" in V,
     "checkout_v6": "actions/checkout@v6" in V and "actions/checkout@v6" in D,
-    "setup_python_v6": "actions/setup-python@v6" in D,
+    "setup_python_v6": "actions/setup-python@v6" in D and "actions/setup-python@v6" in V,
+    "setup_node_v4": "actions/setup-node@v4" in D and "actions/setup-node@v4" in V,
     "configure_pages_v5": "actions/configure-pages@v5" in D,
     "upload_pages_v4": "actions/upload-pages-artifact@v4" in D,
     "deploy_pages_v4": "actions/deploy-pages@v4" in D,

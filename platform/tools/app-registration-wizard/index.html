@@ -32,6 +32,18 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#111827;color:#f9fafb
 <label>内部管理Level
 <select id="level"><option>A</option><option>B</option><option selected>C</option></select>
 </label>
+<label>教材規模
+<select id="projectSize">
+<option value="small">小型教材</option>
+<option value="large">大型教材</option>
+</select>
+</label>
+<label>ファイル構成
+<select id="structureMode">
+<option value="single-file">1ファイル構成</option>
+<option value="multi-file">複数ファイル構成</option>
+</select>
+</label>
 <label>学習難易度（内部値）
 <select id="difficulty">
 <option value="1">1（Portal: 基本）</option>
@@ -42,6 +54,10 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#111827;color:#f9fafb
 </select>
 </label>
 </div>
+<p class="note">
+大型教材は複数ファイル構成を標準とします。
+Simulation・3D・Canvas・WebGL・複雑な状態管理を含む教材では「大型教材」を選んでください。
+</p>
 </section>
 
 <section class="panel">
@@ -137,6 +153,9 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#111827;color:#f9fafb
 "use strict";
 const $=id=>document.getElementById(id);
 $("updatedOn").value=new Date().toISOString().slice(0,10);
+$("projectSize").addEventListener("change",()=>{
+  if($("projectSize").value==="large")$("structureMode").value="multi-file";
+});
 function collectInput(){
   return {
     appId:$("appId").value.trim(),
@@ -144,6 +163,8 @@ function collectInput(){
     version:$("version").value.trim(),
     updatedOn:$("updatedOn").value,
     level:$("level").value,
+    projectSize:$("projectSize").value,
+    structureMode:$("structureMode").value,
     learningDifficulty:Number($("difficulty").value),
     group:$("group").value,
     audience:$("audience").value,
@@ -170,8 +191,11 @@ $("generate").addEventListener("click",()=>{
     return;
   }
 
-  $("pathOutput").textContent=
-    result.folder+"\n├─ index.html\n└─ app.manifest.json";
+  const tree=result.fileTree.map((item,index)=>{
+    const last=index===result.fileTree.length-1;
+    return `${last?"└─":"├─"} ${item}`;
+  }).join("\n");
+  $("pathOutput").textContent=result.folder+"\n"+tree;
   $("manifestOutput").textContent=JSON.stringify(result.manifest,null,2);
   $("overrideOutput").textContent=JSON.stringify(result.override,null,2);
   $("groupOutput").textContent=JSON.stringify(result.groupItem,null,2);

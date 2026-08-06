@@ -32,6 +32,10 @@
       errors.push("教材名を入力してください。");
     }
 
+    if(input.projectSize==="large" && input.structureMode!=="multi-file"){
+      errors.push("大型教材は複数ファイル構成を選択してください。");
+    }
+
     const endpoints=normalizeEndpoints(input.externalEndpoints);
     if(input.networkRequired && endpoints.length===0){
       errors.push("外部通信が必要な場合は、通信先URLを1件以上入力してください。");
@@ -102,6 +106,8 @@
       },
       platform:{
         sourceDependencyMode:"self-contained",
+        structureMode:input.structureMode,
+        structureRuleVersion:"1.0",
         coreVersion:null,
         referenceImplementations:[]
       },
@@ -173,9 +179,18 @@
       sortOrder:Number(input.sortOrder)
     };
 
+    const fileTree=input.structureMode==="multi-file"
+      ?[
+        "index.html","app.manifest.json","README.md",
+        "css/app.css","js/app.js","js/model.js","js/renderer.js","js/ui.js",
+        "data/settings.json","assets/"
+      ]
+      :["index.html","app.manifest.json"];
+
     return {
       ok:true,
       folder,
+      fileTree,
       manifest,
       override,
       groupItem

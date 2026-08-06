@@ -12,6 +12,7 @@ checks={
  "three_columns": "repeat(3,minmax(0,1fr))" in HTML,
  "two_columns": "repeat(2,minmax(0,1fr))" in HTML,
  "filters": all(x in HTML for x in ['id="group"','id="audience"','id="category"','id="difficulty"']),
+    "sorting": 'id="sort"' in HTML and "function sortApps" in HTML and 'value="newest"' in HTML,
  "privacy_notice": "この端末のブラウザ内だけに保存" in HTML,
  "shared_device_warning": "次に使う人にも見える可能性" in HTML,
 }

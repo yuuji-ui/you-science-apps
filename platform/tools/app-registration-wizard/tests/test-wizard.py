@@ -62,11 +62,26 @@ missing=run("network-missing-endpoint")
 assert missing["ok"] is False
 assert any("通信先URL" in message for message in missing["errors"])
 
+large_invalid=run("large-invalid")
+assert large_invalid["ok"] is False
+assert any("大型教材" in message for message in large_invalid["errors"])
+
+large_valid=run("large-valid")
+assert large_valid["ok"] is True
+assert large_valid["manifest"]["platform"]["structureMode"]=="multi-file"
+assert "js/model.js" in large_valid["fileTree"]
+
 html=(WIZARD_DIR/"index.html").read_text(encoding="utf-8")
 assert 'src="./wizard-core.js"' in html
 assert 'id="externalEndpoints"' in html
+assert 'id="projectSize"' in html
+assert 'id="structureMode"' in html
+
+large=run("offline")
+
 
 print("PASS offline manifest generation and schema validation")
 print("PASS network manifest generation and schema validation")
 print("PASS missing endpoint rejection")
+print("PASS large app multi-file rule")
 print("ALL TESTS PASS")

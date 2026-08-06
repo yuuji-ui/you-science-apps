@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>You Science Apps 教材更新ウィザード</title><style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--bg:#f4f7fb;--surface:#fff;--text:#17202a;--muted:#52606d;--line:#cbd5df;--accent:#155eef;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);line-height:1.6}
+main{max-width:1100px;margin:auto;padding:20px}h1{margin-top:0}.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}label{display:grid;gap:5px;font-weight:700}
+input,select,textarea,button{font:inherit;min-height:48px;border:1px solid var(--line);border-radius:10px;padding:10px}
+textarea{min-height:100px}.full{grid-column:1/-1}.checks{display:flex;gap:12px;flex-wrap:wrap}.checks label{display:flex;align-items:center;gap:5px}.checks input{min-height:auto}
+button{background:var(--accent);color:#fff;font-weight:800;cursor:pointer}.secondary{background:#fff;color:var(--text)}.danger{border-color:var(--danger);color:var(--danger);background:#fff}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#111827;color:#f9fafb;padding:14px;border-radius:12px;max-height:440px;overflow:auto}
+.note{color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap}.status{font-weight:800}.error{color:var(--danger)}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<h1>教材更新ウィザード</h1>
+<p class="note">既存のapp.manifest.jsonを貼り付け、Version・公開状態・難易度・分類・Catalog表示を更新します。GitHubへ自動送信しません。</p>
+<section class="panel"><h2>1. 現在のManifestを読み込む</h2>
+<label>app.manifest.json全文<textarea id="source" class="full" placeholder="{ ... }"></textarea></label>
+<div class="actions"><button id="load" type="button">Manifestを読み込む</button></div>
+<p id="loadStatus" class="status"></p></section>
+
+<section class="panel"><h2>2. 更新内容</h2><div class="grid">
+<label>Version<input id="version"></label>
+<label>更新日<input id="updatedOn" type="date"></label>
+<label>公開状態<select id="status"><option>active</option><option>maintenance</option><option>deprecated</option><option>retired</option></select></label>
+<label>学習難易度<select id="difficulty"><option value="1">1（基本）</option><option value="2">2（基本）</option><option value="3">3（標準）</option><option value="4">4（標準）</option><option value="5">5（応用）</option></select></label>
+<label>大分類ID（カンマ区切り）<input id="portalGroups"></label>
+<label>対象ID（カンマ区切り）<input id="audiences"></label>
+<label>単元（カンマ区切り）<input id="categories"></label>
+<label>タグ（カンマ区切り）<input id="tags"></label>
+<label class="full">学習目標（1行1件）<textarea id="learningGoals"></textarea></label>
+<label class="full">モデルの限界（1行1件）<textarea id="modelLimitations"></textarea></label>
+</div></section>
+
+<section class="panel"><h2>3. Portal表示設定</h2><div class="grid">
+<label>表示順<input id="sortOrder" type="number" value="100"></label>
+<label>ラベル（カンマ区切り）<input id="labels"></label>
+<label>おすすめ<select id="featured"><option value="false">いいえ</option><option value="true">はい</option></select></label>
+<label>Portal非表示<select id="hidden"><option value="false">いいえ</option><option value="true">はい</option></select></label>
+<label class="full">廃止・旧版メッセージ<input id="deprecatedMessage"></label>
+</div></section>
+<section class="panel"><button id="generate" type="button">更新ファイルを生成</button></section>
+<section class="panel"><h2>更新後app.manifest.json</h2><div class="actions"><button class="secondary" data-copy="manifestOutput">コピー</button></div><pre id="manifestOutput">未生成</pre>
+<h2>catalog.override.jsonへ追加・置換する項目</h2><div class="actions"><button class="secondary" data-copy="overrideOutput">コピー</button></div><pre id="overrideOutput">未生成</pre></section>
+</main>
+<script src="./update-core.js"></script><script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id);let current=null;
+$("updatedOn").value=new Date().toISOString().slice(0,10);
+$("load").addEventListener("click",()=>{
+ const result=YSAUpdateCore.parseManifest($("source").value);
+ if(!result.ok){$("loadStatus").textContent=result.errors.join(" ");$("loadStatus").className="status error";return}
+ current=result.manifest;$("loadStatus").textContent=`${current.title||current.appId}を読み込みました。`;$("loadStatus").className="status";
+ $("version").value=current.version||"";$("updatedOn").value=current.updatedOn||new Date().toISOString().slice(0,10);
+ $("status").value=current.status||"active";$("difficulty").value=String(current.education?.learningDifficulty||3);
+ $("portalGroups").value=(current.education?.portalGroups||[]).join(", ");
+ $("audiences").value=(current.education?.audiences||[]).join(", ");
+ $("categories").value=(current.education?.categories||[]).join(", ");
+ $("tags").value=(current.education?.tags||[]).join(", ");
+ $("learningGoals").value=(current.education?.learningGoals||[]).join("\n");
+ $("modelLimitations").value=(current.education?.modelLimitations||[]).join("\n");
+});
+$("generate").addEventListener("click",()=>{
+ if(!current){alert("最初にManifestを読み込んでください。");return}
+ const input={
+  version:$("version").value,updatedOn:$("updatedOn").value,status:$("status").value,
+  learningDifficulty:Number($("difficulty").value),portalGroups:$("portalGroups").value,
+  audiences:$("audiences").value,categories:$("categories").value,tags:$("tags").value,
+  learningGoals:$("learningGoals").value,modelLimitations:$("modelLimitations").value
+ };
+ const result=YSAUpdateCore.updateManifest(current,input);
+ if(!result.ok){alert(result.errors.join("\n"));return}
+ const override=YSAUpdateCore.overridePatch(current.appId,{
+  featured:$("featured").value==="true",hidden:$("hidden").value==="true",
+  sortOrder:Number($("sortOrder").value),labels:$("labels").value,
+  deprecatedMessage:$("deprecatedMessage").value
+ });
+ $("manifestOutput").textContent=JSON.stringify(result.manifest,null,2);
+ $("overrideOutput").textContent=JSON.stringify(override,null,2);
+});
+document.querySelectorAll("[data-copy]").forEach(button=>button.addEventListener("click",async()=>{
+ await navigator.clipboard.writeText($(button.dataset.copy).textContent);
+ button.textContent="コピー済み";setTimeout(()=>button.textContent="コピー",1200);
+}));
+})();
+</script></body></html>

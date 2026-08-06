@@ -57,6 +57,8 @@ def main():
           "platform/portal/tests/test-portal.py",
           "platform/pipeline/tests/test-platform-pipeline.py",
           "platform/tools/app-registration-wizard/tests/test-wizard.py",
+          "platform/tools/app-update-wizard/tests/test-update-wizard.py",
+          "platform/tools/classification-editor/tests/test-classification-editor.py",
           "platform/automation/tests/test-workflows.py",
         ]:
           require_paths(repo,[test_path])

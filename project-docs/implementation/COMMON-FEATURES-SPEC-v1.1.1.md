@@ -85,3 +85,9 @@ Portal固有の編集情報はCatalog overrideに残す。
 
 ウィザードは管理ツールであり、生徒向けPortalには表示しない。
 GitHubへ自動書き込みせず、ManifestとCatalog追記用JSONを生成する。
+
+
+## 8. 大型教材の構成
+
+大型教材は複数ファイル構成を標準とする。
+詳細は`LARGE-APP-MULTI-FILE-RULE-v1.0.md`を正本とする。
