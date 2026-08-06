@@ -1,0 +1,8 @@
+{
+  "version": "1.2.0",
+  "runTests": "PASS",
+  "runCi": "PASS",
+  "ciMode": "production",
+  "ciSteps": 11,
+  "node": "v22.16.0"
+}

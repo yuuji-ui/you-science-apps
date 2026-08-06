@@ -3,6 +3,7 @@
   "appId": "mole-calculation",
   "title": "物質量計算トレーナー",
   "version": "1.2.0",
+  "updatedOn": "2026-08-06",
   "status": "active",
   "level": "B",
   "education": {
@@ -13,6 +14,23 @@
     "grades": [
       "SH1"
     ],
+    "portalGroups": [
+      "senior-high-chemistry"
+    ],
+    "audiences": [
+      "chemistry-basic"
+    ],
+    "categories": [
+      "物質量",
+      "質量",
+      "粒子数"
+    ],
+    "tags": [
+      "モル",
+      "計算練習",
+      "化学基礎"
+    ],
+    "learningDifficulty": 3,
     "units": [
       "CHEM.MOLE.001"
     ],
@@ -20,16 +38,27 @@
       "calculation"
     ],
     "learningGoals": [
-      "物質量・質量・粒子数の関係を使って計算できる。"
+      "質量・物質量・粒子数の関係を用いて計算できる。",
+      "単位と有効数字を確認しながら解答できる。"
     ],
     "useCases": [
       "lesson-practice",
-      "home-study"
-    ]
+      "home-study",
+      "test-prep"
+    ],
+    "modelLimitations": []
   },
   "platform": {
     "sourceDependencyMode": "shared",
-    "coreVersion": "1.0.0"
+    "coreVersion": "1.0.0",
+    "referenceImplementations": [
+      {
+        "name": "accessible-form",
+        "version": "1.0.0",
+        "copiedOn": "2026-08-03",
+        "modified": true
+      }
+    ]
   },
   "distribution": {
     "hosted": {
@@ -47,9 +76,11 @@
     }
   },
   "storage": {
-    "enabled": false,
-    "types": [],
-    "deletionMethod": "保存データなし"
+    "enabled": true,
+    "types": [
+      "localStorage"
+    ],
+    "deletionMethod": "設定画面の「学習データを削除」ボタンから削除する。"
   },
   "network": {
     "required": false,
@@ -72,8 +103,12 @@
     "content": "TBD",
     "thirdPartyNotices": []
   },
+  "owners": {
+    "appOwnerRole": "Chemistry App Owner",
+    "maintainerRole": "Platform Maintainer"
+  },
   "links": {
-    "hostedUrl": "./apps/senior-high/chemistry/mole-calculation/",
+    "hostedUrl": "https://example.github.io/you-science-apps/apps/senior-high/chemistry/mole-calculation/",
     "repositoryPath": "site/apps/senior-high/chemistry/mole-calculation"
   }
 }

@@ -1,0 +1,127 @@
+{
+  "result": "PASS",
+  "mode": "production",
+  "steps": [
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/manifest/tests/test-manifest-schema.py"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS /mnt/data/you_science_apps_ci_sync_v1_2/platform/manifest/examples/valid/app.manifest.json\nPASS /mnt/data/you_science_apps_ci_sync_v1_2/platform/manifest/examples/invalid/analytics-enabled.json\nPASS /mnt/data/you_science_apps_ci_sync_v1_2/platform/manifest/examples/invalid/invalid-app-id.json\nPASS /mnt/data/you_science_apps_ci_sync_v1_2/platform/manifest/examples/invalid/portable-shared.json\nALL TESTS PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/catalog/tests/test-catalog-generator.py"
+      ],
+      "returnCode": 0,
+      "stdout": "{\"result\": \"PASS\", \"apps\": 2, \"groups\": 2, \"output\": \"/tmp/tmpihx6ixx1/catalog.json\"}\n \nALL TESTS PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/portal/tests/test-portal.py"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS no_level_display\nPASS difficulty_mapping\nPASS favorites\nPASS recent\nPASS three_columns\nPASS two_columns\nPASS filters\nPASS privacy_notice\nPASS shared_device_warning\nALL TESTS PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/pipeline/tests/test-platform-pipeline.py"
+      ],
+      "returnCode": 0,
+      "stdout": "{\n  \"result\": \"PASS\",\n  \"manifestValidation\": [\n    {\n      \"manifest\": \"/mnt/data/you_science_apps_ci_sync_v1_2/platform/pipeline/examples/apps/mole-calculation/app.manifest.json\",\n      \"result\": \"PASS\",\n      \"stdout\": \"PASS\",\n      \"stderr\": \"\"\n    },\n    {\n      \"manifest\": \"/mnt/data/you_science_apps_ci_sync_v1_2/platform/pipeline/examples/apps/neutralization-simulator/app.manifest.json\",\n      \"result\": \"PASS\",\n      \"stdout\": \"PASS\",\n      \"stderr\": \"\"\n    }\n  ],\n  \"catalogGeneration\": {\n    \"result\": \"PASS\",\n    \"stdout\": \"{\\\"result\\\": \\\"PASS\\\", \\\"apps\\\": 2, \\\"groups\\\": 2, \\\"output\\\": \\\"/tmp/tmpx8kcauqz/catalog.json\\\"}\",\n    \"stderr\": \"\"\n  },\n  \"catalogValidation\": {\n    \"result\": \"PASS\",\n    \"stdout\": \"PASS\",\n    \"stderr\": \"\"\n  },\n  \"errors\": []\n}\nALL TESTS PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/tools/app-registration-wizard/tests/test-wizard.py"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS offline manifest generation and schema validation\nPASS network manifest generation and schema validation\nPASS missing endpoint rejection\nALL TESTS PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/automation/tests/test-workflows.py"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS requirements_install\nPASS checkout_v6\nPASS setup_python_v6\nPASS configure_pages_v5\nPASS upload_pages_v4\nPASS deploy_pages_v4\nPASS pages_write\nPASS id_token_write\nPASS github_pages_environment\nPASS site_artifact\nPASS bootstrap_mode\nPASS production_mode\nPASS privacy_check\nALL TESTS PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/manifest/tools/validate-manifest.py",
+        "platform/manifest/schemas/app-manifest.schema.json",
+        "site/apps/junior-high/chemistry/neutralization-simulator/app.manifest.json"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS: site/apps/junior-high/chemistry/neutralization-simulator/app.manifest.json",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/manifest/tools/validate-manifest.py",
+        "platform/manifest/schemas/app-manifest.schema.json",
+        "site/apps/junior-high/physics/electric-current-master/app.manifest.json"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS: site/apps/junior-high/physics/electric-current-master/app.manifest.json",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/catalog/tools/generate-catalog.py",
+        "--apps-dir",
+        "site/apps",
+        "--override",
+        "catalog-source/catalog.override.json",
+        "--groups",
+        "catalog-source/catalog-groups.json",
+        "--output",
+        "site/catalog/catalog.json",
+        "--report",
+        "platform/automation/docs/catalog-generation-report.json"
+      ],
+      "returnCode": 0,
+      "stdout": "{\"result\": \"PASS\", \"apps\": 2, \"groups\": 2, \"output\": \"site/catalog/catalog.json\"}",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "command": [
+        "/opt/pyvenv/bin/python",
+        "platform/catalog/tools/validate-catalog.py",
+        "platform/catalog/schemas/catalog.schema.json",
+        "site/catalog/catalog.json"
+      ],
+      "returnCode": 0,
+      "stdout": "PASS",
+      "stderr": "",
+      "result": "PASS"
+    },
+    {
+      "result": "PASS",
+      "message": "Static privacy checks passed."
+    }
+  ],
+  "errors": []
+}

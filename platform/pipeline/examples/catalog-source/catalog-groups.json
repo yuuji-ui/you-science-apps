@@ -2,14 +2,22 @@
   "schemaVersion": "1.0.0",
   "groups": [
     {
-      "groupId": "featured",
-      "title": "おすすめ教材",
-      "description": "授業や家庭学習で使いやすい教材",
+      "groupId": "mole-calculation-group",
+      "title": "物質量",
+      "description": "物質量の計算教材",
       "appIds": [
-        "mole-calculation",
-        "neutralization-simulator"
+        "mole-calculation"
       ],
       "sortOrder": 10
+    },
+    {
+      "groupId": "neutralization-group",
+      "title": "酸・アルカリ・中和",
+      "description": "中和と滴定の教材",
+      "appIds": [
+        "neutralization-simulator"
+      ],
+      "sortOrder": 20
     }
   ]
 }

@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "apps": 2,
+  "groups": 2,
+  "output": "site/catalog/catalog.json"
+}

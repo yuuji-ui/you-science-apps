@@ -3,20 +3,24 @@
   "apps": {
     "mole-calculation": {
       "featured": true,
+      "hidden": false,
       "sortOrder": 10,
       "labels": [
-        "高校化学",
-        "計算"
-      ]
+        "化学基礎",
+        "物質量"
+      ],
+      "deprecatedMessage": null
     },
     "neutralization-simulator": {
       "featured": true,
+      "hidden": false,
       "sortOrder": 20,
       "labels": [
         "中3",
-        "高校化学",
-        "実験"
-      ]
+        "化学基礎",
+        "中和"
+      ],
+      "deprecatedMessage": null
     }
   }
 }

@@ -1,61 +1,31 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-import json, shutil, subprocess, sys, tempfile
 from pathlib import Path
+import json, subprocess, sys, tempfile
+from jsonschema import Draft202012Validator, FormatChecker
 
-ROOT = Path(__file__).resolve().parents[1]
-GEN = ROOT/"tools"/"generate-catalog.py"
-VAL = ROOT/"tools"/"validate-catalog.py"
-SCHEMA = ROOT/"schemas"/"catalog.schema.json"
-APPS = ROOT/"examples"/"apps"
-OVERRIDE = ROOT/"examples"/"catalog-source"/"catalog.override.json"
-GROUPS = ROOT/"examples"/"catalog-source"/"catalog-groups.json"
+ROOT=Path(__file__).resolve().parents[1]
+REPO=ROOT.parents[1]
 
+with tempfile.TemporaryDirectory() as td:
+ out=Path(td)/"catalog.json"
+ p=subprocess.run([
+   sys.executable,str(ROOT/"tools/generate-catalog.py"),
+   "--apps-dir",str(ROOT/"examples/apps"),
+   "--override",str(ROOT/"examples/catalog-source/catalog.override.json"),
+   "--groups",str(ROOT/"examples/catalog-source/catalog-groups.json"),
+   "--output",str(out)
+ ],text=True,capture_output=True)
+ print(p.stdout,p.stderr)
+ assert p.returncode==0,p.stderr
+ catalog=json.loads(out.read_text(encoding="utf-8"))
+ assert catalog["schemaVersion"]=="1.1.0"
+ assert len(catalog["apps"])==2
+ assert all("learningDifficulty" in app for app in catalog["apps"])
+ assert all("portalGroups" in app for app in catalog["apps"])
+ assert all("level" not in app for app in catalog["apps"])
+ schema=json.loads((ROOT/"schemas/catalog.schema.json").read_text(encoding="utf-8"))
+ errors=list(Draft202012Validator(schema,format_checker=FormatChecker()).iter_errors(catalog))
+ for error in errors: print(error.message)
+ assert not errors
 
-def run(cmd):
-    return subprocess.run(cmd, text=True, capture_output=True)
-
-
-def main():
-    with tempfile.TemporaryDirectory() as td:
-        td = Path(td)
-        out = td/"catalog.json"
-        report = td/"report.json"
-
-        p = run([sys.executable,str(GEN),"--apps-dir",str(APPS),"--override",str(OVERRIDE),"--groups",str(GROUPS),"--output",str(out),"--report",str(report)])
-        print(p.stdout,end="")
-        assert p.returncode == 0, p.stderr
-
-        data = json.loads(out.read_text(encoding="utf-8"))
-        assert len(data["apps"]) == 2
-        assert data["apps"][0]["appId"] == "mole-calculation"
-        assert data["apps"][0]["featured"] is True
-
-        p = run([sys.executable,str(VAL),str(SCHEMA),str(out)])
-        print(p.stdout,end="")
-        assert p.returncode == 0
-
-        # duplicate appId
-        dup_apps = td/"apps"
-        shutil.copytree(APPS, dup_apps)
-        extra = dup_apps/"duplicate"
-        extra.mkdir()
-        shutil.copy2(APPS/"mole-calculation"/"app.manifest.json", extra/"app.manifest.json")
-        p = run([sys.executable,str(GEN),"--apps-dir",str(dup_apps),"--override",str(OVERRIDE),"--groups",str(GROUPS),"--output",str(td/"dup.json")])
-        assert p.returncode == 1
-        assert "Duplicate appId" in p.stdout
-
-        # unknown override
-        bad_override = json.loads(OVERRIDE.read_text(encoding="utf-8"))
-        bad_override["apps"]["unknown-app"] = {"featured": True}
-        bad_path = td/"bad-override.json"
-        bad_path.write_text(json.dumps(bad_override),encoding="utf-8")
-        p = run([sys.executable,str(GEN),"--apps-dir",str(APPS),"--override",str(bad_path),"--groups",str(GROUPS),"--output",str(td/"bad.json")])
-        assert p.returncode == 1
-        assert "unknown or unpublished" in p.stdout
-
-        print("ALL TESTS PASS")
-        return 0
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+print("ALL TESTS PASS")

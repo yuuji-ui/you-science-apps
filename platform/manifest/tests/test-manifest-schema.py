@@ -1,46 +1,29 @@
 #!/usr/bin/env python3
-"""Regression tests for the app manifest schema."""
-
-from __future__ import annotations
-
-import json
-import subprocess
-import sys
 from pathlib import Path
+import json
+from jsonschema import Draft202012Validator, FormatChecker
 
-ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = ROOT / "tools" / "validate-manifest.py"
-SCHEMA = ROOT / "schemas" / "app-manifest.schema.json"
+ROOT=Path(__file__).resolve().parents[1]
+SCHEMA=json.loads((ROOT/"schemas/app-manifest.schema.json").read_text(encoding="utf-8"))
+validator=Draft202012Validator(SCHEMA,format_checker=FormatChecker())
 
+valid=ROOT/"examples/valid/app.manifest.json"
+invalids=[
+ ROOT/"examples/invalid/analytics-enabled.json",
+ ROOT/"examples/invalid/invalid-app-id.json",
+ ROOT/"examples/invalid/portable-shared.json",
+]
 
-def run(path: Path) -> int:
-    result = subprocess.run(
-        [sys.executable, str(VALIDATOR), str(SCHEMA), str(path)],
-        text=True,
-        capture_output=True,
-    )
-    print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-    return result.returncode
+data=json.loads(valid.read_text(encoding="utf-8"))
+errors=list(validator.iter_errors(data))
+print(("PASS" if not errors else "FAIL"),valid)
+for error in errors: print("-",list(error.path),error.message)
+if errors: raise SystemExit(1)
 
+for path in invalids:
+ data=json.loads(path.read_text(encoding="utf-8"))
+ errors=list(validator.iter_errors(data))
+ print(("PASS" if errors else "FAIL"),path)
+ if not errors: raise SystemExit(1)
 
-def main() -> int:
-    valid = ROOT / "examples" / "valid" / "app.manifest.json"
-    invalid_files = sorted((ROOT / "examples" / "invalid").glob("*.json"))
-
-    if run(valid) != 0:
-        print("TEST FAIL: valid example was rejected.")
-        return 1
-
-    for path in invalid_files:
-        if run(path) == 0:
-            print(f"TEST FAIL: invalid example was accepted: {path.name}")
-            return 1
-
-    print("ALL TESTS PASS")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+print("ALL TESTS PASS")

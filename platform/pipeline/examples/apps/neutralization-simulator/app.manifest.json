@@ -3,6 +3,7 @@
   "appId": "neutralization-simulator",
   "title": "酸・アルカリ・中和シミュレーター",
   "version": "1.0.0",
+  "updatedOn": "2026-08-06",
   "status": "maintenance",
   "level": "C",
   "education": {
@@ -15,6 +16,27 @@
       "JH3",
       "SH1"
     ],
+    "portalGroups": [
+      "junior-high-science",
+      "senior-high-chemistry"
+    ],
+    "audiences": [
+      "JH3",
+      "chemistry-basic"
+    ],
+    "categories": [
+      "酸・アルカリ",
+      "中和",
+      "酸・塩基滴定"
+    ],
+    "tags": [
+      "pH",
+      "指示薬",
+      "粒子モデル",
+      "滴定曲線",
+      "実験"
+    ],
+    "learningDifficulty": 4,
     "units": [
       "JH3.CHEM.NEUTRALIZATION",
       "CHEM.ACIDBASE.001"
@@ -31,11 +53,15 @@
       "teacher-demo",
       "experiment-prep",
       "home-study"
+    ],
+    "modelLimitations": [
+      "学習用の近似モデルであり、実物実験を完全に再現するものではない。"
     ]
   },
   "platform": {
     "sourceDependencyMode": "self-contained",
-    "coreVersion": null
+    "coreVersion": null,
+    "referenceImplementations": []
   },
   "distribution": {
     "hosted": {
@@ -55,7 +81,7 @@
   "storage": {
     "enabled": false,
     "types": [],
-    "deletionMethod": "保存データなし"
+    "deletionMethod": "保存データはありません。"
   },
   "network": {
     "required": false,
@@ -78,8 +104,12 @@
     "content": "TBD",
     "thirdPartyNotices": []
   },
+  "owners": {
+    "appOwnerRole": "Neutralization Simulator Example App Owner",
+    "maintainerRole": "Platform Maintainer"
+  },
   "links": {
-    "hostedUrl": "./apps/junior-high/chemistry/neutralization-simulator/",
+    "hostedUrl": "https://example.github.io/you-science-apps/apps/junior-high/chemistry/neutralization-simulator/",
     "repositoryPath": "site/apps/junior-high/chemistry/neutralization-simulator"
   }
 }

@@ -3,7 +3,7 @@
   "appId": "neutralization-simulator",
   "title": "酸・アルカリ・中和シミュレーター",
   "version": "1.0.0",
-  "updatedOn": "2026-08-05",
+  "updatedOn": "2026-08-06",
   "status": "maintenance",
   "level": "C",
   "education": {
@@ -106,10 +106,10 @@
   },
   "owners": {
     "appOwnerRole": "Neutralization Simulator Example App Owner",
-    "maintainerRole": "You Science Apps Platform Maintainer"
+    "maintainerRole": "Platform Maintainer"
   },
   "links": {
     "hostedUrl": "https://example.github.io/you-science-apps/apps/junior-high/chemistry/neutralization-simulator/",
-    "repositoryPath": "platform/catalog/examples/apps/neutralization-simulator"
+    "repositoryPath": "site/apps/junior-high/chemistry/neutralization-simulator"
   }
 }

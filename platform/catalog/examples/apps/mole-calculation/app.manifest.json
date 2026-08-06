@@ -3,7 +3,7 @@
   "appId": "mole-calculation",
   "title": "物質量計算トレーナー",
   "version": "1.2.0",
-  "updatedOn": "2026-08-05",
+  "updatedOn": "2026-08-06",
   "status": "active",
   "level": "B",
   "education": {
@@ -38,20 +38,27 @@
       "calculation"
     ],
     "learningGoals": [
-      "物質量・質量・粒子数の関係を使って計算できる。"
+      "質量・物質量・粒子数の関係を用いて計算できる。",
+      "単位と有効数字を確認しながら解答できる。"
     ],
     "useCases": [
       "lesson-practice",
-      "home-study"
+      "home-study",
+      "test-prep"
     ],
-    "modelLimitations": [
-      "計算練習用の教材であり、実際の測定誤差や有効数字の詳細は別途確認する。"
-    ]
+    "modelLimitations": []
   },
   "platform": {
     "sourceDependencyMode": "shared",
     "coreVersion": "1.0.0",
-    "referenceImplementations": []
+    "referenceImplementations": [
+      {
+        "name": "accessible-form",
+        "version": "1.0.0",
+        "copiedOn": "2026-08-03",
+        "modified": true
+      }
+    ]
   },
   "distribution": {
     "hosted": {
@@ -69,9 +76,11 @@
     }
   },
   "storage": {
-    "enabled": false,
-    "types": [],
-    "deletionMethod": "保存データはありません。"
+    "enabled": true,
+    "types": [
+      "localStorage"
+    ],
+    "deletionMethod": "設定画面の「学習データを削除」ボタンから削除する。"
   },
   "network": {
     "required": false,
@@ -95,11 +104,11 @@
     "thirdPartyNotices": []
   },
   "owners": {
-    "appOwnerRole": "Mole Calculation App Owner",
-    "maintainerRole": "You Science Apps Platform Maintainer"
+    "appOwnerRole": "Chemistry App Owner",
+    "maintainerRole": "Platform Maintainer"
   },
   "links": {
     "hostedUrl": "https://example.github.io/you-science-apps/apps/senior-high/chemistry/mole-calculation/",
-    "repositoryPath": "platform/catalog/examples/apps/mole-calculation"
+    "repositoryPath": "site/apps/senior-high/chemistry/mole-calculation"
   }
 }
