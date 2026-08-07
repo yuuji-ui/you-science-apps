@@ -3,7 +3,7 @@ from pathlib import Path
 import re, json, sys
 
 ROOT=Path(__file__).resolve().parent
-MD=ROOT/'requirements-v1.2.3-RC.md'
+MD=ROOT/'requirements-v1.2.3.md'
 IDX=ROOT/'requirement-index.json'
 ID_RE=re.compile(r'^####\s+(REQ-[A-Z]+(?:-[A-Z]+)*-\d{3}|REQ-GOV-EXC-\d{3})\b',re.M)
 REQUIRED_GROUPS={

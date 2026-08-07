@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 ID_RE=re.compile(r'^####\s+(REQ-[A-Z]+(?:-[A-Z]+)*-\d{3}|REQ-GOV-EXC-\d{3})\b',re.M)
-text=(Path(__file__).resolve().parent/'requirements-v1.2.3-RC.md').read_text(encoding='utf-8')
+text=(Path(__file__).resolve().parent/'requirements-v1.2.3.md').read_text(encoding='utf-8')
 ids=ID_RE.findall(text)
 assert 'REQ-EDU-CALC-001' in ids
 assert 'REQ-EDU-VIS-004' in ids
