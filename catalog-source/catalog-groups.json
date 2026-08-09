@@ -18,6 +18,15 @@
         "neutralization-simulator"
       ],
       "sortOrder": 30
+    },
+    {
+      "groupId": "high-school-crystal-structure",
+      "title": "高校化学・結晶構造",
+      "description": "金属結晶、共有結合結晶、イオン結晶、配位数、充填、結晶面などを3Dで学ぶ教材",
+      "appIds": [
+        "crystal-structure-simulator"
+      ],
+      "sortOrder": 40
     }
   ]
 }
