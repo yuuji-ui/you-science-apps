@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Crystal Structure Explorer Ver.4 - Phase 8.3 Comparison Tasks</title>
+<title>Crystal Structure Explorer Ver.1 - Phase 9.2.2 Offline Ready</title>
 <style>
 :root{
   --navy:#0f172a;--blue:#2563eb;--sky:#38bdf8;--bg:#eef3f9;--panel:#fff;
@@ -495,7 +495,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 <body>
 <div class="app">
 <header>
- <div class="brand"><div class="logo">CS</div><div><h1>Crystal Structure Explorer Ver.4</h1><div class="sub">Three.js / WebGL — Phase 8 学習・比較・授業プリセット</div></div></div>
+ <div class="brand"><div class="logo">CS</div><div><h1>Crystal Structure Explorer Ver.1</h1><div class="sub">Three.js / WebGL — Phase 8 学習・比較・授業プリセット</div></div></div>
  <div class="phase">Phase 9.2.2：学習メニュー初期表示修正</div>
 </header>
 
@@ -939,7 +939,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 
  <div class="status">
   <span id="statusText">Three.js / WebGL・軽量ライブ検証＋明示実行の全10構造回帰検証</span>
-  <span class="ok">Phase 8.3.3 close-packed layer comparison</span>
+  <span class="ok">Phase 9.2.2 offline-ready build</span>
  </div>
 </section>
 </div>
@@ -947,39 +947,36 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 
 <script type="module">
 /*
- 教材名: Crystal Structure Explorer Ver.4
- 対象: 高校化学
- Phase: 8.1
- 構造: SC・BCC・FCC・Diamond・HCP・NaCl・CsCl・ZnS・CaF₂・Perovskite ABO₃
- Version: 4.0.0-phase8.2.1.2
- 変更履歴:
-  2026-08-08 Three.js描画エンジンへ移行。
-  2026-08-08 Phase 6.6：HCPの1/6球・1/2球をクリッピング依存から専用実体メッシュへ変更。
-  2026-08-08 Phase 6.7：HCPの1/2球をz軸基準の専用半球メッシュへ修正。
-  2026-08-09 Phase 6.8：自動検証を実計算化。粒子種別半径モデルを導入。原子半径・断面モードは接触半径に固定。未使用HCPクリップ関数を整理。
-  2026-08-09 Phase 7.1：NaCl型を追加。Na+/Cl-の2粒子種、6:6配位、4:4の格子内個数、a/2最近接、イオン半径比モデルを実装。
-  2026-08-09 Phase 7.2：CsCl型を追加。8:8配位、1:1の格子内個数、√3a/2最近接、8配位半径比モデルを実装。
-  2026-08-09 Phase 7.3：ZnS（閃亜鉛鉱型）を追加。4:4配位、4:4の格子内個数、√3a/4最近接、四面体孔半径比モデルを実装。
-  2026-08-09 Phase 7.4：CaF₂（蛍石型）を追加。Ca²⁺8配位/F⁻4配位、4:8の格子内個数、√3a/4最近接、1:2組成を実装。
-  2026-08-09 Phase 7.5：理想立方ペロブスカイトABO₃を追加。A頂点・B体心・O面心、B6配位/A12配位、ABO₃組成を実装。全構造に最近接関係の点線表示を追加。
-  2026-08-09 Phase 7.6：NaCl・CsCl・ZnS・CaF₂・ABO₃の比較モードを追加。比較表から3D構造へ直接切替可能。
-  2026-08-09 Phase 7.7：比較画面に左右幅調整スプリッターを追加。0.225・0.414・0.732を1本の半径比スケールで比較する統合学習モードを追加。
-  2026-08-09 Phase 7.8：ABO₃専用学習モードを追加。A/B/Oサイト、BO₆八面体、Goldschmidt tolerance factorを可視化。
-  2026-08-09 Phase 7.8.1：ABO₃発展ボタンをABO₃表示時のみ表示するようUIを整理。
-  2026-08-09 Phase 7.9：10構造の全回帰検証を追加。原子生成・代表サイト・期待配位数・組成比・初期半径設定を構造ルールへ集約。未使用補助関数を削除。
-  2026-08-09 Phase 7.10：Claude/Geminiレビュー反映。ライブ検証と全構造回帰を分離、HCP周期格子近接探索・実座標c/a検証、半径比境界共通化、全サイト配位検証を追加。
-  2026-08-09 Phase 7.10.1：自動検証UIを通常画面から常時非表示化。構造比較・半径比則をイオン結晶系のみ表示。左カラム主要パネルを折り畳み対応。
-  2026-08-09 Phase 7.11：Phase 7凍結版。『次フェーズへ進む条件』を通常UIから削除し、Phase 7機能・表示条件・検証基盤を固定。
-  2026-08-09 Phase 8.1：学習ナビを追加。学習目標ごとの操作手順、現在手順表示、前へ/次へ、該当モードへの自動切替を実装。
-  2026-08-09 Phase 8.3.3：FCC/HCP比較専用の積層可視化を追加。A/B/C層を色分けし、ABCABC…とABAB…を同期3Dで比較可能にした。
-  2026-08-09 Phase 8.3.4：FCC/HCP比較で、単位格子表示と左の大型3DにもA/B/C層色を適用。積層表示から単位格子への視覚的連続性を確保。
-  2026-08-09 Phase 9.2.2：学習メニュー初期表示修正（高校化学標準／高校化学発展／大学初年級）を追加。表示構造・学習機能を段階制御。
-  2026-08-09 Phase 9.2.2：学習メニュー初期表示修正を追加。中心粒子選択＋配位数、格子内粒子数の組立、接触方向、指定断面の4課題を実装。
+ 教材名: Crystal Structure Explorer Ver.1
+ 対象: 高校化学〜大学初年級
+ 単元: 結晶構造
+ Phase: 9.2.2
+ Version: 1.0.0
 
- 重要:
- - Phase 6.6ではHCPの部分球を専用メッシュで描画する。
- - このPhaseではThree.js 0.185.1をCDNから読み込む。
- - 新エンジン合格後、固定ファイルをプロジェクト内へvendorしてCDN依存を外す。
+ 主要変更履歴:
+  2026-08-08 Phase 6：Three.js描画エンジン、HCP部分球・慣用六角柱表示を整備。
+  2026-08-09 Phase 7.1〜7.8：NaCl / CsCl / ZnS / CaF₂ / ABO₃、構造比較、半径比、tolerance factorを追加。
+  2026-08-09 Phase 7.9〜7.11：全10構造回帰検証、HCP周期格子近接探索、実座標c/a検証を追加しPhase 7凍結。
+  2026-08-09 Phase 8.1：学習ナビを追加。
+  2026-08-09 Phase 8.2：操作型チャレンジを追加。
+  2026-08-09 Phase 8.3：比較課題、横並び同期3D、FCC/HCP積層比較を追加。
+  2026-08-09 Phase 8.4：授業用プリセットと左カラムUI整理を追加。
+  2026-08-09 Phase 8.5 / Final Frozen：Claude / Geminiレビューを反映してPhase 8を正式凍結。
+  2026-08-09 Phase 9.1：Three.js r185をローカルvendor構成へ移行。
+  2026-08-09 Phase 9.2：CDN参照を削除し、完全オフライン起動を確認。
+  2026-08-09 Phase 9.2.1：Windows起動スクリプトの文字コード問題を修正。
+  2026-08-09 Phase 9.2.2：学習メニュー初期表示を「選択してください」に修正。
+
+ 配布依存:
+  - ./vendor/three.module.min.js
+  - ./vendor/three.core.min.js
+  - Three.js r185 / npm 0.185.1
+  - CDN依存なし
+
+ 注意:
+  - 半径比則は硬球モデルによる幾何学的近似。
+  - 表示初期半径比は実在結晶の実測イオン半径ではなく、配位孔の幾何学的限界モデル。
+  - Phase 8で確定した科学・学習機能のロジックはPhase 9.2.2で変更していない。
 */
 const THREE_SOURCE="local-offline";
 const THREE=await import("./vendor/three.module.min.js");

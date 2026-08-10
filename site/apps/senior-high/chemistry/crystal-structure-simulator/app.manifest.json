@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "appId": "crystal-structure-simulator",
   "title": "結晶構造シミュレーター",
-  "version": "4.0.0",
+  "version": "1.0.0",
   "updatedOn": "2026-08-10",
   "status": "active",
   "level": "C",
