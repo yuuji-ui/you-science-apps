@@ -1,0 +1,131 @@
+モルマスター Ver.1.3 Phase 5.3 実操作フィードバック修正レポート
+==================================================
+
+対象ブランチ: review/mol-master-v1.3-phase5
+元ファイル: mol_master_v1_3_phase5_2.html（変更なし）
+新規ファイル: mol_master_v1_3_phase5_3.html
+
+1. 不具合の原因
+--------------------------------------------------
+全問終了後に結果画面へ進まない原因は、renderResults()が結果操作領域を
+「#results内で、初期のmargin-topインラインstyleを持つ.row」
+という一時的なDOM状態で検索していたことだった。
+
+初回結果表示時に同要素のclassNameをresult-actionsへ変更したため、次回以降の
+セッションでは検索条件に一致せずrow=nullとなり、その後のrow.classNameで
+例外停止していた。submitAnswer、resultsへのpush、advanceQuestion、最終index判定、
+finishPractice自体にoff-by-oneは確認されなかった。
+
+2. 修正内容
+--------------------------------------------------
+- 結果操作領域へ固定ID resultActionsを付与し、毎回IDで取得。
+- 計算スペースを学習サポートのdetailsから分離。
+- questionStatus / qdotのDOM生成、描画、設定、CSSを削除。
+- モード2用の自然数値正規化を追加し、浮動小数点ノイズを除去。
+- モード2のmol・粒子数と、質量・気体体積で採点ポリシーを分離。
+- 気体体積0.10 molの出題値を復帰し、2.24 Lを自然表記で扱うよう変更。
+- Phase 5.2の開始、scientific、鬼、範囲、storage、variantRetry、7章を維持。
+
+3. モード2の新しい採点仕様
+--------------------------------------------------
+物質量 mol:
+- answerPolicy=sigfig。
+- 問題ごとのsigDigitsをstrict / warn / off設定で判定。
+- 0.10を0.1と入力した場合、strictでは有効数字ミス。
+
+粒子数:
+- answerPolicy=scientific。
+- 丸め後の係数・指数を採点し、係数のsigDigitsも判定。
+- 9.0×10^23を9×10^23と入力した場合、strictでは有効数字ミス。
+
+質量 g:
+- answerPolicy=exact。
+- 有効数字・固定小数桁を要求しない。
+- Number.toPrecision(12)を利用した自然数値正規化後にString化。
+- 整数は9、55等、小数は必要な小数だけを表示し、末尾.0を要求しない。
+
+標準状態の気体体積 L / mL:
+- answerPolicy=exact。
+- モード2ではgasPolicy=fixed1を廃止。
+- 22.4との計算値を自然数値正規化してString化。
+- 2.24 / 5.6 / 11.2 / 56 / 224等をそのまま正答とする。
+
+4. 計算スペースUI変更
+--------------------------------------------------
+- 学習サポートの折りたたみは「学習サポート」のみを格納。
+- 計算スペースを独立配置。
+- 「計算スペースを表示」「計算スペースを隠す」ボタンを追加。
+- PC/Chromebook相当（600px超）は初期表示。
+- スマートフォン相当（600px以下）は初期非表示。
+- molMasterCalcSpaceOpenへユーザー選択を保存し、再読み込み後も復元。
+- textarea、計算記号、問題別メモ保持など内容の既存仕様は維持。
+
+5. 問題進捗UI変更
+--------------------------------------------------
+- questionStatus / qdot一覧を生徒画面から削除。
+- 教員設定showQuestionStatusも削除。
+- 上部のquestionCounter（現在問題 / 全問題）とtimerのみを表示。
+- 各問題のattempts、firstCorrect、completed、passed等の内部状態は維持。
+
+6. 完走テスト
+--------------------------------------------------
+表示正答を実際の入力欄と単位欄へ設定し、submitAnswer.click()から
+advanceQuestion、finishPractice、renderResults、results画面表示まで実行した。
+テスト時のみ待機時間を即時化し、正式ハンドラと正式採点器は変更せず使用した。
+
+- 初級5問、全問正解: results=5、結果画面1回、保存1件 PASS。
+- 中級10問、全問正解: results=10、結果画面1回、保存1件 PASS。
+- 上級15問、全問正解: results=15、結果画面1回、保存1件 PASS。
+- 鬼20問、全問正解: results=20、結果画面1回、保存1件 PASS。
+- 鬼20問、第7問で誤答: results=7、即終了、結果画面1回、保存1件 PASS。
+- モード1、2、3、4、総合ミックス、苦手復習を各5問完走: 全てPASS。
+- 上記11セッションを同一ページで連続実行: pageerror 0件。
+
+7. モード2採点テスト
+--------------------------------------------------
+気体体積:
+- 0.10 mol → 2.24 L: display=2.24、exact、正解 PASS。
+- 0.25 mol → 5.6 L: display=5.6、exact、正解 PASS。
+- 0.50 mol → 11.2 L: display=11.2、exact、正解 PASS。
+- 2.5 mol → 56 L: display=56、exact、正解 PASS。
+- 10 mol → 224 L: display=224、exact、正解 PASS。
+- 56.0 / 224.0の表記要求なし PASS。
+
+質量:
+- 2,000問生成中、質量問題334件を確認。
+- 自然な整数結果あり PASS。
+- 自然な小数結果あり PASS。
+- 全件answerPolicy=exact PASS。
+- displayAnswer末尾.0は0件 PASS。
+
+mol:
+- display=0.10に対して0.1を入力し、strictでkind=sig PASS。
+
+粒子数:
+- display=9.0×10^23に対して9×10^23を入力し、strictでkind=sig PASS。
+
+8. Phase 5.2からの回帰テスト
+--------------------------------------------------
+- JavaScript構文: 4 scriptブロック PASS。
+- ブラウザpageerror: 0件。
+- 6モード合計3,000問生成、scientific問題438件の表示正答採点失敗0件。
+- 全20範囲、合計4,000問で範囲外出題0件。
+- 壊れたrecords={} / questionStats=[] / enabledTypes=nullから安全復旧 PASS。
+- 入門編7章 PASS。
+- 鬼の途中誤答で多重終了なし PASS。
+- startTimer未定義参照なし PASS。
+- resultActions固定ID化後、複数セッション連続完走 PASS。
+
+9. 残っている問題
+--------------------------------------------------
+- 単一HTML内に過去フェーズ由来のrenderQuestion等のラッパーが残り、保守コストは高い。
+- localStorageのスキーマ番号はあるが、将来バージョン向けの明示的移行表は未実装。
+- 今回の範囲外であるため、問題生成・採点・DOM・保存のファイル分割は未実施。
+
+10. Phase 6判定
+--------------------------------------------------
+条件付き可。
+
+実操作で判明した結果遷移、計算スペース、進捗重複、モード2採点仕様は修正済み。
+Phase 6では末尾パッチを追加せず、学習記録改修と並行して描画・セッション終了・
+保存処理の責務分離を進めることを条件とする。

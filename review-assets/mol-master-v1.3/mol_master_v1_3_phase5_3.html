@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>モルマスター Ver.1.3 Phase 5</title>
+<title>モルマスター Ver.1.3 Phase 5.3</title>
 <style>
 :root{
   --bg:#f3f7fb;--panel:#fff;--ink:#17324d;--muted:#62778a;--line:#d7e1ea;
@@ -296,7 +296,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     <div class="grid result-kpis" id="resultKpis"></div>
     <div class="note" id="resultComment"></div>
     <h3>問題別の振り返り</h3><div id="reviewList"></div>
-    <div class="row" style="margin-top:16px"><button class="btn primary" data-go="setup">もう一度演習</button><button class="btn secondary" data-go="records">学習記録を見る</button></div>
+    <div class="row" id="resultActions" style="margin-top:16px"><button class="btn primary" data-go="setup">もう一度演習</button><button class="btn secondary" data-go="records">学習記録を見る</button></div>
   </div>
 </section>
 
@@ -317,7 +317,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     <div class="teacher-grid" style="margin-top:16px">
       <div><label for="teacherSigPolicy">有効数字の判定</label><select id="teacherSigPolicy"><option value="strict">厳密に判定する</option><option value="warn">数値・単位が合えば正解とし、注意を表示</option><option value="off">判定しない</option></select></div>
       
-      <div><label for="teacherEasyRatio">序盤の基本問題割合</label><select id="teacherEasyRatio"><option value="0.3">30%</option><option value="0.4">40%</option><option value="0.5">50%</option></select></div>
       <div><label for="teacherHint">ヒント機能</label><select id="teacherHint"><option value="on">使用する</option><option value="off">使用しない</option></select></div>
     </div>
     <h3>出題する問題形式</h3>
@@ -376,6 +375,12 @@ const UNIT_OPTIONS={
 };
 
 let state={questions:[],index:0,startTime:0,timerId:null,passes:2,hintsUsed:0,results:[],mode:"mode2",count:10,lastMaterial:null,lastType:null};
+let calcSpaceOpen=(()=>{try{const saved=localStorage.getItem('molMasterCalcSpaceOpen');if(saved!==null)return saved==='1'}catch(e){}return !window.matchMedia('(max-width: 600px)').matches})();
+function applyCalcSpaceVisibility(){
+ const calc=document.getElementById('calcSpace'),button=document.getElementById('calcSpaceToggle');if(!calc)return;
+ const available=teacherSettings?.showCalcSpace!==false;calc.style.display=available&&calcSpaceOpen?'block':'none';
+ if(button){button.style.display=available?'inline-flex':'none';button.textContent=calcSpaceOpen?'計算スペースを隠す':'計算スペースを表示';button.setAttribute('aria-expanded',String(available&&calcSpaceOpen))}
+}
 
 function showScreen(id){
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
@@ -383,7 +388,7 @@ function showScreen(id){
  window.scrollTo({top:0,behavior:"smooth"});
  if(id==="records") renderRecords(7);
 }
-document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.go)));
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)showScreen(b.dataset.go)});
 
 function formatFormula(s){
  return String(s).replace(/([A-Za-z\)])(\d+)/g,(m,a,b)=>a+"<sub>"+b+"</sub>").replace(/・(\d+)/g,"・$1");
@@ -406,9 +411,7 @@ function sigDigitsInput(text){
 }
 function roundSig(value,sig){
  if(value===0)return 0;
- const p=sig-1-Math.floor(Math.log10(Math.abs(value)));
- const f=10**p;
- return Math.round(value*f)/f;
+ return Number(value.toPrecision(sig));
 }
 function displaySig(value,sig){
  if(value===0)return "0";
@@ -626,13 +629,6 @@ document.getElementById("lessonNext").onclick=()=>{if(lessonIndex===LESSONS.leng
 document.querySelectorAll(".readyCheck").forEach(c=>c.addEventListener("change",()=>{
  document.getElementById("startPractice").disabled=!Array.from(document.querySelectorAll(".readyCheck")).every(x=>x.checked);
 }));
-document.getElementById("startPractice").onclick=()=>{
- state.mode=document.getElementById("modeSelect").value;
- state.count=Number(document.getElementById("countSelect").value);
- state.questions=buildQuestions(state.mode,state.count);state.index=0;state.startTime=Date.now();state.passes=2;state.hintsUsed=0;state.results=[];
- clearInterval(state.timerId);state.timerId=setInterval(updateTimer,1000);
- showScreen("practice");renderQuestion();updateTimer();
-};
 function updateTimer(){
  const sec=Math.floor((Date.now()-state.startTime)/1000);
  document.getElementById("timer").textContent=`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
@@ -662,37 +658,25 @@ function evaluateAnswer(q){
  const unit=document.getElementById("unitSelect").value;
  if(q.scientific){
   const coeffText=document.getElementById("coefficientInput").value.trim(),expText=document.getElementById("exponentInput").value.trim();
-  const n=normalizedScientific(coeffText,expText);
-  if(!n)return {ok:false,kind:"format",message:"係数と指数を正しい形式で入力してください。",raw:`${coeffText}×10^${expText} ${unit}`};
-  const numericOk=Math.abs((n.value-q.answer)/q.answer)<1e-8;
+  const n=normalizedScientific(coeffText,expText),target=q.scientificAnswer;
+  if(!n||Math.abs(Number(coeffText))<1||Math.abs(Number(coeffText))>=10)return {ok:false,kind:"format",message:"係数は1以上10未満の科学的記数法で入力してください。",raw:`${coeffText}×10^${expText} ${unit}`};
+  if(!target)return {ok:false,kind:"format",message:"正答データを確認できません。",raw:`${coeffText}×10^${expText} ${unit}`};
+  const numericOk=n.e===target.exponent&&Math.abs(n.c-target.coefficient)<=Math.max(1e-12,Math.abs(target.coefficient)*1e-10);
   if(!numericOk)return {ok:false,kind:"number",message:"数値が違います。変換ルートと計算を確認しましょう。",raw:`${coeffText}×10^${expText} ${unit}`};
   if(unit!==q.unit)return {ok:false,kind:"unit",message:"数値は合っています。単位を確認してください。",raw:`${coeffText}×10^${expText} ${unit}`};
-  if(sigDigitsInput(coeffText)!==q.sig)return {ok:false,kind:"sig",message:`数値と単位は合っています。有効数字${q.sig}桁にそろえてください。`,raw:`${coeffText}×10^${expText} ${unit}`};
+  if(q.sigDigits&&sigDigitsInput(coeffText)!==q.sigDigits)return {ok:false,kind:"sig",message:`数値と単位は合っています。有効数字${q.sigDigits}桁にそろえてください。`,raw:`${coeffText}×10^${expText} ${unit}`};
   return {ok:true,raw:`${coeffText}×10^${expText} ${unit}`};
  }
  const text=document.getElementById("answerInput").value.trim();
  if(/[eE×*]/.test(text)||!/^[+-]?\d*\.?\d+$/.test(text))return {ok:false,kind:"format",message:"通常の小数形式で入力してください。e表記や分数は使いません。",raw:`${text} ${unit}`};
  const val=Number(text);if(!Number.isFinite(val))return {ok:false,kind:"format",message:"数値を入力してください。",raw:`${text} ${unit}`};
- const tol=Math.max(1e-9,Math.abs(q.answer)*1e-8);
- if(Math.abs(val-q.answer)>tol)return {ok:false,kind:"number",message:"数値が違います。式と計算を確認しましょう。",raw:`${text} ${unit}`};
+ const target=q.acceptedAnswer;
+ const tol=Math.max(1e-9,Math.abs(target)*1e-8);
+ if(!Number.isFinite(target)||Math.abs(val-target)>tol)return {ok:false,kind:"number",message:"数値が違います。式と計算を確認しましょう。",raw:`${text} ${unit}`};
  if(unit!==q.unit)return {ok:false,kind:"unit",message:"数値は合っています。単位を確認してください。",raw:`${text} ${unit}`};
- if(q.sig&&sigDigitsInput(text)!==q.sig)return {ok:false,kind:"sig",message:`数値と単位は合っています。有効数字${q.sig}桁にそろえてください。`,raw:`${text} ${unit}`};
+ if(q.answerPolicy==='sigfig'&&q.sigDigits&&sigDigitsInput(text)!==q.sigDigits)return {ok:false,kind:"sig",message:`数値と単位は合っています。有効数字${q.sigDigits}桁にそろえてください。`,raw:`${text} ${unit}`};
  return {ok:true,raw:`${text} ${unit}`};
 }
-document.getElementById("submitAnswer").onclick=()=>{
- const q=currentQ(),ev=evaluateAnswer(q),fb=document.getElementById("feedback");
- q.attempts++;if(q.attempts===1)q.userFirst=ev.raw;
- if(ev.ok){
-  q.firstCorrect=q.attempts===1&&!q.passed;
-  fb.className="feedback show ok";fb.textContent="正解です。次の問題へ進みます。";
-  state.results.push({...q});
-  document.getElementById("submitAnswer").disabled=true;
-  setTimeout(()=>{document.getElementById("submitAnswer").disabled=false;advanceQuestion()},700);
- }else{
-  q["miss_"+ev.kind]=(q["miss_"+ev.kind]||0)+1;
-  fb.className="feedback show bad";fb.textContent=ev.message;
- }
-};
 document.getElementById("hintButton").onclick=()=>{
  const q=currentQ();if(q.hintsShown>=3)return;
  q.hintsShown++;state.hintsUsed++;document.getElementById("hint"+q.hintsShown).classList.add("show");
@@ -731,8 +715,10 @@ function renderResults(r,completed){
  document.getElementById("resultComment").innerHTML=`<strong>${modeLabel(r.mode)}</strong><br>${comment}`;
  document.getElementById("reviewList").innerHTML=completed.map((q,i)=>`<details class="review-item"><summary>${i+1}. ${q.firstCorrect?"初回正解":"要復習"}｜${q.question.replace(/<[^>]+>/g,"")}</summary><div class="review-body"><p><strong>最初の回答：</strong>${q.userFirst||"未入力"}</p><p><strong>正答：</strong>${q.answerText} ${q.unit}</p><p><strong>解説：</strong>${q.explanation}</p><p><strong>有効数字：</strong>${q.sig?`${q.sig}桁`:"指定なし"}</p></div></details>`).join("");
 }
-function getRecords(){try{return JSON.parse(localStorage.getItem("molMasterRecords")||"[]")}catch{return []}}
-function saveRecord(r){const a=getRecords();a.push(r);localStorage.setItem("molMasterRecords",JSON.stringify(a.slice(-200)))}
+const STORAGE_SCHEMA_VERSION=2;
+function isPlainObject(v){return !!v&&typeof v==='object'&&!Array.isArray(v)}
+function getRecords(){try{const v=JSON.parse(localStorage.getItem("molMasterRecords")||"[]");if(!Array.isArray(v))return [];return v.filter(isPlainObject).map(r=>({...r,date:typeof r.date==='string'?r.date:new Date(0).toISOString(),rate:Number(r.rate)||0,avg:Number(r.avg)||0,misses:isPlainObject(r.misses)?r.misses:{number:0,unit:0,sig:0,fixed:0,format:0}}))}catch{return []}}
+function saveRecord(r){const a=getRecords();a.push(r);localStorage.setItem("molMasterRecords",JSON.stringify(a.slice(-200)));localStorage.setItem('molMasterStorageSchemaVersion',String(STORAGE_SCHEMA_VERSION))}
 function renderRecords(days){
  document.querySelectorAll("[data-days]").forEach(b=>b.classList.toggle("active",Number(b.dataset.days)===days));
  const cutoff=Date.now()-days*86400000,records=getRecords().filter(r=>new Date(r.date).getTime()>=cutoff);
@@ -756,17 +742,13 @@ function drawChart(records){
  ctx.fillStyle="#176b87";pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fill()});
  ctx.fillStyle="#62778a";ctx.fillText("実施順",w/2-20,h-12);
 }
-document.getElementById("clearRecords").onclick=()=>{
- if(confirm("この端末に保存されたモルマスターの学習記録を削除しますか？")){localStorage.removeItem("molMasterRecords");renderRecords(7)}
-};
 ["answerInput","coefficientInput","exponentInput"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("submitAnswer").click()}));
 
 
 /* ===== Ver.1.1 追加機能 ===== */
-const DEFAULT_TEACHER_SETTINGS={sigPolicy:"strict",passes:2,easyRatio:0.4,hints:true,enabledTypes:[]};
+const DEFAULT_TEACHER_SETTINGS={sigPolicy:"strict",hints:true,enabledTypes:[]};
 let teacherSettings=loadTeacherSettings();
 let generationDifficulty=1;
-let selectedIntroAnswer=null;
 const TYPE_INFO={
  molarMass:["分子量・式量",1],isotope:["同位体・原子量",2],massToMol:["質量→物質量",1],molToMass:["物質量→質量",1],
  molToParticles:["物質量→粒子数",1],particlesToMol:["粒子数→物質量",1],molToGas:["物質量→気体体積",1],gasToMol:["気体体積→物質量",1],
@@ -774,8 +756,8 @@ const TYPE_INFO={
  molarConcentration:["モル濃度",1],massPercent:["質量％濃度",1],percentToMolar:["質量％→モル濃度",3],
  molarToPercent:["モル濃度→質量％",3],soluteMassMolar:["モル濃度→溶質質量",2],solutionVolumeMolar:["モル濃度→溶液体積",2],soluteMassPercent:["質量％→溶質質量",1]
 };
-function loadTeacherSettings(){try{return {...DEFAULT_TEACHER_SETTINGS,...JSON.parse(localStorage.getItem("molMasterTeacherSettings")||"{}")}}catch{return {...DEFAULT_TEACHER_SETTINGS}}}
-function saveTeacherSettings(){localStorage.setItem("molMasterTeacherSettings",JSON.stringify(teacherSettings))}
+function loadTeacherSettings(){try{const v=JSON.parse(localStorage.getItem("molMasterTeacherSettings")||"{}");if(!isPlainObject(v))return {...DEFAULT_TEACHER_SETTINGS};const out={...DEFAULT_TEACHER_SETTINGS,...v};if(!Array.isArray(out.enabledTypes))out.enabledTypes=[];if(!['strict','warn','off'].includes(out.sigPolicy))out.sigPolicy='strict';return out}catch{return {...DEFAULT_TEACHER_SETTINGS}}}
+function saveTeacherSettings(){localStorage.setItem("molMasterTeacherSettings",JSON.stringify(teacherSettings));localStorage.setItem('molMasterStorageSchemaVersion',String(STORAGE_SCHEMA_VERSION))}
 function typeEnabled(type){return !teacherSettings.enabledTypes.length||teacherSettings.enabledTypes.includes(type)}
 
 // 難易度に応じて数値と物質を制御する
@@ -832,7 +814,7 @@ function updateRangeOptions(){
  document.getElementById('rangeHelp').textContent=mode==='weak'?'誤答率の高い問題形式を優先して出題します。':'「すべて」では、序盤は基本問題、後半は応用問題へ進みます。';
  document.getElementById('practiceStyle').value=mode==='weak'?'standard':document.getElementById('practiceStyle').value;
 }
-document.getElementById('modeSelect').addEventListener('change',updateRangeOptions);updateRangeOptions();
+updateRangeOptions();
 
 function getWeakTypes(){
  const stats=getQuestionStats();
@@ -844,7 +826,7 @@ function availableBuilders(mode,range){
  if(range&&range!=='all'&&RANGE_TYPES[range]) builders=RANGE_TYPES[range].map(t=>BUILDER_BY_TYPE[t]).filter(Boolean).filter(b=>{try{return typeEnabled(b().type)}catch{return false}});
  return builders.length?builders:QUESTION_BUILDERS[mode]||QUESTION_BUILDERS.mode2;
 }
-function phaseDifficulty(i,count){const easyEnd=Math.ceil(count*teacherSettings.easyRatio),middleEnd=Math.ceil(count*0.8);return i<easyEnd?1:i<middleEnd?2:3}
+function phaseDifficulty(i,count){const easyEnd=Math.ceil(count*.4),middleEnd=Math.ceil(count*.8);return i<easyEnd?1:i<middleEnd?2:3}
 buildQuestions=function(mode,count){
  const range=document.getElementById('rangeSelect').value,builders=availableBuilders(mode,range),qs=[];
  state.lastMaterial=null;state.lastType=null;
@@ -857,23 +839,6 @@ buildQuestions=function(mode,count){
  }
  generationDifficulty=1;return qs;
 };
-
-// 入門編の操作問題
-const LESSON_CHECKS=[
- {q:'「3.0」の有効数字は何桁ですか。',opts:['1桁','2桁','3桁'],ans:1,ex:'末尾の0も測定の精度を表すため、2桁です。'},
- {q:'「0.00450」の有効数字は何桁ですか。',opts:['2桁','3桁','5桁'],ans:1,ex:'先頭の0は数えず、4・5・末尾の0を数えます。'},
- {q:'2.0×3.14 の答えを有効数字に合わせると？',opts:['6.28','6.3','6'],ans:1,ex:'最少の2桁に合わせて6.3です。'},
- {q:'12.3+0.45 の適切な答えは？',opts:['12.75','12.8','13'],ans:1,ex:'小数第1位までの12.3に合わせます。'},
- {q:'計算途中の値はどう扱うのがよいですか。',opts:['毎回丸める','最後まで保持して最後に丸める','整数にする'],ans:1,ex:'途中では丸めず、最後に有効数字をそろえます。'},
- {q:'6.0×10^23 個の入力方法として正しいものは？',opts:['係数6.0・指数23・単位 個','係数60・指数23・単位 mol','通常欄に6.0e23'],ans:0,ex:'係数・指数・単位を分けて入力します。'}
-];
-const oldRenderLesson=renderLesson;
-renderLesson=function(){
- oldRenderLesson();selectedIntroAnswer=null;const c=LESSON_CHECKS[lessonIndex];
- document.getElementById('lessonBody').insertAdjacentHTML('beforeend',`<div class="intro-check"><strong>確認問題</strong><p>${c.q}</p><div class="intro-options">${c.opts.map((o,i)=>`<button class="intro-option" data-intro-answer="${i}">${o}</button>`).join('')}</div><button class="btn secondary" id="checkIntro">答え合わせ</button><div class="mini-feedback" id="introFeedback"></div></div>`);
- document.querySelectorAll('[data-intro-answer]').forEach(b=>b.onclick=()=>{selectedIntroAnswer=Number(b.dataset.introAnswer);document.querySelectorAll('[data-intro-answer]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected')});
- document.getElementById('checkIntro').onclick=()=>{const f=document.getElementById('introFeedback');if(selectedIntroAnswer===null){f.textContent='選択肢を選んでください。';return}f.textContent=(selectedIntroAnswer===c.ans?'正解です。':'もう一度確認しましょう。')+' '+c.ex;f.style.color=selectedIntroAnswer===c.ans?'var(--ok)':'var(--bad)'};
-};renderLesson();
 
 // じっくり練習：多段階問題では途中の物質量等を確認
 function guidedStep(q){
@@ -910,54 +875,40 @@ evaluateAnswer=function(q){
  return ev;
 };
 
-// 開始処理を拡張
-const oldStart=document.getElementById('startPractice').onclick;
-document.getElementById('startPractice').onclick=()=>{
- state.mode=document.getElementById('modeSelect').value;state.range=document.getElementById('rangeSelect').value;state.practiceStyle=document.getElementById('practiceStyle').value;
- state.count=Number(document.getElementById('countSelect').value);state.questions=buildQuestions(state.mode,state.count);state.index=0;state.startTime=Date.now();state.passes=teacherSettings.passes;state.initialPasses=teacherSettings.passes;state.hintsUsed=0;state.results=[];
- clearInterval(state.timerId);state.timerId=setInterval(updateTimer,1000);showScreen('practice');renderQuestion();updateTimer();
-};
-
 // 途中終了
 function quitToHome(){
  if(!confirm('演習を途中で終了して最初の画面に戻りますか？\n途中の記録は保存されません。'))return;
- clearInterval(state.timerId);state.questions=[];state.results=[];state.index=0;showScreen('home');
+ clearInterval(state.timerId);state.timerId=null;state.questions=[];state.results=[];state.index=0;state.sessionEnding=false;state.sessionEnded=false;showScreen('home');
 }
 document.getElementById('quitPractice').onclick=quitToHome;
 
 // パス表示を設定値対応
-const oldAdvance=advanceQuestion;
-const oldFinish=finishPractice;
 finishPractice=function(){
- clearInterval(state.timerId);const elapsed=Math.floor((Date.now()-state.startTime)/1000),completed=state.results.slice(-state.count),firstCorrect=completed.filter(q=>q.firstCorrect).length,misses={number:0,unit:0,sig:0,format:0};
+ clearInterval(state.timerId);state.timerId=null;const elapsed=Math.floor((Date.now()-state.startTime)/1000),completed=state.results.slice(-state.count),firstCorrect=completed.filter(q=>q.firstCorrect).length,misses={number:0,unit:0,sig:0,fixed:0,format:0};
  completed.forEach(q=>Object.keys(misses).forEach(k=>misses[k]+=q['miss_'+k]||0));
  updateQuestionStats(completed);
- const record={date:new Date().toISOString(),mode:state.mode,range:state.range,style:state.practiceStyle,count:state.count,elapsed,avg:elapsed/state.count,firstCorrect,rate:firstCorrect/state.count*100,misses,hints:state.hintsUsed,passes:(state.initialPasses??teacherSettings.passes)-state.passes};saveRecord(record);renderResults(record,completed);showScreen('results');
+ const record={date:new Date().toISOString(),mode:state.mode,range:state.range,style:state.practiceStyle,count:state.count,elapsed,avg:elapsed/state.count,firstCorrect,rate:firstCorrect/state.count*100,misses,hints:state.hintsUsed,passes:state.initialPasses-state.passes};saveRecord(record);renderResults(record,completed);showScreen('results');
 };
 const oldRenderQuestion2=renderQuestion;
 renderQuestion=function(){oldRenderQuestion2();document.getElementById('passButton').textContent=`パス（残り${state.passes}回）`;document.getElementById('passButton').disabled=state.passes<=0};
 
 // 苦手統計
-function getQuestionStats(){try{return JSON.parse(localStorage.getItem('molMasterQuestionStats')||'{}')}catch{return {}}}
-function updateQuestionStats(completed){const s=getQuestionStats();completed.forEach(q=>{const x=s[q.type]||{seen:0,wrong:0,hints:0};x.seen++;if(!q.firstCorrect)x.wrong++;x.hints+=q.hintsShown||0;s[q.type]=x});localStorage.setItem('molMasterQuestionStats',JSON.stringify(s))}
+function getQuestionStats(){try{const v=JSON.parse(localStorage.getItem('molMasterQuestionStats')||'{}');return isPlainObject(v)?v:{}}catch{return {}}}
+function updateQuestionStats(completed){const s=getQuestionStats();completed.forEach(q=>{const old=isPlainObject(s[q.type])?s[q.type]:{},x={seen:Number(old.seen)||0,wrong:Number(old.wrong)||0,hints:Number(old.hints)||0};x.seen++;if(!q.firstCorrect)x.wrong++;x.hints+=q.hintsShown||0;s[q.type]=x});localStorage.setItem('molMasterQuestionStats',JSON.stringify(s));localStorage.setItem('molMasterStorageSchemaVersion',String(STORAGE_SCHEMA_VERSION))}
 function renderWeakSummary(){const el=document.getElementById('weakSummary'),stats=getQuestionStats(),types=getWeakTypes();if(!Object.keys(stats).length){el.innerHTML='<strong>苦手分析</strong><br>演習を完了すると、ここに苦手な問題形式が表示されます。';return}el.innerHTML='<strong>現在の復習候補</strong><br>'+types.map(t=>`${TYPE_INFO[t]?.[0]||t}（誤答 ${stats[t].wrong}/${stats[t].seen}回）`).join('、')}
 const oldRenderRecords=renderRecords;renderRecords=function(days){oldRenderRecords(days);renderWeakSummary()};
 document.getElementById('startWeakReview').onclick=()=>{showScreen('setup');document.getElementById('modeSelect').value='weak';updateRangeOptions()};
 
 // 教員設定画面
 function renderTeacherSettings(){
- document.getElementById('teacherSigPolicy').value=teacherSettings.sigPolicy;document.getElementById('teacherEasyRatio').value=String(teacherSettings.easyRatio);document.getElementById('teacherHint').value=teacherSettings.hints?'on':'off';
+ document.getElementById('teacherSigPolicy').value=teacherSettings.sigPolicy;document.getElementById('teacherHint').value=teacherSettings.hints?'on':'off';
  document.getElementById('teacherTypeChecks').innerHTML=Object.entries(TYPE_INFO).map(([t,v])=>`<label><input type="checkbox" data-teacher-type="${t}" ${typeEnabled(t)?'checked':''}> ${v[0]}</label>`).join('');
 }
 const oldShowScreen=showScreen;showScreen=function(id){oldShowScreen(id);if(id==='teacher')renderTeacherSettings()};
-document.getElementById('saveTeacherSettings').onclick=()=>{teacherSettings.sigPolicy=document.getElementById('teacherSigPolicy').value;teacherSettings.easyRatio=Number(document.getElementById('teacherEasyRatio').value);teacherSettings.hints=document.getElementById('teacherHint').value==='on';teacherSettings.enabledTypes=Array.from(document.querySelectorAll('[data-teacher-type]:checked')).map(x=>x.dataset.teacherType);saveTeacherSettings();alert('教員用設定を保存しました。')};
 document.getElementById('resetTeacherSettings').onclick=()=>{teacherSettings={...DEFAULT_TEACHER_SETTINGS};saveTeacherSettings();renderTeacherSettings()};
 
-// data-go は旧showScreenを参照しているため、教員画面だけ再設定
-Array.from(document.querySelectorAll('[data-go="teacher"]')).forEach(b=>b.onclick=()=>showScreen('teacher'));
-
 // 記録削除時に苦手統計も選択可能
-const oldClear=document.getElementById('clearRecords').onclick;document.getElementById('clearRecords').onclick=()=>{if(confirm('学習記録と苦手分析データを削除しますか？')){localStorage.removeItem('molMasterRecords');localStorage.removeItem('molMasterQuestionStats');renderRecords(7)}};
+document.getElementById('clearRecords').onclick=()=>{if(confirm('学習記録と苦手分析データを削除しますか？')){localStorage.removeItem('molMasterRecords');localStorage.removeItem('molMasterQuestionStats');renderRecords(7)}};
 
 
 
@@ -967,7 +918,6 @@ const oldClear=document.getElementById('clearRecords').onclick;document.getEleme
 <style>
 /* ===== Ver.1.2 追加スタイル ===== */
 .stage-message{margin:8px 0 12px;padding:10px 12px;border-left:5px solid var(--brand);background:#f2f8fb;border-radius:10px;font-weight:800}
-.question-status{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}.qdot{min-width:34px;height:34px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-weight:900;background:#fff}.qdot.current{outline:3px solid rgba(23,107,135,.18);border-color:var(--brand)}.qdot.first{background:#e8f6f1}.qdot.retry{background:#fff4db}.qdot.review{background:#ffe8e6;color:#9b1c13;border-color:#e58d86}.qdot.pass{background:#f3eafe;color:#5c2b87}
 .calc-space{margin:0 0 16px;background:#fbfcfd;border:1px solid var(--line);border-radius:14px;padding:12px}.calc-space textarea{min-height:96px;resize:vertical;line-height:1.55}.calc-tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.calc-tools button{padding:.45rem .68rem;min-width:42px}
 .support-links{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 14px}.support-panel{display:none;background:#fffbea;border:1px solid #ead58a;border-radius:12px;padding:12px;margin-bottom:12px}.support-panel.open{display:block}
 .review-label{display:inline-flex;align-items:center;gap:5px;padding:.25rem .55rem;border-radius:999px;font-weight:900}.review-label.ok{background:#e8f6f1;color:#0d644b}.review-label.retry{background:#fff2cb;color:#6d4700}.review-label.bad{background:#d83228;color:#fff;box-shadow:0 0 0 3px rgba(216,50,40,.12)}
@@ -977,7 +927,7 @@ const oldClear=document.getElementById('clearRecords').onclick;document.getEleme
 .atomic-grid{grid-template-columns:repeat(3,1fr)}.atomic-item{display:grid;grid-template-columns:28px 1fr auto;gap:5px;align-items:center}.atomic-item small{color:var(--muted)}
 .mobile-bottom-actions{display:none}
 @media(max-width:900px){.practice-layout{grid-template-columns:1fr}.side-card{display:none}.mobile-constants{display:block}.toggle-grid{grid-template-columns:1fr}.intro-roadmap{grid-template-columns:repeat(2,1fr)}.calc-space textarea{min-height:88px}}
-@media(max-width:600px){body{font-size:16px}.app{padding:10px}.header{align-items:flex-start}.brand h1{font-size:1.45rem}.card{padding:15px}.question{font-size:1.18rem}.answer-box input,.answer-box select,.calc-space textarea{font-size:16px}.row.mobile-stack{gap:8px}.row.mobile-stack .btn{width:100%;min-height:48px}.scientific{grid-template-columns:minmax(0,1fr) auto 76px}.intro-roadmap{grid-template-columns:1fr}.question-status{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.qdot{flex:0 0 34px}.support-links .btn{flex:1 1 45%}.result-actions .btn{width:100%}.atomic-grid{grid-template-columns:repeat(2,1fr)}.teacher-grid{grid-template-columns:1fr}.formula-map{grid-template-columns:1fr}.formula-map .arrow{transform:rotate(90deg)}}
+@media(max-width:600px){body{font-size:16px}.app{padding:10px}.header{align-items:flex-start}.brand h1{font-size:1.45rem}.card{padding:15px}.question{font-size:1.18rem}.answer-box input,.answer-box select,.calc-space textarea{font-size:16px}.row.mobile-stack{gap:8px}.row.mobile-stack .btn{width:100%;min-height:48px}.scientific{grid-template-columns:minmax(0,1fr) auto 76px}.intro-roadmap{grid-template-columns:1fr}.support-links .btn{flex:1 1 45%}.result-actions .btn{width:100%}.atomic-grid{grid-template-columns:repeat(2,1fr)}.teacher-grid{grid-template-columns:1fr}.formula-map{grid-template-columns:1fr}.formula-map .arrow{transform:rotate(90deg)}}
 </style>
 <script>
 
@@ -987,9 +937,9 @@ const oldClear=document.getElementById('clearRecords').onclick;document.getEleme
 (function(){
 const V12_DEFAULTS={
  showStage:true,showSuccessNote:true,showTodayGain:true,showNextRecommendation:true,
- showQuestionStatus:true,showFormulaBreakdown:true,showCalcSpace:true,showCalcTools:true,keepCalcNotes:true,
+ showFormulaBreakdown:true,showCalcSpace:true,showCalcTools:true,keepCalcNotes:true,
  showUnitSupport:true,showRelationMap:true,showUsedAtomicMasses:false,
- confidenceInput:false,variantRetry:true,numberPolicy:'balanced',roundingPolicy:'advanced'
+ confidenceInput:false,variantRetry:true
 };
 Object.keys(V12_DEFAULTS).forEach(k=>{if(teacherSettings[k]===undefined)teacherSettings[k]=V12_DEFAULTS[k]});
 saveTeacherSettings();
@@ -1090,10 +1040,6 @@ renderLesson();
 // 教員設定UI
 const teacherCard=document.querySelector('#teacher .card');
 teacherCard.querySelector('.teacher-grid').insertAdjacentHTML('afterend',`
-<details class="teacher-group" open><summary>数値・採点設定</summary><div class="teacher-group-body teacher-grid">
-<div><label>計算数値の難易度</label><select id="teacherNumberPolicy"><option value="friendly">計算しやすい数値のみ</option><option value="balanced">基本は割り切れる・後半のみ丸めあり</option><option value="practical">有効数字を含む実戦設定</option></select></div>
-<div><label>割り切れない問題</label><select id="teacherRoundingPolicy"><option value="none">使用しない</option><option value="advanced">応用問題だけ使用</option><option value="all">全段階で使用可能</option></select></div>
-</div></details>
 <details class="teacher-group"><summary>学習支援</summary><div class="teacher-group-body toggle-grid" id="supportToggles"></div></details>
 <details class="teacher-group"><summary>振り返り・学習意欲</summary><div class="teacher-group-body toggle-grid" id="motivationToggles"></div></details>
 <details class="teacher-group"><summary>演習操作</summary><div class="teacher-group-body toggle-grid" id="operationToggles"></div></details>`);
@@ -1115,17 +1061,16 @@ const toggleDefs={
   ['showCalcSpace','計算スペース','画面上に途中式を残す'],
   ['showCalcTools','計算補助記号ボタン','×・÷・＝などを入力'],
   ['keepCalcNotes','問題別メモ保持','戻った問題でも復元'],
-  ['showQuestionStatus','問題状態表示','○・△・！・Pを表示'],
   ['variantRetry','別数値・別物質で再挑戦','同じ解法を別条件で確認']
  ]
 };
 function renderToggleGroup(id,defs){document.getElementById(id).innerHTML=defs.map(([k,l,d])=>`<label class="toggle-item"><input type="checkbox" data-v12-setting="${k}"><span><strong>${l}</strong><small>${d}</small></span></label>`).join('')}
 renderToggleGroup('supportToggles',toggleDefs.support);renderToggleGroup('motivationToggles',toggleDefs.motivation);renderToggleGroup('operationToggles',toggleDefs.operation);
 const renderTeacherOld=renderTeacherSettings;
-renderTeacherSettings=function(){renderTeacherOld();document.getElementById('teacherNumberPolicy').value=teacherSettings.numberPolicy;document.getElementById('teacherRoundingPolicy').value=teacherSettings.roundingPolicy;document.querySelectorAll('[data-v12-setting]').forEach(x=>x.checked=!!teacherSettings[x.dataset.v12Setting])};
+renderTeacherSettings=function(){renderTeacherOld();document.querySelectorAll('[data-v12-setting]').forEach(x=>x.checked=!!teacherSettings[x.dataset.v12Setting])};
 document.getElementById('saveTeacherSettings').onclick=()=>{
- teacherSettings.sigPolicy=document.getElementById('teacherSigPolicy').value;teacherSettings.easyRatio=Number(document.getElementById('teacherEasyRatio').value);teacherSettings.hints=document.getElementById('teacherHint').value==='on';teacherSettings.enabledTypes=Array.from(document.querySelectorAll('[data-teacher-type]:checked')).map(x=>x.dataset.teacherType);
- teacherSettings.numberPolicy=document.getElementById('teacherNumberPolicy').value;teacherSettings.roundingPolicy=document.getElementById('teacherRoundingPolicy').value;document.querySelectorAll('[data-v12-setting]').forEach(x=>teacherSettings[x.dataset.v12Setting]=x.checked);saveTeacherSettings();alert('Ver.1.3の教員用設定を保存しました。')
+ teacherSettings.sigPolicy=document.getElementById('teacherSigPolicy').value;teacherSettings.hints=document.getElementById('teacherHint').value==='on';teacherSettings.enabledTypes=Array.from(document.querySelectorAll('[data-teacher-type]:checked')).map(x=>x.dataset.teacherType);
+ document.querySelectorAll('[data-v12-setting]').forEach(x=>teacherSettings[x.dataset.v12Setting]=x.checked);saveTeacherSettings();alert('Ver.1.3 Phase 5.2の教員用設定を保存しました。')
 };
 document.getElementById('resetTeacherSettings').onclick=()=>{teacherSettings={...DEFAULT_TEACHER_SETTINGS,...V12_DEFAULTS};saveTeacherSettings();renderTeacherSettings()};
 
@@ -1144,30 +1089,19 @@ qMolarMass=function(){
  return commonQ({type:'molarMass',material:m,formulaLevel:level,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> の${m.kind==='分子'?'分子量':'式量'}を求めなさい。`,answer:m.molarMass,answerText:String(m.molarMass),sig:null,unitKey:'none',unit:'単位なし',scientific:false,hints:[`${names[level]}の問題です。化学式中の各元素の個数を確認します。`,'原子量×個数を元素ごとに求め、すべて加えます。',m.hydrate?'結晶水の分も忘れずに加えます。':'かっこの外の数字は、かっこ内全体に掛かります。'],explanation:`${formatFormula(m.formula)} を構成する原子量を合計すると ${m.molarMass} です。`})
 };
 
-// 質量→物質量：原則、答えから逆算して割り切れる問題を生成。応用時のみ意図的な丸め問題。
-qMassToMol=function(){
- const m=chooseMaterial('compound');let v=chooseValue();let challenge=false;
- if(teacherSettings.roundingPolicy==='all'||(teacherSettings.roundingPolicy==='advanced'&&(generationDifficulty||1)>=3&&Math.random()<.25))challenge=true;
- if(teacherSettings.numberPolicy==='friendly')challenge=false;
- if(!challenge){const mass=m.molarMass*v.factor;const sig=Math.max(2,sigDigitsFromText(v.molText));const massText=displaySig(mass,sig);return commonQ({type:'massToMol',material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量は何 mol か。`,answer:v.factor,answerText:v.molText,sig:sigDigitsFromText(v.molText),unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の変換です。','物質量＝質量÷モル質量',`${massText}÷${m.molarMass} を計算します。`],explanation:`n=m/M=${massText}/${m.molarMass}=${v.molText} mol`})}
- const sig=2,massRaw=m.molarMass*(pick([0.33,0.67,1.3,1.7,2.3]));const massText=displaySig(massRaw,sig);const ans=Number(massText)/m.molarMass,ansText=displaySig(ans,sig);
- return commonQ({type:'massToMol',material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量を、有効数字${sig}桁で求めなさい。`,answer:roundSig(ans,sig),answerText:ansText,sig,unitKey:'mol',unit:'mol',scientific:false,roundingChallenge:true,hints:['割り切れない場合も途中では丸めません。','物質量＝質量÷モル質量',`計算結果を最後に有効数字${sig}桁へ丸めます。`],explanation:`${massText}/${m.molarMass}=${ans.toPrecision(7)}… より、有効数字${sig}桁で ${ansText} mol`})
-};
-
 // 演習UI追加
 const answerBox=document.querySelector('#practice .answer-box');
-answerBox.insertAdjacentHTML('afterbegin',`<div id="stageMessage" class="stage-message"></div><div id="questionStatus" class="question-status"></div><div class="support-links" id="supportLinks"><button class="btn ghost" data-support="unit">単位変換</button><button class="btn ghost" data-support="relation">量の関係</button><button class="btn ghost" data-support="formula">化学式の読み方</button><button class="btn ghost" data-support="sig">有効数字</button></div><div id="supportPanel" class="support-panel"></div><div class="calc-space" id="calcSpace"><label for="calcNote">計算スペース（採点されません）</label><textarea id="calcNote" placeholder="例：63×2＝126\n126÷63＝2.0"></textarea><div class="calc-tools" id="calcTools">${['＋','－','×','÷','＝','(',')'].map(x=>`<button type="button" class="btn ghost" data-calc="${x}">${x}</button>`).join('')}<button type="button" class="btn ghost" id="clearCalc">消去</button></div></div><div id="confidenceWrap" style="display:none;margin-bottom:12px"><label for="confidenceSelect">解答前の自信度（任意）</label><select id="confidenceSelect"><option value="">選択しない</option><option>自信あり</option><option>少し不安</option><option>分からない</option></select></div>`);
+answerBox.insertAdjacentHTML('afterbegin',`<div id="stageMessage" class="stage-message"></div><div class="support-links" id="supportLinks"><button class="btn ghost" data-support="unit">単位変換</button><button class="btn ghost" data-support="relation">量の関係</button><button class="btn ghost" data-support="formula">化学式の読み方</button><button class="btn ghost" data-support="sig">有効数字</button></div><div id="supportPanel" class="support-panel"></div><button type="button" class="btn secondary" id="calcSpaceToggle" aria-controls="calcSpace">計算スペースを表示</button><div class="calc-space" id="calcSpace"><label for="calcNote">計算スペース（採点されません）</label><textarea id="calcNote" placeholder="例：63×2＝126\n126÷63＝2.0"></textarea><div class="calc-tools" id="calcTools">${['＋','－','×','÷','＝','(',')'].map(x=>`<button type="button" class="btn ghost" data-calc="${x}">${x}</button>`).join('')}<button type="button" class="btn ghost" id="clearCalc">消去</button></div></div><div id="confidenceWrap" style="display:none;margin-bottom:12px"><label for="confidenceSelect">解答前の自信度（任意）</label><select id="confidenceSelect"><option value="">選択しない</option><option>自信あり</option><option>少し不安</option><option>分からない</option></select></div>`);
 document.querySelectorAll('[data-calc]').forEach(b=>b.onclick=()=>{const t=document.getElementById('calcNote'),s=t.selectionStart,e=t.selectionEnd;t.value=t.value.slice(0,s)+b.dataset.calc+t.value.slice(e);t.focus();t.selectionStart=t.selectionEnd=s+b.dataset.calc.length;t.dispatchEvent(new Event('input'))});document.getElementById('clearCalc').onclick=()=>{document.getElementById('calcNote').value='';currentQ().calcNote=''};
 function supportHtml(kind,q){if(kind==='unit')return '<strong>単位変換</strong><br>1000 mL＝1 L、1000 mg＝1 g。モル濃度では体積をLに直します。';if(kind==='relation')return '<strong>量の関係</strong><br>質量 ÷ モル質量 ＝ 物質量<br>物質量 × 6.0×10²³ ＝ 粒子数<br>標準状態：物質量 × 22.4 ＝ 気体体積(L)';if(kind==='sig')return '<strong>有効数字</strong><br>途中では丸めず、最後に問題文で最も少ない桁数へそろえます。';return `<strong>化学式の読み方</strong><br>${q.material?formatFormula(q.material.formula):'下付き数字とかっこの外の数字を確認します。'}`}
 document.querySelectorAll('[data-support]').forEach(b=>b.onclick=()=>{const p=document.getElementById('supportPanel');p.innerHTML=supportHtml(b.dataset.support,currentQ());p.classList.toggle('open')});
 
 function stageText(q,i,n){if(q.type==='molarMass'){const l=q.formulaLevel||1;return ['','原子の種類が1～2種類の式を読む','複数の元素を漏れなく数える','かっこの外の数字を全体に掛ける','総合問題・結晶水に挑戦'][l]}const d=q.difficulty||1;return d===1?'基本変換を確認中':d===2?'複数段階の計算に挑戦':'有効数字を含む総合問題に挑戦'}
-function renderStatus(){const el=document.getElementById('questionStatus');if(!teacherSettings.showQuestionStatus){el.style.display='none';return}el.style.display='flex';el.innerHTML=state.questions.slice(0,state.count).map((q,i)=>{let cls='',mark=i+1;if(i===state.index){cls='current';mark='→'}else if(q.firstCorrect){cls='first';mark='○'}else if(q.attempts>0&&q.completed){cls='retry';mark='△'}else if(q.passed){cls='pass';mark='P'}else if(i<state.index){cls='review';mark='！'}return `<span class="qdot ${cls}" title="第${i+1}問">${mark}</span>`}).join('')}
 const renderQPrev=renderQuestion;
 renderQuestion=function(){
  renderQPrev();const q=currentQ();
  document.getElementById('stageMessage').style.display=teacherSettings.showStage?'block':'none';document.getElementById('stageMessage').textContent=stageText(q,state.index,state.count);
- renderStatus();document.getElementById('calcSpace').style.display=teacherSettings.showCalcSpace?'block':'none';document.getElementById('calcTools').style.display=teacherSettings.showCalcTools?'flex':'none';document.getElementById('calcNote').value=teacherSettings.keepCalcNotes?(q.calcNote||''):'';document.getElementById('confidenceWrap').style.display=teacherSettings.confidenceInput?'block':'none';document.getElementById('confidenceSelect').value=q.confidence||'';
+ applyCalcSpaceVisibility();document.getElementById('calcTools').style.display=teacherSettings.showCalcTools?'flex':'none';document.getElementById('calcNote').value=teacherSettings.keepCalcNotes?(q.calcNote||''):'';document.getElementById('confidenceWrap').style.display=teacherSettings.confidenceInput?'block':'none';document.getElementById('confidenceSelect').value=q.confidence||'';
  document.getElementById('supportLinks').style.display=(teacherSettings.showUnitSupport||teacherSettings.showRelationMap||teacherSettings.showFormulaBreakdown)?'flex':'none';document.querySelector('[data-support="unit"]').style.display=teacherSettings.showUnitSupport?'inline-flex':'none';document.querySelector('[data-support="relation"]').style.display=teacherSettings.showRelationMap?'inline-flex':'none';document.querySelector('[data-support="formula"]').style.display=teacherSettings.showFormulaBreakdown?'inline-flex':'none';document.getElementById('supportPanel').classList.remove('open');
 };
 document.getElementById('calcNote').addEventListener('input',e=>{if(currentQ())currentQ().calcNote=e.target.value});document.getElementById('confidenceSelect').addEventListener('change',e=>{if(currentQ())currentQ().confidence=e.target.value});
@@ -1182,8 +1116,9 @@ renderResults=function(r,completed){
  const items=[['初回正解',`${r.firstCorrect}/${r.count}`],['初回正答率',`${r.rate.toFixed(0)}%`],['平均時間',`${r.avg.toFixed(1)}秒`],['ヒント',`${r.hints}回`]];document.getElementById('resultKpis').innerHTML=items.map(x=>`<div class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join('');
  const need=completed.filter(q=>!q.firstCorrect).length;document.getElementById('resultComment').innerHTML=`<strong>${modeLabel(r.mode)}</strong><br>${r.rate>=80?'基本内容は安定しています。':r.rate>=60?'定着しつつあります。要復習を解き直しましょう。':'入門編とじっくり練習を併用すると効果的です。'}${teacherSettings.showTodayGain?`<hr><strong>今日できるようになったこと</strong><br>${skillGain(completed)}`:''}${teacherSettings.showNextRecommendation?`<hr><strong>次のおすすめ</strong><br>${nextAdvice(completed)}`:''}`;
  document.getElementById('reviewList').innerHTML=`${need?`<div class="review-alert">！ 要復習：${need}問あります。赤い項目を優先して確認してください。</div>`:''}`+completed.map((q,i)=>{const status=q.firstCorrect?'<span class="review-label ok">○ 初回正解</span>':q.attempts>1?'<span class="review-label retry">△ 修正して正解</span>':'<span class="review-label bad">！ 要復習</span>';return `<details class="review-item ${q.firstCorrect?'':'needs-review'}"><summary>${status}　第${i+1}問｜${q.question.replace(/<[^>]+>/g,'')}</summary><div class="review-body"><p><strong>最初の回答：</strong>${q.userFirst||'未入力'}</p><p><strong>正答：</strong>${q.answerText} ${q.unit}</p>${q.calcNote?`<p><strong>自分の計算メモ：</strong><br>${q.calcNote.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>`:''}<p><strong>解説：</strong>${q.explanation}</p><p><strong>有効数字：</strong>${q.sig?`${q.sig}桁`:'指定なし'}</p></div></details>`}).join('');
- const row=document.querySelector('#results .row[style*="margin-top:16px"]');row.className='result-actions';row.innerHTML='<button class="btn primary" id="retrySame">同じ範囲でもう一度</button><button class="btn secondary" id="retryWeak">間違えた形式を復習</button><button class="btn secondary" data-go="records">学習記録を見る</button><button class="btn ghost" data-go="home">トップへ</button>';
- row.querySelector('#retrySame').onclick=()=>{showScreen('setup')};row.querySelector('#retryWeak').onclick=()=>{showScreen('setup');document.getElementById('modeSelect').value='weak';updateRangeOptions()};row.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showScreen(b.dataset.go));
+ const row=document.getElementById('resultActions');row.className='result-actions';row.innerHTML='<button class="btn primary" id="retrySame">同じ範囲でもう一度</button><button class="btn secondary" id="retryWeak">間違えた形式を復習</button><button class="btn secondary" data-go="records">学習記録を見る</button><button class="btn ghost" data-go="home">トップへ</button>';
+ row.querySelector('#retrySame').onclick=()=>{showScreen('setup')};
+ const retryWeak=row.querySelector('#retryWeak');retryWeak.style.display=teacherSettings.variantRetry?'inline-flex':'none';retryWeak.onclick=()=>{state.variantSource=completed;showScreen('setup');const mode=document.getElementById('modeSelect');mode.value='weak';updateRangeOptions();mode.dispatchEvent(new Event('change'))};
 };
 
 // 完了状態を記録
@@ -1191,7 +1126,6 @@ const advanceOld=advanceQuestion;advanceQuestion=function(passed){const q=curren
 
 // 画面表示時に教員設定反映
 const showOld=showScreen;showScreen=function(id){showOld(id);if(id==='teacher')renderTeacherSettings();if(id==='intro')renderLesson()};
-Array.from(document.querySelectorAll('[data-go]')).forEach(b=>b.onclick=()=>showScreen(b.dataset.go));
 
 // ===== Phase 5：演習UI・スマホUI最終整理 =====
 (function(){
@@ -1221,7 +1155,7 @@ Array.from(document.querySelectorAll('[data-go]')).forEach(b=>b.onclick=()=>show
     });
   }
 
-  // 学習支援と計算スペースをスマホでは1つの折りたたみにまとめる
+  // 学習サポートのみを折りたたみ、計算スペースは独立操作にする
   const support=document.getElementById('supportLinks');
   const supportPanel=document.getElementById('supportPanel');
   const calc=document.getElementById('calcSpace');
@@ -1229,12 +1163,11 @@ Array.from(document.querySelectorAll('[data-go]')).forEach(b=>b.onclick=()=>show
     const details=document.createElement('details');
     details.id='studyToolsDetails';
     details.className='study-tools';
-    details.innerHTML='<summary>学習サポート・計算スペース</summary><div class="study-tools-content"></div>';
+    details.innerHTML='<summary>学習サポート</summary><div class="study-tools-content"></div>';
     support.parentNode.insertBefore(details,support);
     const content=details.querySelector('.study-tools-content');
     content.appendChild(support);
     content.appendChild(supportPanel);
-    content.appendChild(calc);
     details.open=!isNarrow();
     details.addEventListener('toggle',()=>{
       try{localStorage.setItem('molMasterStudyToolsOpen',details.open?'1':'0')}catch(e){}
@@ -1245,6 +1178,15 @@ Array.from(document.querySelectorAll('[data-go]')).forEach(b=>b.onclick=()=>show
         if(saved!==null)details.open=saved==='1';
       }catch(e){}
     }
+  }
+  const calcToggle=document.getElementById('calcSpaceToggle');
+  if(calcToggle){
+    calcToggle.addEventListener('click',()=>{
+      calcSpaceOpen=!calcSpaceOpen;
+      try{localStorage.setItem('molMasterCalcSpaceOpen',calcSpaceOpen?'1':'0')}catch(e){}
+      applyCalcSpaceVisibility();
+    });
+    applyCalcSpaceVisibility();
   }
 
   // 回答後のフィードバックを確実に視認
@@ -1266,17 +1208,6 @@ Array.from(document.querySelectorAll('[data-go]')).forEach(b=>b.onclick=()=>show
       if(isNarrow())setTimeout(()=>e.target.scrollIntoView({behavior:'smooth',block:'center'}),250);
     });
   });
-
-  // 現在問題の進捗マーカーを自動で見える位置へ
-  const phase5BaseRender=renderQuestion;
-  renderQuestion=function(){
-    phase5BaseRender();
-    setTimeout(()=>{
-      document.querySelector('#questionStatus .qdot.current')?.scrollIntoView({
-        behavior:'smooth',block:'nearest',inline:'center'
-      });
-    },0);
-  };
 
   // モード4・鬼の注意を設定画面で簡潔に表示
   const challenge=document.getElementById('challengeHelp');
@@ -1334,12 +1265,12 @@ const PH3 = {
     3:[0.025,0.04,0.05,0.1,0.125,0.25,0.5,0.6,0.75,1,1.25,1.5,2,2.5,3,4],
     4:[0.005,0.01,0.0125,0.025,0.03,0.04,0.05,0.075,0.09,0.1,0.25,0.5,0.55,0.75,0.9,1,1.5,2,2.5,3,4,5,6.5,7.5]
   },
-  // 22.4 L/mol の比例関係を見やすくするL問題。0.1倍は意図的に除外。
+  // 22.4 L/mol の自然な計算結果を扱うL問題。
   gasLFactorsByDifficulty: {
-    1:[0.25,0.5,1,1.5,2],
-    2:[0.25,0.5,0.75,1,1.5,2,2.5,3],
-    3:[0.25,0.5,0.75,1,1.5,2,2.5,3,4,5],
-    4:[0.25,0.5,0.75,1,1.5,2,2.5,3,4,5,7.5,10]
+    1:[0.1,0.25,0.5,1,1.5,2],
+    2:[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3],
+    3:[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3,4,5],
+    4:[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3,4,5,7.5,10]
   },
   // 小体積はmLにして「きれいな整数」にする。
   gasMlFactors:[0.005,0.01,0.025,0.04,0.05],
@@ -1411,13 +1342,10 @@ function ph3Sci(value){
   return {coeff,exp,text:`${coeffText}×10^${exp}`};
 }
 function ph3GasL(n){
-  const v=n*22.4;
-  // 100 L以上の整数は整数表記、それ以外は小数第1位まで。
-  if(v>=100&&Math.abs(v-Math.round(v))<1e-9)return {value:v,text:String(Math.round(v))};
-  return {value:Math.round(v*10)/10,text:(Math.round(v*10)/10).toFixed(1)};
+  const value=Number((n*22.4).toPrecision(12));return {value,text:String(value)};
 }
 function ph3GasMl(n){
-  const v=n*22400;return {value:Math.round(v),text:String(Math.round(v))};
+  const value=Number((n*22400).toPrecision(12));return {value,text:String(value)};
 }
 function ph3Pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
 function ph3DifficultySchedule(count){
@@ -1470,6 +1398,8 @@ function ph3ExactText(value,maxDecimals=3){
   }
   return null;
 }
+function ph3NaturalNumber(value){return Number(Number(value).toPrecision(12))}
+function ph3NaturalText(value){return String(ph3NaturalNumber(value))}
 function ph3FriendlyMassPair(filter,difficulty,load=1,{gasL=false}={}){
   const maxDecimals=difficulty<=1?1:difficulty===2?2:3;
   for(let tries=0;tries<80;tries++){
@@ -1485,11 +1415,11 @@ function ph3FriendlyMassPair(filter,difficulty,load=1,{gasL=false}={}){
 }
 function ph3QMassToMol(ctx){
   const {m,n,text:massText}=ph3FriendlyMassPair('compound',ctx.difficulty,1);
-  return ph3BaseQ({type:'massToMol',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量は何 mol か。`,answer:n,answerText:ph3MoleText(n),sig:null,unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の1段階です。',`物質量 = 質量 ÷ モル質量` ,`${massText} ÷ ${m.molarMass} を計算します。`],explanation:`${massText} ÷ ${m.molarMass} = ${ph3MoleText(n)} mol`});
+  const answerText=ph3MoleText(n);return ph3BaseQ({type:'massToMol',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量は何 mol か。`,answer:n,answerText,sig:sigDigitsFromText(answerText),unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の1段階です。',`物質量 = 質量 ÷ モル質量` ,`${massText} ÷ ${m.molarMass} を計算します。`],explanation:`${massText} ÷ ${m.molarMass} = ${answerText} mol`});
 }
 function ph3QMolToMass(ctx){
   const {m,n,mass,text:massText}=ph3FriendlyMassPair('compound',ctx.difficulty,1);
-  return ph3BaseQ({type:'molToMass',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の質量は何 g か。`,answer:mass,answerText:massText,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['物質量 → 質量 の1段階です。','質量 = 物質量 × モル質量',`${ph3MoleText(n)} × ${m.molarMass} を計算します。`],explanation:`${ph3MoleText(n)} × ${m.molarMass} = ${massText} g`});
+  const natural=ph3NaturalNumber(mass),text=ph3NaturalText(mass);return ph3BaseQ({type:'molToMass',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の質量は何 g か。`,answer:natural,answerText:text,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['物質量 → 質量 の1段階です。','質量 = 物質量 × モル質量',`${ph3MoleText(n)} × ${m.molarMass} を計算します。`],explanation:`${ph3MoleText(n)} × ${m.molarMass} = ${text} g`});
 }
 function ph3QMassToParticles(ctx){
   const {m,n,text:massText}=ph3FriendlyMassPair('molecule',ctx.difficulty,2),ans=ph3Sci(n*AVOGADRO);
@@ -1497,15 +1427,15 @@ function ph3QMassToParticles(ctx){
 }
 function ph3QMolToGas(ctx){
   const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasL:true}),gas=ph3GasL(n);
-  return ph3BaseQ({type:'molToGas',material:m,difficulty:ctx.difficulty,question:`標準状態で、${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の体積は何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,gasPolicy:'fixed1',hints:['物質量 → 気体体積 の1段階です。','標準状態では 1 mol = 22.4 L を使います。',`${ph3MoleText(n)} × 22.4 を計算します。`],explanation:`${ph3MoleText(n)} mol × 22.4 L/mol = ${gas.text} L`});
+  return ph3BaseQ({type:'molToGas',material:m,difficulty:ctx.difficulty,question:`標準状態で、${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の体積は何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,hints:['物質量 → 気体体積 の1段階です。','標準状態では 1 mol = 22.4 L を使います。',`${ph3MoleText(n)} × 22.4 を計算します。`],explanation:`${ph3MoleText(n)} mol × 22.4 L/mol = ${gas.text} L`});
 }
 function ph3QGasToMol(ctx){
   const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasL:true}),gas=ph3GasL(n);
-  return ph3BaseQ({type:'gasToMol',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,answer:n,answerText:ph3MoleText(n),sig:null,unitKey:'mol',unit:'mol',scientific:false,gasPolicy:'fixed1',hints:['気体体積 → 物質量 の1段階です。','物質量 = 気体体積 ÷ 22.4',`${gas.text} ÷ 22.4 を計算します。`],explanation:`${gas.text} L ÷ 22.4 L/mol = ${ph3MoleText(n)} mol`});
+  const answerText=ph3MoleText(n);return ph3BaseQ({type:'gasToMol',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,answer:n,answerText,sig:sigDigitsFromText(answerText),unitKey:'mol',unit:'mol',scientific:false,hints:['気体体積 → 物質量 の1段階です。','物質量 = 気体体積 ÷ 22.4',`${gas.text} ÷ 22.4 を計算します。`],explanation:`${gas.text} L ÷ 22.4 L/mol = ${answerText} mol`});
 }
 function ph3QGasToMass(ctx){
   const {m,n,mass,text:massText}=ph3FriendlyMassPair('gas',ctx.difficulty,2,{gasL:true}),gas=ph3GasL(n);
-  return ph3BaseQ({type:'gasToMass',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> の質量は何 g か。`,answer:mass,answerText:massText,sig:null,unitKey:'g',unit:'g',scientific:false,gasPolicy:'fixed1',hints:['気体体積 → 物質量 → 質量 の2段階です。',`まず ${gas.text} ÷ 22.4 で物質量を求めます。`,`物質量にモル質量 ${m.molarMass} g/mol を掛けます。`],explanation:`${gas.text} L = ${ph3MoleText(n)} mol、質量は ${massText} g です。`});
+  const natural=ph3NaturalNumber(mass),text=ph3NaturalText(mass);return ph3BaseQ({type:'gasToMass',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> の質量は何 g か。`,answer:natural,answerText:text,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['気体体積 → 物質量 → 質量 の2段階です。',`まず ${gas.text} ÷ 22.4 で物質量を求めます。`,`物質量にモル質量 ${m.molarMass} g/mol を掛けます。`],explanation:`${gas.text} L = ${ph3MoleText(n)} mol、質量は ${text} g です。`});
 }
 function ph3QAtomCount(ctx){
   let arr=eligibleMaterials('compound').filter(m=>Object.keys(ph3Atoms(m)).length>=2&&ph3FormulaLevel(m)<=Math.max(1,ctx.difficulty));
@@ -1520,16 +1450,16 @@ function ph3QIonCount(ctx){
 }
 
 function ph3QParticlesToMass(ctx){
-  const m=ph3Material('compound',ctx.difficulty,2),n=ph3Factor(ctx.difficulty),src=ph3Sci(n*AVOGADRO),mass=m.molarMass*n,massText=ph3MassText(mass,ctx.difficulty);
+  const m=ph3Material('compound',ctx.difficulty,2),n=ph3Factor(ctx.difficulty),src=ph3Sci(n*AVOGADRO),mass=ph3NaturalNumber(m.molarMass*n),massText=ph3NaturalText(mass);
   return ph3BaseQ({type:'particlesToMass',material:m,difficulty:ctx.difficulty,question:`${src.text} 個の${ph3ParticleName(m)}の質量は何 g か。`,answer:mass,answerText:massText,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['粒子数 → 物質量 → 質量 の2段階です。',`まず粒子数を 6.0×10^23 で割って物質量を求めます。`,`物質量にモル質量 ${m.molarMass} g/mol を掛けます。`],explanation:`${src.text} 個 = ${ph3MoleText(n)} mol、したがって質量は ${massText} g です。`});
 }
 function ph3QMassToGas(ctx){
   const {m,n,text:massText}=ph3FriendlyMassPair('gas',ctx.difficulty,2,{gasL:true}),gas=ph3GasL(n);
-  return ph3BaseQ({type:'massToGas',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の体積は、標準状態で何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,gasPolicy:'fixed1',hints:['質量 → 物質量 → 気体体積 の2段階です。',`まず ${massText} ÷ ${m.molarMass} で物質量を求めます。`,'標準状態では 1 mol = 22.4 L を使います。'],explanation:`${massText} g = ${ph3MoleText(n)} mol、標準状態の体積は ${gas.text} L です。`});
+  return ph3BaseQ({type:'massToGas',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の体積は、標準状態で何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,hints:['質量 → 物質量 → 気体体積 の2段階です。',`まず ${massText} ÷ ${m.molarMass} で物質量を求めます。`,'標準状態では 1 mol = 22.4 L を使います。'],explanation:`${massText} g = ${ph3MoleText(n)} mol、標準状態の体積は ${gas.text} L です。`});
 }
 function ph3QParticlesToGas(ctx){
   const m=ph3Material('gas',ctx.difficulty,2),n=ph3Factor(ctx.difficulty,{gasL:true}),src=ph3Sci(n*AVOGADRO),gas=ph3GasL(n);
-  return ph3BaseQ({type:'particlesToGas',material:m,difficulty:ctx.difficulty,question:`${src.text} 個の${m.name}分子の体積は、標準状態で何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,gasPolicy:'fixed1',hints:['粒子数 → 物質量 → 気体体積 の2段階です。','粒子数を 6.0×10^23 で割ります。','求めた物質量に 22.4 L/mol を掛けます。'],explanation:`${src.text} 個 = ${ph3MoleText(n)} mol、体積は ${gas.text} L です。`});
+  return ph3BaseQ({type:'particlesToGas',material:m,difficulty:ctx.difficulty,question:`${src.text} 個の${m.name}分子の体積は、標準状態で何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,hints:['粒子数 → 物質量 → 気体体積 の2段階です。','粒子数を 6.0×10^23 で割ります。','求めた物質量に 22.4 L/mol を掛けます。'],explanation:`${src.text} 個 = ${ph3MoleText(n)} mol、体積は ${gas.text} L です。`});
 }
 function ph3QGasToParticles(ctx){
   const m=ph3Material('gas',ctx.difficulty,2),n=ph3Factor(ctx.difficulty,{gasL:true}),gas=ph3GasL(n),ans=ph3Sci(n*AVOGADRO);
@@ -1541,7 +1471,7 @@ function ph3QMolToGasMl(ctx){
 }
 function ph3QGasMlToMol(ctx){
   const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasMl:true}),gas=ph3GasMl(n);
-  return ph3BaseQ({type:'gasMlToMol',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} mL の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,answer:n,answerText:ph3MoleText(n),sig:null,unitKey:'mol',unit:'mol',scientific:false,hints:['mLをLに直してから考えます。',`${gas.text} mL = ${(gas.value/1000).toString()} L`,'気体体積(L) ÷ 22.4 で物質量を求めます。'],explanation:`${gas.text} mL = ${gas.value/1000} L より、物質量は ${ph3MoleText(n)} mol です。`});
+  const answerText=ph3MoleText(n);return ph3BaseQ({type:'gasMlToMol',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} mL の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,answer:n,answerText,sig:sigDigitsFromText(answerText),unitKey:'mol',unit:'mol',scientific:false,hints:['mLをLに直してから考えます。',`${gas.text} mL = ${(gas.value/1000).toString()} L`,'気体体積(L) ÷ 22.4 で物質量を求めます。'],explanation:`${gas.text} mL = ${gas.value/1000} L より、物質量は ${answerText} mol です。`});
 }
 function ph3QAtomCountMass(ctx){
   const d=Math.max(1,ctx.difficulty-1),pair=ph3FriendlyMassPair('compound',d,3),m=pair.m,n=pair.n,massText=pair.text,atoms=ph3Atoms(m),target=ph3Pick(Object.keys(atoms)),count=atoms[target],ans=ph3Sci(n*count*AVOGADRO);
@@ -1549,7 +1479,7 @@ function ph3QAtomCountMass(ctx){
 }
 function ph3QIonMol(ctx){
   const m=ph3Material('ionic',ctx.difficulty,1),ions=ph3Ions(m),ion=ph3Pick(ions),n=ph3Factor(ctx.difficulty),ans=n*ion.count;
-  return ph3BaseQ({type:'ionMol',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol に含まれる ${ion.label} の物質量は何 mol か。`,answer:ans,answerText:displaySig(ans,2),sig:null,unitKey:'mol',unit:'mol',scientific:false,hints:[`化学式1単位に ${ion.label} が何個あるか確認します。`,`化合物の物質量 × ${ion.count} で ${ion.label} の物質量を求めます。`,'粒子数に直す必要はありません。'],explanation:`${ion.label} は1式単位に${ion.count}個なので、${displaySig(ans,2)} mol です。`});
+  return ph3BaseQ({type:'ionMol',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol に含まれる ${ion.label} の物質量は何 mol か。`,answer:ans,answerText:displaySig(ans,2),sig:2,unitKey:'mol',unit:'mol',scientific:false,hints:[`化学式1単位に ${ion.label} が何個あるか確認します。`,`化合物の物質量 × ${ion.count} で ${ion.label} の物質量を求めます。`,'粒子数に直す必要はありません。'],explanation:`${ion.label} は1式単位に${ion.count}個なので、${displaySig(ans,2)} mol です。`});
 }
 function ph3QIonCountMass(ctx){
   const d=Math.max(1,ctx.difficulty-1),pair=ph3FriendlyMassPair('ionic',d,3),m=pair.m,n=pair.n,massText=pair.text,ion=ph3Pick(ph3Ions(m)),ans=ph3Sci(n*ion.count*AVOGADRO);
@@ -1752,30 +1682,46 @@ function ph3cFixed1Text(value){
 function ph3cApplyAnswerPolicy(q){
  if(!q)return q;
  q.rawAnswer=(q.rawAnswer!==undefined)?q.rawAnswer:q.answer;
- if(q.scientific){q.answerPolicy='scientific';return q}
+ q.sigDigits=q.sigDigits||q.sig||null;
+ q.decimalPlaces=q.decimalPlaces??null;
+ if(q.answerPolicy==='fixed'&&q.decimalPlaces!==null){
+   q.acceptedAnswer=Number(q.displayAnswer);q.answer=q.acceptedAnswer;q.sigDigits=null;q.sig=null;return q;
+ }
+ if(q.scientific){
+   const sig=q.sigDigits||2;
+   let exponent=Math.floor(Math.log10(Math.abs(q.rawAnswer)));
+   let coefficient=roundSig(q.rawAnswer/10**exponent,sig);
+   if(Math.abs(coefficient)>=10){coefficient/=10;exponent++}
+   q.answerPolicy='scientific';q.sigDigits=sig;
+   q.scientificAnswer={coefficient,exponent};
+   q.acceptedAnswer=coefficient*10**exponent;
+   q.displayAnswer=`${coefficient.toFixed(sig-1)}×10^${exponent}`;
+   q.answerText=q.displayAnswer;q.answer=q.acceptedAnswer;
+   return q;
+ }
  // 気体体積をLで答える問題は22.4 L/molとの比例を優先し、小数第1位まで。
  if(q.gasPolicy==='fixed1'&&q.unit==='L'){
-   q.answerPolicy='fixed1';q.displayAnswer=ph3cFixed1Text(q.rawAnswer);q.answerText=q.displayAnswer;q.answer=Number(q.displayAnswer);q.sig=null;
+   q.answerPolicy='fixed';q.decimalPlaces=1;q.displayAnswer=ph3cFixed1Text(q.rawAnswer);q.answerText=q.displayAnswer;q.acceptedAnswer=Number(q.displayAnswer);q.answer=q.acceptedAnswer;q.sig=null;q.sigDigits=null;
    ph3cAppendRule(q,'気体の体積は、小数第1位まで求めてください。');return q;
  }
  // 明示された有効数字問題
  const sig=q.sigDigits||q.sig;
  if(sig&&Number.isFinite(q.rawAnswer)){
    const rounded=roundSig(q.rawAnswer,sig),display=ph3cSigText(q.rawAnswer,sig);
-   // 丸めが実質的に必要なときだけ問題文へ指示を追加
-   if(Math.abs(rounded-q.rawAnswer)>Math.max(1e-12,Math.abs(q.rawAnswer)*1e-12)||q.roundingChallenge){
-     q.answerPolicy='sigfig';q.sigDigits=sig;q.sig=sig;q.displayAnswer=display;q.answerText=display;q.answer=rounded;
-     ph3cAppendRule(q,`答えは有効数字${sig}桁で求めてください。`);
-   }
+   q.answerPolicy='sigfig';q.sigDigits=sig;q.sig=sig;q.displayAnswer=display;q.answerText=display;q.acceptedAnswer=rounded;q.answer=rounded;
+   if(Math.abs(rounded-q.rawAnswer)>Math.max(1e-12,Math.abs(q.rawAnswer)*1e-12)||q.roundingChallenge)ph3cAppendRule(q,`答えは有効数字${sig}桁で求めてください。`);
+   return q;
  }
+ q.answerPolicy='exact';q.acceptedAnswer=q.rawAnswer;q.displayAnswer=q.answerText??String(q.rawAnswer);q.answerText=q.displayAnswer;q.answer=q.acceptedAnswer;
  return q;
 }
 // fixed1は「値」だけでなく小数第1位表記も確認する（100 L以上の整数は例外）
 const ph3cOldEvaluate=evaluateAnswer;
 evaluateAnswer=function(q){
- const ev=ph3cOldEvaluate(q);if(!q||q.answerPolicy!=='fixed1'||q.scientific||!ev.ok)return ev;
- const text=document.getElementById('answerInput').value.trim();
- if(Math.abs(q.answer)<100 && !/^[-+]?\d+\.\d$/.test(text))return {ok:false,kind:'sig',message:'数値と単位は合っています。小数第1位まで書いてください。',raw:ev.raw};
+ const ev=ph3cOldEvaluate(q);if(!q||q.answerPolicy!=='fixed'||q.scientific||!ev.ok)return ev;
+ const text=document.getElementById('answerInput').value.trim(),dec=q.decimalPlaces??1;
+ const re=new RegExp(`^[-+]?\\d+${dec?`\\.\\d{${dec}}`:''}$`);
+ if(!re.test(text))return {ok:false,kind:'fixed',message:dec?`数値と単位は合っています。小数第${dec}位まで書いてください。`:'整数で答えてください。',raw:ev.raw};
  return ev;
 };
 
@@ -1789,7 +1735,7 @@ function ph3cFlexibleMassToMol(ctx){
  // 序盤は従来通りきれいな値を優先。標準～応用では割り切れない値も採用。
  if(ctx.difficulty===1){const n=[0.25,0.5,1,1.5,2][Math.floor(Math.random()*5)];mass=n*m.molarMass;raw=n}
  const sig=2, rounded=roundSig(raw,sig), roundedNeeded=Math.abs(rounded-raw)>Math.max(1e-12,Math.abs(raw)*1e-12);
- const q=commonQ({type:'massToMolFlexible',material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${displaySig(mass,4)} g の物質量は何 mol か。`,answer:raw,answerText:roundedNeeded?displaySig(raw,sig):displaySig(raw,Math.max(2,sigDigitsFromText(String(raw)))),sig:roundedNeeded?sig:null,unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の変換です。','物質量 = 質量 ÷ モル質量','割り切れない場合は途中で丸めず、最後に指定された桁へ丸めます。'],explanation:`${displaySig(mass,4)} ÷ ${m.molarMass} = ${raw.toPrecision(7)}… ${roundedNeeded?`→ 有効数字${sig}桁で ${displaySig(raw,sig)} mol`:''}`});
+ const q=commonQ({type:'massToMolFlexible',material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${displaySig(mass,4)} g の物質量は何 mol か。`,answer:raw,answerText:displaySig(raw,sig),sig,unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の変換です。','物質量 = 質量 ÷ モル質量','割り切れない場合は途中で丸めず、最後に指定された桁へ丸めます。'],explanation:`${displaySig(mass,4)} ÷ ${m.molarMass} = ${raw.toPrecision(7)}… → 有効数字${sig}桁で ${displaySig(raw,sig)} mol`});
  q.difficulty=ctx.difficulty;q.rawAnswer=raw;q.roundingChallenge=roundedNeeded;return ph3cApplyAnswerPolicy(q);
 }
 
@@ -2030,11 +1976,11 @@ function ph3dFixed(value,decimals){
 }
 function ph3dApplyDecimalPolicy(q,decimals,label){
   q.rawAnswer=(q.rawAnswer!==undefined)?q.rawAnswer:q.answer;
-  q.answerPolicy='decimal';
+  q.answerPolicy='fixed';
   q.decimalPlaces=decimals;
   q.displayAnswer=ph3dFixed(q.rawAnswer,decimals);
   q.answerText=q.displayAnswer;
-  q.answer=Number(q.displayAnswer);
+  q.acceptedAnswer=Number(q.displayAnswer);q.answer=q.acceptedAnswer;q.sigDigits=null;q.sig=null;
   ph3dAppendRule(q,label||`答えは小数第${decimals}位まで求めてください。`);
   return q;
 }
@@ -2253,7 +2199,7 @@ function ph3dBuildQuestions(mode,count){
   PH3D.recentTypes=[];PH3D.recentMaterials=[];
   for(let i=0;i<count;i++){
     const d=schedule[i]||1;let pool=ph3dPool(mode,ranges,d),q=null;
-    if(!pool.length)pool=ph3dPool(mode,[],d);
+    if(!pool.length)return null;
     for(let attempt=0;attempt<60;attempt++){
       const p=ph3dWeighted(pool,d);if(!p)break;
       try{q=p.build({difficulty:d,index:i,count,mode,range:p.range})}catch(e){console.warn('Phase3D builder',p.type,e);continue}
@@ -2264,10 +2210,7 @@ function ph3dBuildQuestions(mode,count){
       if(attempt<35 && (PH3D.recentTypes.slice(-1)[0]===q.type || (mat&&PH3D.recentMaterials.slice(-1)[0]===mat)))continue;
       break;
     }
-    if(!q){
-      const fallback=pool[0]||ph3dAllPatterns()[0];
-      q=fallback.build({difficulty:d,index:i,count,mode,range:fallback.range});
-    }
+    if(!q)return null;
     qs.push(q);
     PH3D.recentTypes.push(q.type);if(PH3D.recentTypes.length>2)PH3D.recentTypes.shift();
     const mat=q.material?.id||q.material?.formula||'';
@@ -2281,12 +2224,12 @@ buildQuestions=ph3dBuildQuestions;
 const ph3dOldEvaluate=evaluateAnswer;
 evaluateAnswer=function(q){
   const ev=ph3dOldEvaluate(q);
-  if(!q || q.answerPolicy!=='decimal' || !ev.ok || q.scientific)return ev;
+  if(!q || q.answerPolicy!=='fixed' || !ev.ok || q.scientific)return ev;
   const text=document.getElementById('answerInput').value.trim();
   const dec=q.decimalPlaces??1;
   const re=new RegExp(`^[-+]?\\d+${dec?`\\.\\d{${dec}}`:''}$`);
   if(!re.test(text)){
-    return {ok:false,kind:'sig',message:dec?`数値と単位は合っています。小数第${dec}位まで書いてください。`:'整数で答えてください。',raw:ev.raw};
+    return {ok:false,kind:'fixed',message:dec?`数値と単位は合っています。小数第${dec}位まで書いてください。`:'整数で答えてください。',raw:ev.raw};
   }
   return ev;
 };
@@ -2303,9 +2246,17 @@ document.getElementById('startPractice').onclick=()=>{
   const challenge=ph3dChallenge(state.count);
   state.challengeKey=challenge.key;state.challengeLabel=challenge.label;state.instantFail=challenge.instantFail;
   state.passes=challenge.passes;state.initialPasses=challenge.passes;
-  state.questions=buildQuestions(state.mode,state.count);state.index=0;state.startTime=Date.now();state.hintsUsed=0;state.results=[];
+  let generated=null;
+  if(state.mode==='weak'&&state.variantSource&&teacherSettings.variantRetry){
+    generated=ph37VariantRetryQuestions(state.variantSource,state.count).map(q=>window.PHASE3C_ENGINE.applyAnswerPolicy(q));
+    state.variantSource=null;
+  }else generated=buildQuestions(state.mode,state.count);
+  if(!generated||generated.length!==state.count){alert('現在の設定では出題できる問題がありません。\n出題範囲または教員設定を変更してください。');return}
+  state.questions=generated;state.index=0;state.startTime=Date.now();state.hintsUsed=0;state.results=[];state.sessionEnding=false;state.sessionEnded=false;
+  ['submitAnswer','answerInput','coefficientInput','exponentInput','unitSelect','hintButton'].forEach(id=>document.getElementById(id).disabled=false);
   state.questions.forEach(q=>{q.attempts=0;q.hintsShown=0;q.passed=false;q.completed=false});
-  showScreen('practice');renderQuestion();startTimer();
+  clearInterval(state.timerId);state.timerId=setInterval(updateTimer,1000);updateTimer();
+  showScreen('practice');renderQuestion();
 };
 
 // ---------- パス表示 ----------
@@ -2321,13 +2272,15 @@ renderQuestion=function(){
 
 // ---------- 鬼：誤答で即終了 ----------
 function ph3dFinishOni(q,ev){
-  clearInterval(state.timerId);
+  if(state.sessionEnded)return;
+  state.sessionEnded=true;
+  clearInterval(state.timerId);state.timerId=null;
   q.firstCorrect=false;q.completed=true;
   state.results.push({...q});
   const elapsed=Math.floor((Date.now()-state.startTime)/1000);
   const completed=state.results.slice();
   const firstCorrect=completed.filter(x=>x.firstCorrect).length;
-  const misses={number:0,unit:0,sig:0,format:0};
+  const misses={number:0,unit:0,sig:0,fixed:0,format:0};
   completed.forEach(x=>Object.keys(misses).forEach(k=>misses[k]+=x['miss_'+k]||0));
   updateQuestionStats(completed);
   const record={
@@ -2341,17 +2294,22 @@ function ph3dFinishOni(q,ev){
   comment.innerHTML=`<strong style="color:#b42318">鬼モード終了：第${state.index+1}問でミス</strong><br>${ev.message}<br>間違えた形式を確認して、もう一度挑戦しましょう。`;
 }
 document.getElementById('submitAnswer').onclick=()=>{
+  if(state.sessionEnding||state.sessionEnded)return;
   const q=currentQ(),ev=evaluateAnswer(q),fb=document.getElementById('feedback');
   q.attempts++;if(q.attempts===1)q.userFirst=ev.raw;
   if(ev.ok){
     q.firstCorrect=q.attempts===1&&!q.passed;
-    fb.className='feedback show ok';fb.textContent='正解です。次の問題へ進みます。';
+    fb.className='feedback show ok';fb.textContent=ev.sigWarning?`正解です。ただし、有効数字${q.sigDigits}桁なら ${q.displayAnswer} ${q.unit} のように表しましょう。`:'正解です。次の問題へ進みます。';
     state.results.push({...q});document.getElementById('submitAnswer').disabled=true;
     setTimeout(()=>{document.getElementById('submitAnswer').disabled=false;advanceQuestion()},700);
   }else{
     q['miss_'+ev.kind]=(q['miss_'+ev.kind]||0)+1;
     fb.className='feedback show bad';fb.textContent=ev.message;
-    if(state.instantFail){setTimeout(()=>ph3dFinishOni(q,ev),650)}
+    if(state.instantFail){
+      state.sessionEnding=true;
+      ['submitAnswer','answerInput','coefficientInput','exponentInput','unitSelect','hintButton','passButton'].forEach(id=>document.getElementById(id).disabled=true);
+      setTimeout(()=>ph3dFinishOni(q,ev),650);
+    }
   }
 };
 
@@ -2438,7 +2396,11 @@ function ph37VariantRetryQuestions(sourceResults,count){
     let q=null;
     for(let a=0;a<30;a++){
       try{q=builder?builder():null}catch(e){q=null}
-      if(q&&(q.material?.id!==src.material?.id||q.answer!==src.answer))break;
+      if(!q)continue;
+      const materialChanged=src.material?.id?q.material?.id!==src.material.id:true;
+      const valueChanged=q.answer!==src.rawAnswer||q.question!==src.question;
+      if(materialChanged&&valueChanged)break;
+      q=null;
     }
     if(q)out.push(q);
   }
