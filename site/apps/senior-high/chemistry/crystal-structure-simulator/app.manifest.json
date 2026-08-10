@@ -117,7 +117,7 @@
     "maintainerRole": "Platform Maintainer"
   },
   "links": {
-    "hostedUrl": "/apps/senior-high/chemistry/crystal-structure-simulator/",
+    "hostedUrl": "./apps/senior-high/chemistry/crystal-structure-simulator/",
     "repositoryPath": "site/apps/senior-high/chemistry/crystal-structure-simulator"
   }
 }
