@@ -22,6 +22,17 @@
         "実験"
       ],
       "deprecatedMessage": null
+    },
+    "crystal-structure-simulator": {
+      "featured": false,
+      "hidden": false,
+      "sortOrder": 30,
+      "labels": [
+        "高校化学",
+        "結晶構造",
+        "シミュレーション"
+      ],
+      "deprecatedMessage": null
     }
   }
 }

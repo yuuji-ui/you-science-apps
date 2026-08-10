@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "1.0.0",
+  "appId": "crystal-structure-simulator",
+  "title": "結晶構造シミュレーター",
+  "version": "4.0.0",
+  "updatedOn": "2026-08-10",
+  "status": "active",
+  "level": "C",
+  "education": {
+    "schoolStage": "senior-high",
+    "subjects": [
+      "chemistry"
+    ],
+    "grades": [
+      "SH1",
+      "SH2",
+      "SH3",
+      "other"
+    ],
+    "portalGroups": [
+      "senior-high-chemistry"
+    ],
+    "audiences": [
+      "chemistry-basic",
+      "chemistry",
+      "other"
+    ],
+    "categories": [
+      "結晶構造",
+      "金属結晶",
+      "イオン結晶",
+      "共有結合結晶"
+    ],
+    "tags": [
+      "結晶構造",
+      "配位数",
+      "充填率",
+      "半径比",
+      "3D",
+      "シミュレーション"
+    ],
+    "learningDifficulty": 4,
+    "units": [
+      "CHEM.CRYSTAL.001"
+    ],
+    "appTypes": [
+      "simulation",
+      "visualization"
+    ],
+    "learningGoals": [
+      "SC・BCC・FCC・HCPなどの結晶構造を3Dで観察し、配位数や格子内粒子数との関係を説明できる。",
+      "NaCl・CsCl・ZnS・CaF2などのイオン結晶について、粒子配置・配位数・組成比を比較できる。",
+      "FCCとHCPの最密充填構造について、ABC積層とAB積層の違いを視覚的に説明できる。",
+      "半径比則やペロブスカイト構造を、硬球モデルの限界に注意しながら発展的に考察できる。"
+    ],
+    "useCases": [
+      "lesson-introduction",
+      "lesson-practice",
+      "home-study",
+      "teacher-demo"
+    ],
+    "modelLimitations": [
+      "粒子は硬球・模式球として表現しており、実在結晶の電子密度や化学結合そのものを再現するものではない。",
+      "半径比則は幾何学的な硬球モデルによる近似であり、実在結晶の構造を半径比だけで一意に決定するものではない。",
+      "理想HCPおよび理想立方ペロブスカイトなど、学習目的に応じて理想化した構造を含む。"
+    ]
+  },
+  "platform": {
+    "sourceDependencyMode": "vendored",
+    "coreVersion": null,
+    "structureMode": "multi-file",
+    "structureRuleVersion": "1.0"
+  },
+  "distribution": {
+    "hosted": {
+      "enabled": true,
+      "dependencyMode": "vendored"
+    },
+    "portable": {
+      "enabled": true,
+      "dependencyMode": "vendored",
+      "directFileOpen": false
+    },
+    "standalonePackage": {
+      "enabled": false,
+      "dependencyMode": null
+    }
+  },
+  "storage": {
+    "enabled": false,
+    "types": [],
+    "deletionMethod": "保存機能を使用しないため、削除対象の学習データはありません。"
+  },
+  "network": {
+    "required": false,
+    "externalEndpoints": []
+  },
+  "privacy": {
+    "collectsPersonalData": false,
+    "usesAnalytics": false,
+    "usesCookies": false,
+    "externalTransmission": false
+  },
+  "license": {
+    "code": "TBD",
+    "content": "TBD",
+    "thirdPartyNotices": [
+      {
+        "name": "Three.js r185",
+        "license": "MIT",
+        "source": "https://github.com/mrdoob/three.js/tree/r185"
+      }
+    ]
+  },
+  "owners": {
+    "appOwnerRole": "Chemistry App Owner",
+    "maintainerRole": "Platform Maintainer"
+  },
+  "links": {
+    "hostedUrl": "/apps/senior-high/chemistry/crystal-structure-simulator/",
+    "repositoryPath": "site/apps/senior-high/chemistry/crystal-structure-simulator"
+  }
+}
