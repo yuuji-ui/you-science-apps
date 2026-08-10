@@ -4,7 +4,7 @@
   "title": "結晶構造シミュレーター",
   "version": "4.0.0",
   "updatedOn": "2026-08-10",
-  "status": "pilot",
+  "status": "active",
   "level": "C",
   "education": {
     "schoolStage": "senior-high",
@@ -117,7 +117,7 @@
     "maintainerRole": "Platform Maintainer"
   },
   "links": {
-    "hostedUrl": "/apps/high-school/chemistry/crystal-structure-simulator/",
-    "repositoryPath": "site/apps/high-school/chemistry/crystal-structure-simulator"
+    "hostedUrl": "/apps/senior-high/chemistry/crystal-structure-simulator/",
+    "repositoryPath": "site/apps/senior-high/chemistry/crystal-structure-simulator"
   }
 }
