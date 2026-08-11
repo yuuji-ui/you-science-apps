@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>モルマスター Ver.1.3 Phase 5.3</title>
+<title>モルマスター Ver.1.3 Phase 6</title>
 <style>
 :root{
   --bg:#f3f7fb;--panel:#fff;--ink:#17324d;--muted:#62778a;--line:#d7e1ea;
@@ -303,7 +303,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <section id="records" class="screen">
   <div class="card">
     <div class="row spread"><h2 class="section-title">学習記録</h2><button class="btn ghost" data-go="home">トップへ</button></div>
-    <div class="record-filters"><button class="pill active" data-days="7">7日</button><button class="pill" data-days="30">1か月</button><button class="pill" data-days="99999">全期間</button></div>
+    <div class="record-filters"><button class="pill" data-days="7">7日</button><button class="pill active" data-days="30">直近30日</button><button class="pill" data-days="99999">全期間</button></div>
     <div id="recordSummary"></div>
     <canvas id="recordChart" width="900" height="280"></canvas>
     <div id="weakSummary" class="note" style="margin-top:14px"></div><div class="row" style="margin-top:14px"><button class="btn primary" id="startWeakReview">苦手問題を復習</button><button class="btn ghost" id="clearRecords">学習記録を削除</button></div>
@@ -386,7 +386,7 @@ function showScreen(id){
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  document.getElementById(id).classList.add("active");
  window.scrollTo({top:0,behavior:"smooth"});
- if(id==="records") renderRecords(7);
+ if(id==="records") renderRecords(30);
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)showScreen(b.dataset.go)});
 
@@ -705,28 +705,47 @@ function finishPractice(){
  renderResults(record,completed);showScreen("results");
 }
 function modeLabel(m){return {mode1:"原子量・分子量・式量",mode2:"物質量",mode3:"発展",mixed:"総合ミックス"}[m]}
-function renderResults(r,completed){
- const items=[
-  ["初回正答率",`${r.rate.toFixed(0)}%`],["所要時間",`${Math.floor(r.elapsed/60)}分${r.elapsed%60}秒`],["平均時間",`${r.avg.toFixed(1)}秒`],["ヒント",`${r.hints}回`],
-  ["数値ミス",`${r.misses.number}回`],["単位ミス",`${r.misses.unit}回`],["有効数字",`${r.misses.sig}回`],["パス",`${r.passes}回`]
- ];
- document.getElementById("resultKpis").innerHTML=items.map(x=>`<div class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("");
- let comment=r.rate>=90?"かなり安定しています。次は平均時間を縮めると、計算の流れがさらに定着します。":r.rate>=70?"基本はつかめています。ミスの種類を見て、同じ変換をもう一度練習しましょう。":"変換ルートを紙に書いてから計算すると整理しやすくなります。入門編も活用してください。";
- document.getElementById("resultComment").innerHTML=`<strong>${modeLabel(r.mode)}</strong><br>${comment}`;
- document.getElementById("reviewList").innerHTML=completed.map((q,i)=>`<details class="review-item"><summary>${i+1}. ${q.firstCorrect?"初回正解":"要復習"}｜${q.question.replace(/<[^>]+>/g,"")}</summary><div class="review-body"><p><strong>最初の回答：</strong>${q.userFirst||"未入力"}</p><p><strong>正答：</strong>${q.answerText} ${q.unit}</p><p><strong>解説：</strong>${q.explanation}</p><p><strong>有効数字：</strong>${q.sig?`${q.sig}桁`:"指定なし"}</p></div></details>`).join("");
-}
 const STORAGE_SCHEMA_VERSION=2;
 function isPlainObject(v){return !!v&&typeof v==='object'&&!Array.isArray(v)}
-function getRecords(){try{const v=JSON.parse(localStorage.getItem("molMasterRecords")||"[]");if(!Array.isArray(v))return [];return v.filter(isPlainObject).map(r=>({...r,date:typeof r.date==='string'?r.date:new Date(0).toISOString(),rate:Number(r.rate)||0,avg:Number(r.avg)||0,misses:isPlainObject(r.misses)?r.misses:{number:0,unit:0,sig:0,fixed:0,format:0}}))}catch{return []}}
+const MISS_LABELS={number:'数値',unit:'単位',sig:'有効数字',fixed:'指定された桁・表記',format:'入力形式'};
+function normalizedRanges(value){const a=Array.isArray(value)?value:String(value||'').split(',');return [...new Set(a.map(x=>String(x).trim()).filter(x=>x&&x!=='weak'))].sort()}
+function challengeKeyFor(count){return ({5:'beginner',10:'intermediate',15:'advanced',20:'oni'})[Number(count)]||String(count||'unknown')}
+function totalMissesOf(misses){return Object.keys(MISS_LABELS).reduce((n,k)=>n+(Number(misses?.[k])||0),0)}
+function comparisonKeyFor(r){const ranges=normalizedRanges(r.rangesNormalized||r.ranges||r.range);return [r.mode||'unknown',ranges.join('+')||'auto',Number(r.count)||0,r.challengeKey||challengeKeyFor(r.count)].join('|')}
+function normalizeRecord(r){
+ const misses=isPlainObject(r.misses)?Object.fromEntries(Object.keys(MISS_LABELS).map(k=>[k,Number(r.misses[k])||0])):{number:0,unit:0,sig:0,fixed:0,format:0};
+ const rangesNormalized=normalizedRanges(r.rangesNormalized||r.ranges||r.range),rate=Number(r.firstCorrectRate??r.rate)||0;
+ const out={...r,date:typeof r.date==='string'?r.date:new Date(0).toISOString(),rate,firstCorrectRate:rate,avg:Number(r.avg)||0,elapsed:Number(r.elapsed)||0,hints:Number(r.hints)||0,passes:Number(r.passes)||0,count:Number(r.count)||0,misses,rangesNormalized,challengeKey:r.challengeKey||challengeKeyFor(r.count),completed:r.completed!==false,failedEarly:!!r.failedEarly};
+ out.totalMisses=Number.isFinite(Number(r.totalMisses))?Number(r.totalMisses):totalMissesOf(misses);out.comparisonKey=r.comparisonKey||comparisonKeyFor(out);return out;
+}
+function getRecords(){try{const v=JSON.parse(localStorage.getItem("molMasterRecords")||"[]");return Array.isArray(v)?v.filter(isPlainObject).map(normalizeRecord):[]}catch{return []}}
 function saveRecord(r){const a=getRecords();a.push(r);localStorage.setItem("molMasterRecords",JSON.stringify(a.slice(-200)));localStorage.setItem('molMasterStorageSchemaVersion',String(STORAGE_SCHEMA_VERSION))}
+function compareBest(a,b){return (b.firstCorrectRate-a.firstCorrectRate)||(a.totalMisses-b.totalMisses)||(a.hints-b.hints)||(a.elapsed-b.elapsed)}
+function buildProgressComparison(record,records=getRecords()){
+ const same=records.filter(x=>x.comparisonKey===record.comparisonKey),previous=same.at(-1)||null,best=same.slice().sort(compareBest)[0]||null;
+ let meaningfulBest=false,timeOnlyBest=false,bestReason='';
+ if(best){
+  if(record.firstCorrectRate>best.firstCorrectRate){meaningfulBest=true;bestReason='初回正答率が上がりました'}
+  else if(record.firstCorrectRate===best.firstCorrectRate&&record.totalMisses<best.totalMisses){meaningfulBest=true;bestReason='同じ正答率でミスが減りました'}
+  else if(record.firstCorrectRate===best.firstCorrectRate&&record.totalMisses===best.totalMisses&&record.hints<best.hints){meaningfulBest=true;bestReason='同じ正答率・ミス数でヒントが減りました'}
+  else if(record.firstCorrectRate===best.firstCorrectRate&&record.totalMisses===best.totalMisses&&record.hints===best.hints&&record.elapsed<best.elapsed)timeOnlyBest=true;
+ }
+ return {previous,best,meaningfulBest,timeOnlyBest,bestReason};
+}
+function buildSessionRecord(completed,elapsed,{failedEarly=false,reached=null}={}){
+ const misses={number:0,unit:0,sig:0,fixed:0,format:0};completed.forEach(q=>Object.keys(misses).forEach(k=>misses[k]+=q['miss_'+k]||0));
+ const firstCorrect=completed.filter(q=>q.firstCorrect).length,count=state.count,rangesNormalized=normalizedRanges(state.ranges||state.range);
+ return normalizeRecord({date:new Date().toISOString(),mode:state.mode,range:state.range,rangesNormalized,style:state.practiceStyle,practiceStyle:state.practiceStyle,count,challengeKey:state.challengeKey||challengeKeyFor(count),elapsed,avg:elapsed/Math.max(1,completed.length),firstCorrect,rate:firstCorrect/Math.max(1,count)*100,firstCorrectRate:firstCorrect/Math.max(1,count)*100,misses,totalMisses:totalMissesOf(misses),hints:state.hintsUsed,passes:state.initialPasses-state.passes,completed:!failedEarly,failedEarly,reached:reached??completed.length});
+}
 function renderRecords(days){
  document.querySelectorAll("[data-days]").forEach(b=>b.classList.toggle("active",Number(b.dataset.days)===days));
  const cutoff=Date.now()-days*86400000,records=getRecords().filter(r=>new Date(r.date).getTime()>=cutoff);
  const sum=document.getElementById("recordSummary");
  if(!records.length){sum.innerHTML=`<div class="empty">この期間の学習記録はありません。</div>`;drawChart([]);return}
- const avgRate=records.reduce((s,r)=>s+r.rate,0)/records.length,avgTime=records.reduce((s,r)=>s+r.avg,0)/records.length;
- const number=records.reduce((s,r)=>s+r.misses.number,0),unit=records.reduce((s,r)=>s+r.misses.unit,0),sig=records.reduce((s,r)=>s+r.misses.sig,0);
- sum.innerHTML=`<div class="grid result-kpis"><div class="kpi"><span>実施回数</span><strong>${records.length}</strong></div><div class="kpi"><span>平均初回正答率</span><strong>${avgRate.toFixed(0)}%</strong></div><div class="kpi"><span>平均時間/問</span><strong>${avgTime.toFixed(1)}秒</strong></div><div class="kpi"><span>ミス内訳</span><strong>${number}/${unit}/${sig}</strong><small>数値/単位/有効数字</small></div></div>`;
+ const avgRate=records.reduce((s,r)=>s+r.firstCorrectRate,0)/records.length,hints=records.reduce((s,r)=>s+r.hints,0),misses=Object.fromEntries(Object.keys(MISS_LABELS).map(k=>[k,records.reduce((s,r)=>s+r.misses[k],0)]));
+ const missText=Object.entries(misses).filter(([,n])=>n>0).map(([k,n])=>`${MISS_LABELS[k]} ${n}回`).join('、')||'ミス記録なし';
+ const trend=records.slice(-5).map(r=>`${r.firstCorrectRate.toFixed(0)}%`).join(' → ');
+ sum.innerHTML=`<div class="grid result-kpis"><div class="kpi"><span>実施回数</span><strong>${records.length}</strong></div><div class="kpi"><span>平均初回正答率</span><strong>${avgRate.toFixed(0)}%</strong></div><div class="kpi"><span>ヒント使用</span><strong>${hints}回</strong></div><div class="kpi"><span>ミス傾向</span><strong>${missText}</strong></div></div><div class="note" id="recordTrendText"><strong>直近${Math.min(5,records.length)}回の初回正答率</strong><br>${trend}</div>`;
  drawChart(records);
 }
 document.querySelectorAll("[data-days]").forEach(b=>b.onclick=()=>renderRecords(Number(b.dataset.days)));
@@ -884,10 +903,8 @@ document.getElementById('quitPractice').onclick=quitToHome;
 
 // パス表示を設定値対応
 finishPractice=function(){
- clearInterval(state.timerId);state.timerId=null;const elapsed=Math.floor((Date.now()-state.startTime)/1000),completed=state.results.slice(-state.count),firstCorrect=completed.filter(q=>q.firstCorrect).length,misses={number:0,unit:0,sig:0,fixed:0,format:0};
- completed.forEach(q=>Object.keys(misses).forEach(k=>misses[k]+=q['miss_'+k]||0));
- updateQuestionStats(completed);
- const record={date:new Date().toISOString(),mode:state.mode,range:state.range,style:state.practiceStyle,count:state.count,elapsed,avg:elapsed/state.count,firstCorrect,rate:firstCorrect/state.count*100,misses,hints:state.hintsUsed,passes:state.initialPasses-state.passes};saveRecord(record);renderResults(record,completed);showScreen('results');
+ clearInterval(state.timerId);state.timerId=null;const elapsed=Math.floor((Date.now()-state.startTime)/1000),completed=state.results.slice(-state.count);
+ updateQuestionStats(completed);const record=buildSessionRecord(completed,elapsed),comparison=buildProgressComparison(record);saveRecord(record);renderResults(record,completed,comparison);showScreen('results');
 };
 const oldRenderQuestion2=renderQuestion;
 renderQuestion=function(){oldRenderQuestion2();document.getElementById('passButton').textContent=`パス（残り${state.passes}回）`;document.getElementById('passButton').disabled=state.passes<=0};
@@ -908,7 +925,7 @@ const oldShowScreen=showScreen;showScreen=function(id){oldShowScreen(id);if(id==
 document.getElementById('resetTeacherSettings').onclick=()=>{teacherSettings={...DEFAULT_TEACHER_SETTINGS};saveTeacherSettings();renderTeacherSettings()};
 
 // 記録削除時に苦手統計も選択可能
-document.getElementById('clearRecords').onclick=()=>{if(confirm('学習記録と苦手分析データを削除しますか？')){localStorage.removeItem('molMasterRecords');localStorage.removeItem('molMasterQuestionStats');renderRecords(7)}};
+document.getElementById('clearRecords').onclick=()=>{if(confirm('学習記録と苦手分析データを削除しますか？')){localStorage.removeItem('molMasterRecords');localStorage.removeItem('molMasterQuestionStats');renderRecords(30)}};
 
 
 
@@ -1109,17 +1126,37 @@ document.getElementById('calcNote').addEventListener('input',e=>{if(currentQ())c
 // 正解時の短い確認をフィードバックへ追加（DOM変化を監視）
 const feedbackObserver=new MutationObserver(()=>{const q=currentQ(),f=document.getElementById('feedback');if(!q||!teacherSettings.showSuccessNote||!f.textContent.includes('正解'))return;if(f.dataset.v12done===String(state.index))return;let note=q.type==='molarMass'?'化学式から原子の個数を読み取り、原子量を合計できました。':q.type.includes('Mol')||q.type.includes('mol')?'求める量に合わせて、物質量を中心に変換できました。':'単位と数値を対応させて計算できました。';f.insertAdjacentHTML('beforeend',`<div><small>${note}</small></div>`);f.dataset.v12done=String(state.index)});feedbackObserver.observe(document.getElementById('feedback'),{childList:true,subtree:true,characterData:true});
 
-// リザルト強化
-function skillGain(completed){const good=completed.filter(q=>q.firstCorrect);if(!good.length)return 'ヒントや解説を使って、解き方を確認できました。';if(good.some(q=>q.type==='molarMass'&&(q.formulaLevel||1)>=3))return 'かっこを含む化学式から、原子の個数を正確に数えられました。';if(good.some(q=>q.type==='massToMol'))return '質量をモル質量で割り、物質量へ変換できました。';return '単位を確認しながら、物質量を中心とした変換ができました。'}
-function nextAdvice(completed){const bad=completed.filter(q=>!q.firstCorrect);if(!bad.length)return '次は1段階上の難易度、または総合ミックスに進みましょう。';const counts={};bad.forEach(q=>counts[q.type]=(counts[q.type]||0)+1);const t=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];return `「${TYPE_INFO[t]?.[0]||t}」を、別の物質・数値で5問復習しましょう。`}
-renderResults=function(r,completed){
- const items=[['初回正解',`${r.firstCorrect}/${r.count}`],['初回正答率',`${r.rate.toFixed(0)}%`],['平均時間',`${r.avg.toFixed(1)}秒`],['ヒント',`${r.hints}回`]];document.getElementById('resultKpis').innerHTML=items.map(x=>`<div class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join('');
- const need=completed.filter(q=>!q.firstCorrect).length;document.getElementById('resultComment').innerHTML=`<strong>${modeLabel(r.mode)}</strong><br>${r.rate>=80?'基本内容は安定しています。':r.rate>=60?'定着しつつあります。要復習を解き直しましょう。':'入門編とじっくり練習を併用すると効果的です。'}${teacherSettings.showTodayGain?`<hr><strong>今日できるようになったこと</strong><br>${skillGain(completed)}`:''}${teacherSettings.showNextRecommendation?`<hr><strong>次のおすすめ</strong><br>${nextAdvice(completed)}`:''}`;
- document.getElementById('reviewList').innerHTML=`${need?`<div class="review-alert">！ 要復習：${need}問あります。赤い項目を優先して確認してください。</div>`:''}`+completed.map((q,i)=>{const status=q.firstCorrect?'<span class="review-label ok">○ 初回正解</span>':q.attempts>1?'<span class="review-label retry">△ 修正して正解</span>':'<span class="review-label bad">！ 要復習</span>';return `<details class="review-item ${q.firstCorrect?'':'needs-review'}"><summary>${status}　第${i+1}問｜${q.question.replace(/<[^>]+>/g,'')}</summary><div class="review-body"><p><strong>最初の回答：</strong>${q.userFirst||'未入力'}</p><p><strong>正答：</strong>${q.answerText} ${q.unit}</p>${q.calcNote?`<p><strong>自分の計算メモ：</strong><br>${q.calcNote.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>`:''}<p><strong>解説：</strong>${q.explanation}</p><p><strong>有効数字：</strong>${q.sig?`${q.sig}桁`:'指定なし'}</p></div></details>`}).join('');
- const row=document.getElementById('resultActions');row.className='result-actions';row.innerHTML='<button class="btn primary" id="retrySame">同じ範囲でもう一度</button><button class="btn secondary" id="retryWeak">間違えた形式を復習</button><button class="btn secondary" data-go="records">学習記録を見る</button><button class="btn ghost" data-go="home">トップへ</button>';
- row.querySelector('#retrySame').onclick=()=>{showScreen('setup')};
- const retryWeak=row.querySelector('#retryWeak');retryWeak.style.display=teacherSettings.variantRetry?'inline-flex':'none';retryWeak.onclick=()=>{state.variantSource=completed;showScreen('setup');const mode=document.getElementById('modeSelect');mode.value='weak';updateRangeOptions();mode.dispatchEvent(new Event('change'))};
-};
+// Phase 6：結果集計・比較・描画
+function escapeResultText(v){return String(v??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function elapsedText(sec){return `${Math.floor(sec/60)}分${String(sec%60).padStart(2,'0')}秒`}
+function missSummary(misses){return Object.entries(MISS_LABELS).filter(([k])=>misses[k]>0).map(([k,l])=>`${l} ${misses[k]}回`).join('、')||'なし'}
+function previousMessages(record,comparison){
+ const p=comparison.previous;if(!p)return ['今回の結果を記録しました。次回、同じ条件で比べられます。'];const out=[],delta=Math.round(record.firstCorrectRate-p.firstCorrectRate);
+ if(delta>0)out.push(`前回より初回正答率 +${delta}%`);else if(delta<0)out.push(`今回は初回正答率 ${record.firstCorrectRate.toFixed(0)}%。要復習を確認して次につなげましょう。`);else out.push('前回と同じ初回正答率です。');
+ const changes=Object.keys(MISS_LABELS).map(k=>({k,d:p.misses[k]-record.misses[k]})).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)),c=changes[0];if(c?.d>0)out.push(`${MISS_LABELS[c.k]}ミスが${c.d}回減りました。`);else if(c?.d<0)out.push(`今回は${MISS_LABELS[c.k]}ミスが${-c.d}回ありました。次は確認してから解答してみましょう。`);return out.slice(0,2);
+}
+function todayGain(record,completed,comparison){
+ if(comparison.previous){for(const k of Object.keys(MISS_LABELS))if(comparison.previous.misses[k]>record.misses[k])return `${MISS_LABELS[k]}ミスが前回より減りました。`}
+ const independent=completed.filter(q=>q.firstCorrect&&(q.hintsShown||0)===0),counts={};independent.forEach(q=>counts[q.type]=(counts[q.type]||0)+1);const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];if(top&&top[1]>=2)return `「${TYPE_INFO[top[0]]?.[0]||top[0]}」をヒントなしで正確に解けました。`;return '今回の結果を記録しました。次回と比べてみましょう。';
+}
+function nextRecommendation(record,completed){
+ const miss=Object.entries(record.misses).sort((a,b)=>b[1]-a[1])[0];if(miss&&miss[1]>0)return `${MISS_LABELS[miss[0]]}を確認してから、「苦手を別条件で復習」に取り組みましょう。`;
+ const weak=completed.filter(q=>!q.firstCorrect||q.passed||(q.hintsShown||0)>=2);if(weak.length)return `要復習の${TYPE_INFO[weak[0].type]?.[0]||weak[0].type}を別条件で確認しましょう。`;
+ if(record.firstCorrectRate>=80&&record.count<20)return '同じ範囲で、次のチャレンジを選ぶ準備ができています。設定画面で自分で選びましょう。';return '同じ範囲でもう一度取り組み、安定して解けるか確認しましょう。';
+}
+function applySessionSettings(record,modeOverride=null){
+ const mode=document.getElementById('modeSelect');mode.value=modeOverride||record.mode;mode.dispatchEvent(new Event('change'));document.getElementById('countSelect').value=String(record.count);document.getElementById('practiceStyle').value=record.practiceStyle||record.style||'standard';
+ setTimeout(()=>{if(!modeOverride){const wanted=new Set(record.rangesNormalized);document.querySelectorAll('#rangeChecklist input').forEach(x=>x.checked=wanted.has(x.value))}document.querySelectorAll('.readyCheck').forEach(x=>x.checked=true);document.getElementById('startPractice').disabled=false;document.getElementById('startPractice').click()},20);
+}
+renderResults=function(r,completed,comparison=buildProgressComparison(normalizeRecord(r))){
+ r=normalizeRecord(r);const prev=previousMessages(r,comparison),items=[['初回正答率',`${r.firstCorrectRate.toFixed(0)}%`],['ミスの傾向',missSummary(r.misses)],['ヒント',`${r.hints}回`],['前回・自己ベスト',comparison.meaningfulBest?'自己ベスト更新！':prev[0]]];
+ document.getElementById('resultKpis').innerHTML=items.map(x=>`<div class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join('');
+ document.getElementById('resultComment').innerHTML=`${comparison.meaningfulBest?`<div class="review-alert">★ 自己ベスト更新！ ${comparison.bestReason}</div>`:''}<strong>${modeLabel(r.mode)}</strong><br>${prev.join('<br>')}${comparison.timeOnlyBest?'<br><small>正確さと自立度を保ったまま、所要時間も短くなりました。</small>':''}<hr><strong>今日できるようになったこと</strong><br>${todayGain(r,completed,comparison)}<hr><strong>次のおすすめ</strong><br>${nextRecommendation(r,completed)}<hr><small>所要時間 ${elapsedText(r.elapsed)}　パス ${r.passes}回</small>`;
+ const reviews=completed.map((q,i)=>{const failed=r.failedEarly&&i===completed.length-1,needs=!q.firstCorrect||q.passed||(q.hintsShown||0)>=2||failed,misses=Object.keys(MISS_LABELS).filter(k=>(q['miss_'+k]||0)>0).map(k=>MISS_LABELS[k]).join('、')||'なし',label=needs?'<span class="review-label bad">⚠ 要復習</span>':'<span class="review-label ok">○ 初回正解</span>',question=q.question.replace(/<[^>]+>/g,'');if(!needs)return `<div class="review-item"><strong>${label}　第${i+1}問｜${question}</strong></div>`;return `<details class="review-item needs-review" open><summary>${label}　第${i+1}問｜${question}</summary><div class="review-body"><p><strong>最初の入力：</strong>${escapeResultText(q.userFirst||'未入力')}</p><p><strong>正答：</strong>${q.answerText} ${q.unit}</p><p><strong>ミス分類：</strong>${misses}</p><p><strong>使用ヒント：</strong>${q.hintsShown||0}回${q.passed?'／パス使用':''}${failed?'／鬼モード終了問題':''}</p><p><strong>解説：</strong>${q.explanation}</p></div></details>`}).join('');
+ const need=completed.filter((q,i)=>!q.firstCorrect||q.passed||(q.hintsShown||0)>=2||(r.failedEarly&&i===completed.length-1)).length;document.getElementById('reviewList').innerHTML=`${need?`<div class="review-alert">⚠ 要復習：${need}問あります。</div>`:''}${reviews}`;
+ const row=document.getElementById('resultActions');row.className='result-actions';row.innerHTML='<button class="btn primary" id="retryWeak">苦手を別条件で復習</button><button class="btn secondary" id="retrySame">同じ範囲でもう一度</button><button class="btn ghost" data-go="home">トップへ</button><button class="pill" data-go="records">学習記録を見る</button>';
+ const weak=completed.filter(q=>!q.firstCorrect||q.passed||(q.hintsShown||0)>=2),retryWeak=row.querySelector('#retryWeak');retryWeak.style.display=teacherSettings.variantRetry&&weak.length?'inline-flex':'none';retryWeak.onclick=()=>{state.variantSource=weak;showScreen('setup');applySessionSettings(r,'weak')};row.querySelector('#retrySame').onclick=()=>{showScreen('setup');applySessionSettings(r)};
+}
 
 // 完了状態を記録
 const advanceOld=advanceQuestion;advanceQuestion=function(passed){const q=currentQ();if(q)q.completed=true;advanceOld(passed)};
@@ -2279,19 +2316,11 @@ function ph3dFinishOni(q,ev){
   state.results.push({...q});
   const elapsed=Math.floor((Date.now()-state.startTime)/1000);
   const completed=state.results.slice();
-  const firstCorrect=completed.filter(x=>x.firstCorrect).length;
-  const misses={number:0,unit:0,sig:0,fixed:0,format:0};
-  completed.forEach(x=>Object.keys(misses).forEach(k=>misses[k]+=x['miss_'+k]||0));
   updateQuestionStats(completed);
-  const record={
-    date:new Date().toISOString(),mode:state.mode,range:state.range,style:state.practiceStyle,
-    count:20,completedCount:completed.length,failedEarly:true,reached:state.index+1,
-    elapsed,avg:elapsed/Math.max(1,completed.length),firstCorrect,
-    rate:firstCorrect/Math.max(1,completed.length)*100,misses,hints:state.hintsUsed,passes:0
-  };
-  saveRecord(record);renderResults(record,completed);showScreen('results');
+  const record=buildSessionRecord(completed,elapsed,{failedEarly:true,reached:state.index+1}),comparison=buildProgressComparison(record);
+  saveRecord(record);renderResults(record,completed,comparison);showScreen('results');
   const comment=document.getElementById('resultComment');
-  comment.innerHTML=`<strong style="color:#b42318">鬼モード終了：第${state.index+1}問でミス</strong><br>${ev.message}<br>間違えた形式を確認して、もう一度挑戦しましょう。`;
+  comment.insertAdjacentHTML('afterbegin',`<div class="review-alert">⚠ 鬼モード終了：第${state.index+1}問でミス<br>${ev.message}</div>`);
 }
 document.getElementById('submitAnswer').onclick=()=>{
   if(state.sessionEnding||state.sessionEnded)return;
