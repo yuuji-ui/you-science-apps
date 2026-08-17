@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "1.0.0",
+  "appId": "mol-master",
+  "title": "モルマスター",
+  "version": "1.0.0",
+  "updatedOn": "2026-08-17",
+  "status": "active",
+  "level": "B",
+  "education": {
+    "schoolStage": "senior-high",
+    "subjects": [
+      "chemistry"
+    ],
+    "grades": [
+      "SH1",
+      "SH2",
+      "SH3",
+      "other"
+    ],
+    "portalGroups": [
+      "senior-high-chemistry"
+    ]
+  },
+  "audiences": [
+    "chemistry-basic",
+    "chemistry",
+    "other"
+  ],
+  "categories": [
+    "物質量",
+    "モル計算",
+    "原子量・分子量・式量",
+    "濃度",
+    "溶解度",
+    "反応式"
+  ],
+  "tags": [
+    "物質量",
+    "mol",
+    "モル計算",
+    "原子量",
+    "分子量",
+    "式量",
+    "有効数字",
+    "粒子数",
+    "気体体積",
+    "モル濃度",
+    "溶解度",
+    "反応式",
+    "計算練習"
+  ],
+  "learningDifficulty": 3,
+  "units": [
+    "CHEM.MOL.001"
+  ],
+  "appTypes": [
+    "practice",
+    "calculation"
+  ],
+  "learningGoals": [
+    "原子量・分子量・式量を用いて、物質の量的関係を計算できる。",
+    "質量・物質量・粒子数・標準状態の気体体積を相互に変換できる。",
+    "モル濃度・質量パーセント濃度・溶解度に関する基本計算ができる。",
+    "化学反応式の係数比を用いて、反応物と生成物の量的関係を計算できる。",
+    "問題に応じた有効数字・単位・科学的記数法で解答できる。"
+  ],
+  "useCases": [
+    "lesson-introduction",
+    "lesson-practice",
+    "home-study",
+    "homework",
+    "test-preparation",
+    "teacher-demo"
+  ],
+  "modelLimitations": [
+    "学習記録は使用端末のブラウザ内に保存され、他端末とは共有されない。",
+    "標準状態の気体1 molの体積は22.4 Lとして扱う。",
+    "本教材は高校化学基礎の基礎計算定着を目的としており、大学レベルの厳密な物理化学的補正は扱わない。"
+  ],
+  "platform": {
+    "sourceDependencyMode": "standalone",
+    "coreVersion": null,
+    "structureMode": "single-file",
+    "structureRuleVersion": "1.0"
+  },
+  "distribution": {
+    "hosted": {
+      "enabled": true,
+      "dependencyMode": "standalone"
+    },
+    "portable": {
+      "enabled": true,
+      "dependencyMode": "standalone",
+      "directFileOpen": true
+    },
+    "standalonePackage": {
+      "enabled": true,
+      "dependencyMode": "standalone"
+    }
+  },
+  "storage": {
+    "enabled": true,
+    "types": [
+      "localStorage"
+    ],
+    "deletionMethod": "ブラウザの学習記録削除機能、または教員用設定から記録を削除できます。"
+  },
+  "network": {
+    "required": false,
+    "externalEndpoints": []
+  },
+  "privacy": {
+    "collectsPersonalData": false,
+    "usesAnalytics": false,
+    "usesCookies": false,
+    "externalTransmission": false
+  },
+  "license": {
+    "code": "TBD",
+    "content": "TBD",
+    "thirdPartyNotices": []
+  },
+  "owners": {
+    "appOwnerRole": "Chemistry App Owner",
+    "maintainerRole": "Platform Maintainer"
+  },
+  "links": {
+    "hostedUrl": "./apps/senior-high/chemistry/mol-master/",
+    "repositoryPath": "site/apps/senior-high/chemistry/mol-master"
+  }
+}
