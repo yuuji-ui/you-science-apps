@@ -53,7 +53,6 @@
       "CHEM.MOL.001"
     ],
     "appTypes": [
-      "practice",
       "calculation"
     ],
     "learningGoals": [
@@ -68,15 +67,10 @@
       "lesson-practice",
       "home-study",
       "homework",
-      "test-preparation",
+      "test-prep",
       "teacher-demo"
     ]
   },
-  "modelLimitations": [
-    "学習記録は使用端末のブラウザ内に保存され、他端末とは共有されない。",
-    "標準状態の気体1 molの体積は22.4 Lとして扱う。",
-    "本教材は高校化学基礎の基礎計算定着を目的としており、大学レベルの厳密な物理化学的補正は扱わない。"
-  ],
   "platform": {
     "sourceDependencyMode": "self-contained",
     "coreVersion": null,
