@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>モルマスター Ver.1.0</title>
+<style>
+:root{
+  --bg:#f3f7fb;--panel:#fff;--ink:#17324d;--muted:#62778a;--line:#d7e1ea;
+  --brand:#176b87;--brand2:#0f5269;--accent:#f4a261;--ok:#13795b;--bad:#b42318;
+  --warn:#8a5a00;--shadow:0 10px 28px rgba(26,70,96,.12);--radius:18px;
+}
+*{box-sizing:border-box}
+html{font-size:16px}
+body{margin:0;background:linear-gradient(180deg,#eef6fb,#f8fbfd 38%,#f3f7fb);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;min-height:100vh}
+button,input,select{font:inherit}
+button{touch-action:manipulation}
+.app{max-width:1180px;margin:0 auto;padding:18px}
+.header{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand h1{margin:0;font-size:clamp(1.6rem,4vw,2.35rem);letter-spacing:.02em}
+.brand p{margin:.25rem 0 0;color:var(--muted)}
+.badge{background:#e7f3f7;color:var(--brand2);border:1px solid #c7e0e8;border-radius:999px;padding:.45rem .75rem;font-weight:700;white-space:nowrap}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(16px,3vw,28px)}
+.grid{display:grid;gap:16px}
+.home-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.mode-card{min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
+.mode-card h2{margin:.2rem 0;font-size:1.35rem}
+.mode-card p{color:var(--muted);line-height:1.75}
+.icon{font-size:2.2rem}
+.btn{border:0;border-radius:13px;padding:.85rem 1.1rem;font-weight:800;cursor:pointer;min-height:48px}
+.btn.primary{background:var(--brand);color:#fff}.btn.primary:hover{background:var(--brand2)}
+.btn.secondary{background:#eaf2f6;color:var(--brand2);border:1px solid #cddce5}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.warn{background:#fff4db;color:#754c00;border:1px solid #f1d184}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.section-title{margin:0 0 14px;font-size:1.45rem}
+.note{background:#edf7fa;border-left:5px solid var(--brand);padding:14px;border-radius:12px;line-height:1.65}
+.lesson-nav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.5rem .75rem;cursor:pointer}
+.pill.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.example{font-size:1.2rem;background:#f8fafc;border:1px dashed #b9cbd7;border-radius:12px;padding:16px;margin:12px 0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{display:block;font-weight:700;margin-bottom:6px}
+select,input[type="text"],input[type="number"]{width:100%;padding:.85rem;border:1px solid #b9c9d4;border-radius:12px;background:#fff;min-height:48px}
+.check-list{display:grid;gap:8px;margin:14px 0}
+.check-list label{display:flex;gap:9px;align-items:flex-start;font-weight:500}
+.practice-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px}
+.topbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;margin-bottom:14px}
+.progress-wrap{height:12px;background:#e4edf2;border-radius:999px;overflow:hidden}
+.progress{height:100%;background:linear-gradient(90deg,var(--brand),#2aa1bd);width:0}
+.stat-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.42rem .7rem;font-weight:700}
+.question{font-size:clamp(1.18rem,2.5vw,1.55rem);line-height:1.7;margin:12px 0 18px}
+.formula{font-family:"Times New Roman",serif;font-size:1.15em}
+.answer-box{background:#f8fbfd;border:1px solid var(--line);padding:16px;border-radius:14px}
+.scientific{display:grid;grid-template-columns:1fr auto 120px;gap:8px;align-items:center}
+.feedback{min-height:54px;margin-top:12px;border-radius:12px;padding:12px;display:none;line-height:1.6}
+.feedback.show{display:block}.feedback.ok{background:#e8f6f1;color:#0d644b;border:1px solid #a8d9c8}
+.feedback.bad{background:#fff0ee;color:#8f1d15;border:1px solid #efb3ad}
+.hints{display:grid;gap:8px;margin-top:14px}.hint{background:#fff8e8;border:1px solid #f2d69a;border-radius:11px;padding:11px;display:none}
+.hint.show{display:block}
+.side-card{position:sticky;top:16px;align-self:start}
+.constants h3{margin-top:0}.constant{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #edf1f4}
+.atomic-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.atom{border:1px solid var(--line);border-radius:8px;text-align:center;padding:6px;font-size:.9rem;background:#fbfdfe}
+.result-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}
+.kpi{text-align:center;padding:16px;background:#f8fbfd;border:1px solid var(--line);border-radius:14px}
+.kpi strong{display:block;font-size:1.6rem}
+.review-item{border:1px solid var(--line);border-radius:14px;padding:15px;margin:10px 0}
+.review-item summary{cursor:pointer;font-weight:800}
+.review-body{margin-top:10px;line-height:1.7;color:#334e62}
+.record-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+canvas{width:100%;height:260px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.footer-note{margin-top:16px;color:var(--muted);font-size:.9rem}
+.mobile-constants{display:none}
+.teacher-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.range-help{margin-top:7px;color:var(--muted);font-size:.92rem}.step-panel{background:#eef7fb;border:1px solid #bdd9e5;border-radius:14px;padding:14px;margin-bottom:14px}.step-panel.done{background:#e8f6f1;border-color:#a8d9c8}.difficulty-badge{display:inline-block;border-radius:999px;padding:.3rem .65rem;font-size:.85rem;font-weight:800;background:#edf3f7;color:#36566e;margin-bottom:8px}.difficulty-badge.level1{background:#e8f6f1;color:#0d644b}.difficulty-badge.level2{background:#fff4db;color:#754c00}.difficulty-badge.level3{background:#fff0ee;color:#8f1d15}.intro-check{margin-top:18px;background:#f8fbfd;border:1px solid var(--line);border-radius:14px;padding:15px}.intro-options{display:grid;gap:8px;margin:10px 0}.intro-option{text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:.75rem;cursor:pointer}.intro-option.selected{border-color:var(--brand);box-shadow:0 0 0 2px rgba(23,107,135,.12)}.mini-feedback{min-height:28px;font-weight:700;margin-top:8px}.type-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.type-checks label{font-weight:500;border:1px solid var(--line);border-radius:10px;padding:9px;background:#fff}.danger-zone{border:1px solid #efb3ad;background:#fff7f6;border-radius:14px;padding:14px}
+@media(max-width:850px){
+  .home-grid,.result-kpis{grid-template-columns:1fr 1fr}
+  .practice-layout{grid-template-columns:1fr}
+  .side-card{display:none}
+  .mobile-constants{display:block;margin-bottom:12px}
+}
+@media(max-width:600px){
+  .app{padding:10px}.header{align-items:flex-start}.badge{font-size:.82rem}
+  .home-grid,.result-kpis,.form-grid,.teacher-grid,.type-checks{grid-template-columns:1fr}
+  .topbar{grid-template-columns:1fr 1fr}.topbar .progress-wrap{grid-column:1/-1}
+  .scientific{grid-template-columns:1fr auto 88px}
+  .row.mobile-stack{display:grid;grid-template-columns:1fr}
+}
+
+/* ===== 複数範囲選択 ===== */
+.range-box{min-width:0}.range-actions{margin:7px 0}.btn.mini{min-height:36px;padding:.42rem .7rem;font-size:.88rem}
+.range-checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.range-checklist label{display:flex;gap:8px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:600;line-height:1.35}
+.range-checklist input{width:20px;height:20px;flex:0 0 auto;margin-top:1px}
+.answer-rule{display:block;margin-top:9px;padding:7px 10px;border-radius:9px;background:#fff4db;border:1px solid #f1d184;color:#754c00;font-weight:700;font-size:.92rem}
+.reaction-eq{display:block;margin:.65rem 0;padding:.65rem .8rem;border-radius:10px;background:#edf7fa;font-weight:800;text-align:center}
+@media(max-width:600px){.range-checklist{grid-template-columns:1fr}.range-actions .btn{flex:1}.range-box{grid-column:1/-1}}
+</style>
+
+<style id="phase37Styles">
+.used-atomic-masses{margin:10px 0 14px;padding:10px 12px;border-radius:12px;background:#f2f8fb;border:1px solid #cfe0e8;color:#234}
+.range-checklist label{min-height:48px}
+</style>
+
+<style id="phase4Styles">
+.intro-lead{margin:.25rem 0 0;color:var(--muted)}
+.lesson-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 12px;padding:10px 12px;border-radius:12px;background:#eef7fa;border:1px solid #cfe3ea}
+.lesson-goal{margin:10px 0 14px;padding:12px 14px;border-left:5px solid var(--brand);background:#f6fafc;border-radius:0 10px 10px 0}
+.lesson-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.lesson-key>div{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.lesson-map{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0}
+.lesson-map .box{padding:12px;border-radius:12px;background:#f7fbfd;border:1px solid var(--line);text-align:center;font-weight:700}
+.lesson-map .arrow{font-size:1.25rem;color:var(--brand);font-weight:900}
+.intro-checks{display:grid;gap:12px;margin-top:18px}
+.intro-check{margin-top:0}
+.intro-check-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.intro-check-index{font-size:.82rem;color:var(--muted);font-weight:700}
+.mode-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.mode-preview>div{padding:11px;border-radius:11px;border:1px solid var(--line);background:#fbfdfe}
+@media(max-width:600px){
+ .lesson-key,.mode-preview{grid-template-columns:1fr}
+ .lesson-map{grid-template-columns:1fr}
+ .lesson-map .arrow{transform:rotate(90deg);justify-self:center}
+ .lesson-progress{align-items:flex-start;flex-direction:column}
+}
+</style>
+
+
+<style id="phase5Styles">
+/* 演習UI・スマホUI ===== */
+:root{--safe-bottom:env(safe-area-inset-bottom,0px)}
+body{padding-bottom:var(--safe-bottom)}
+button,input,select,textarea{touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{
+  outline:3px solid rgba(23,107,135,.35);outline-offset:2px
+}
+.range-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.range-selected-summary{font-size:.84rem;font-weight:800;color:var(--brand);white-space:nowrap}
+.practice-actions{display:grid;gap:9px}
+.practice-actions-secondary{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.action-submit{width:100%;min-height:54px;font-size:1.08rem}
+.action-quit{justify-self:start}
+.mobile-constants summary{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;min-height:48px}
+.summary-note{font-size:.8rem;color:var(--muted);font-weight:500}
+#feedback{scroll-margin-top:16px}
+#questionText{scroll-margin-top:12px}
+.study-tools{border:1px solid var(--line);border-radius:12px;margin:10px 0 14px;background:#fbfdfe}
+.study-tools>summary{cursor:pointer;padding:11px 12px;font-weight:800;min-height:48px;display:flex;align-items:center}
+.study-tools-content{padding:0 10px 10px}
+.study-tools .support-links{margin-top:4px}
+.study-tools .calc-space{margin-bottom:0}
+.question-status{scroll-behavior:smooth}
+@media(max-width:850px){
+  .mobile-constants{position:relative;z-index:2}
+}
+@media(max-width:600px){
+  body{padding-bottom:calc(10px + var(--safe-bottom))}
+  .app{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .range-heading{align-items:flex-start;flex-direction:column;gap:3px}
+  .range-box{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfdfe}
+  .range-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .range-actions .btn{min-height:44px}
+  .range-checklist{max-height:280px;overflow:auto;padding-right:2px}
+  .range-checklist label{min-height:52px;align-items:center}
+  .scientific{grid-template-columns:minmax(0,1fr) auto 82px;gap:6px}
+  .scientific span{font-size:.96rem;white-space:nowrap}
+  .answer-box{padding:13px}
+  .feedback.show{margin:10px 0 0}
+  .practice-actions-secondary{grid-template-columns:1fr 1fr}
+  .action-quit{width:auto!important;min-height:44px!important;font-size:.92rem}
+  .calc-tools button{min-width:48px;min-height:44px}
+  .support-links{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .support-links .btn{width:100%;min-height:44px}
+  .mobile-constants .card{padding:10px 12px}
+  .topbar{position:sticky;top:0;background:var(--bg);z-index:3;padding:4px 0 7px}
+}
+@media(max-width:390px){
+  .scientific{grid-template-columns:1fr}
+  .scientific span{text-align:center}
+  .practice-actions-secondary{grid-template-columns:1fr}
+  .support-links{grid-template-columns:1fr!important}
+}
+</style>
+
+
+<style id="phase72Styles">
+.answer-format-guide{
+  display:none;
+  margin:10px 0 12px;
+  padding:9px 12px;
+  border-radius:10px;
+  border:1px solid #c8dce6;
+  background:#f3f9fc;
+  color:#153d52;
+  font-weight:800;
+  font-size:.94rem;
+}
+.answer-format-guide.show{display:block}
+.answer-format-guide .answer-format-label{
+  color:var(--muted);
+  font-weight:700;
+  margin-right:.35rem;
+}
+@media(max-width:600px){
+  .answer-format-guide{font-size:.92rem;padding:9px 10px}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+<header class="header">
+  <div class="brand"><h1>⚗️ モルマスター</h1><p>高校化学基礎｜原子量・物質量・濃度・溶解度・反応の量的関係</p></div>
+  <div class="badge">Ver.1.0</div>
+</header>
+
+<section id="home" class="screen active">
+  <div class="grid home-grid">
+    <article class="card mode-card"><div><div class="icon">📘</div><h2>入門編</h2><p>中学校理科から高校化学へつなぎ、化学式・物質量・単位・有効数字を段階的に確認します。</p></div><button class="btn primary" data-go="intro">入門編を開く</button></article>
+    <article class="card mode-card"><div><div class="icon">🧪</div><h2>演習編</h2><p>出題範囲と問題数を選び、時間・正答率・ミスの種類を記録します。</p></div><button class="btn primary" data-go="setup">演習を始める</button></article>
+    <article class="card mode-card"><div><div class="icon">📈</div><h2>学習記録</h2><p>初回正答率、平均時間、ミスの内訳を端末内に保存します。</p></div><button class="btn secondary" data-go="records">記録を見る</button></article>
+    <article class="card mode-card"><div><div class="icon">⚙️</div><h2>教員用設定</h2><p>出題範囲、有効数字判定、ヒントなどを授業に合わせて調整します。</p></div><button class="btn secondary" data-go="teacher">設定を開く</button></article>
+  </div>
+  <p class="footer-note">学習記録はこの端末のブラウザ内に保存されます。別端末との共有やオンラインランキングは行いません。</p>
+</section>
+
+<section id="intro" class="screen">
+  <div class="card">
+    <div class="row spread"><div><h2 class="section-title">入門編</h2><p class="intro-lead">必要な章だけ選んで学習できます。各章の確認問題で理解を確かめてから演習へ進みましょう。</p></div><button class="btn ghost" data-go="home">トップへ</button></div>
+    <div class="lesson-nav" id="lessonNav"></div>
+    <div id="lessonBody"></div>
+    <div class="row spread" style="margin-top:16px">
+      <button class="btn secondary" id="lessonPrev">前へ</button>
+      <button class="btn primary" id="lessonNext">次へ</button>
+    </div>
+  </div>
+</section>
+
+<section id="setup" class="screen">
+  <div class="card">
+    <div class="row spread"><h2 class="section-title">演習設定</h2><button class="btn ghost" data-go="home">トップへ</button></div>
+    <div class="form-grid">
+      <div><label for="modeSelect">モード</label><select id="modeSelect">
+        <option value="mode1">モード1：原子量・分子量・式量</option>
+        <option value="mode2" selected>モード2：物質量</option>
+        <option value="mode3">モード3：濃度・溶解度</option>
+        <option value="mode4">モード4：反応式と量的関係（発展）</option>
+        <option value="mixed">総合ミックス</option>
+        <option value="weak">苦手問題を復習</option>
+      </select></div>
+      <div class="range-box"><div class="range-heading"><label>出題範囲（複数選択可）</label><span id="rangeSelectedSummary" class="range-selected-summary">1項目選択中</span></div>
+        <select id="rangeSelect" hidden><option value="all">all</option></select>
+        <div class="row range-actions"><button type="button" class="btn ghost mini" id="rangeAll">すべて選択</button><button type="button" class="btn ghost mini" id="rangeClear">選択解除</button></div>
+        <div id="rangeChecklist" class="range-checklist"></div><div class="range-help" id="rangeHelp"></div></div>
+      <div><label for="countSelect">問題数・チャレンジ</label><select id="countSelect">
+      <option value="5">5問（初級）</option>
+      <option value="10" selected>10問（中級）</option>
+      <option value="15">15問（上級）</option>
+      <option value="20">20問（鬼）</option>
+    </select>
+    <div class="range-help" id="challengeHelp">中級：パス2回まで</div></div>
+      <div><label for="practiceStyle">練習方法</label><select id="practiceStyle"><option value="standard">通常演習</option><option value="guided">じっくり練習（途中段階を確認）</option></select></div>
+    </div>
+    <div class="note" style="margin-top:16px">
+      <strong>開始前に確認</strong>
+      <div class="check-list">
+        <label><input type="checkbox" class="readyCheck"> 単位を必ず選ぶ</label>
+        <label><input type="checkbox" class="readyCheck"> 有効数字を意識する</label>
+        <label><input type="checkbox" class="readyCheck"> 途中計算では丸めない</label>
+        <label><input type="checkbox" class="readyCheck"> 粒子の種類（原子・分子・式単位・イオン）を確認する</label>
+      </div>
+    </div>
+    <button class="btn primary" id="startPractice" disabled style="margin-top:16px;width:100%">確認してスタート</button>
+  </div>
+</section>
+
+<section id="practice" class="screen">
+  <div class="mobile-constants"><details class="card" id="mobileConstantsDetails"><summary><strong>定数・原子量表</strong><span class="summary-note">タップで開閉</span></summary><div id="mobileConstants"></div></details></div>
+  <div class="practice-layout">
+    <main class="card">
+      <div class="topbar">
+        <div class="progress-wrap"><div id="progressBar" class="progress"></div></div>
+        <div class="stat-chip" id="questionCounter">1 / 10</div>
+        <div class="stat-chip" id="timer">00:00</div>
+      </div>
+      <div id="difficultyBadge" class="difficulty-badge level1">基本</div><div id="questionText" class="question"></div><div id="answerFormatGuide" class="answer-format-guide" aria-live="polite"></div><div id="stepPanel" class="step-panel" style="display:none"></div>
+      <div class="answer-box">
+        <div class="answer-entry-row">
+          <div class="answer-value-column">
+            <div id="normalAnswer">
+              <label for="answerInput">数値</label>
+              <input id="answerInput" type="text" inputmode="decimal" autocomplete="off" placeholder="例：0.50">
+            </div>
+            <div id="scientificAnswer" style="display:none">
+              <label>科学的記数法</label>
+              <div class="scientific"><input id="coefficientInput" type="text" inputmode="decimal" placeholder="6.0"><span>× 10^</span><input id="exponentInput" type="number" inputmode="numeric" placeholder="23"></div>
+            </div>
+          </div>
+          <div class="answer-unit-column"><label for="unitSelect">単位</label><select id="unitSelect"></select></div>
+        </div>
+        <div id="feedback" class="feedback" aria-live="polite" role="status"></div>
+        <div class="practice-actions" style="margin-top:14px">
+          <button class="btn primary action-submit" id="submitAnswer">解答する</button>
+          <div class="practice-actions-secondary">
+            <button class="btn secondary" id="hintButton">ヒントを見る（0/3）</button>
+            <button class="btn warn" id="passButton">パス（残り2回）</button>
+          </div>
+          <button class="btn ghost action-quit" id="quitPractice">最初に戻る</button>
+        </div>
+        <div class="hints"><div class="hint" id="hint1"></div><div class="hint" id="hint2"></div><div class="hint" id="hint3"></div></div>
+      </div>
+    </main>
+    <aside class="card side-card constants" id="desktopConstants"></aside>
+  </div>
+</section>
+
+<section id="results" class="screen">
+  <div class="card">
+    <div class="row spread"><h2 class="section-title">演習結果</h2><button class="btn ghost" data-go="home">トップへ</button></div>
+    <div class="grid result-kpis" id="resultKpis"></div>
+    <div class="note" id="resultComment"></div>
+    <h3>問題別の振り返り</h3><div id="reviewList"></div>
+    <div class="row" id="resultActions" style="margin-top:16px"><button class="btn primary" data-go="setup">もう一度演習</button><button class="btn secondary" data-go="records">学習記録を見る</button></div>
+  </div>
+</section>
+
+<section id="records" class="screen">
+  <div class="card">
+    <div class="row spread"><h2 class="section-title">学習記録</h2><button class="btn ghost" data-go="home">トップへ</button></div>
+    <div class="record-filters"><button class="pill" data-days="7">7日</button><button class="pill active" data-days="30">直近30日</button><button class="pill" data-days="99999">全期間</button></div>
+    <div id="recordSummary"></div>
+    <canvas id="recordChart" width="900" height="280"></canvas>
+    <div id="weakSummary" class="note" style="margin-top:14px"></div><div class="row" style="margin-top:14px"><button class="btn primary" id="startWeakReview">苦手問題を復習</button><button class="btn ghost" id="clearRecords">学習記録を削除</button></div>
+  </div>
+</section>
+
+<section id="teacher" class="screen">
+  <div class="card">
+    <div class="row spread"><h2 class="section-title">教員用設定</h2><button class="btn ghost" data-go="home">トップへ</button></div>
+    <p class="note">この設定は現在の端末・ブラウザに保存されます。生徒端末ごとに設定する場合は、公開前にHTML上部の初期値を変更してください。</p>
+    <div class="teacher-grid" style="margin-top:16px">
+      <div><label for="teacherSigPolicy">有効数字の判定</label><select id="teacherSigPolicy"><option value="strict">厳密に判定する</option><option value="warn">数値・単位が合えば正解とし、注意を表示</option><option value="off">判定しない</option></select></div>
+      
+      <div><label for="teacherHint">ヒント機能</label><select id="teacherHint"><option value="on">使用する</option><option value="off">使用しない</option></select></div>
+    </div>
+    <h3>出題する問題形式</h3>
+    <div id="teacherTypeChecks" class="type-checks"></div>
+    <div class="row" style="margin-top:18px"><button class="btn primary" id="saveTeacherSettings">設定を保存</button><button class="btn secondary" id="resetTeacherSettings">初期設定に戻す</button></div>
+  </div>
+</section>
+</div>
+
+<script>
+
+
+
+// =========================================================
+// 1. DATA / CONSTANTS
+// =========================================================
+/*
+ 教材名：モルマスター
+ 対象：高校 化学基礎
+ 単元：原子量・分子量・式量、物質量、粒子数、気体体積、濃度
+ Version：1.0.0
+ 更新履歴：
+  2026-07-30 Ver.1.0 初版
+  2026-07-30 Ver.1.1 段階出題・範囲選択・じっくり練習・苦手復習・教員設定・濃度問題拡充
+  2026-07-30 Ver.1.2 入門編再編・計算スペース・段階別式量・モバイル最適化・定着支援・数値生成改善
+  2026-08-10 開発版 Phase 3.7 問題生成エンジン安定化・設定整合・コード層整理
+  2026-08-10 開発版 Phase 4 入門編7章再構築
+  2026-08-10 開発版 Phase 5 演習UI・スマホUI最終整理
+  2026-08-11 開発版 Phase 7 統合・構造整理・総合検証
+  2026-08-11 開発版 Phase 7.2 画面遷移回帰修正
+  2026-08-11 開発版 Phase 7.2 問題別解答形式ガイド追加
+  2026-08-11 開発版 Phase 8.1 RC前軽微修正（モード4気体体積exact統一・ReactionLimit採点経路統一）
+  2026-08-17 開発版 RC Phase 8.2回帰確認完了・RC候補固定
+  2026-08-17 開発版 RC Final 未使用fixed1経路削除（Claude最終レビュー反映）
+  2026-08-17 開発版 最終確認完了
+  2026-08-17 Ver.1.0 初回正式Release
+ 教員編集箇所：
+  1) MATERIALS（物質データ）
+  2) VALUE_SETS（数値セット）
+  3) QUESTION_BUILDERS（出題ロジック）
+  4) LESSONS（入門編）
+*/
+const MATERIALS = [{"id":"SUB-001","name":"水素","formula":"H","kind":"原子","molarMass":1,"gas":false,"components":"H","ratios":1,"hydrate":false},{"id":"SUB-002","name":"ヘリウム","formula":"He","kind":"原子","molarMass":4,"gas":false,"components":"He","ratios":1,"hydrate":false},{"id":"SUB-003","name":"炭素","formula":"C","kind":"原子","molarMass":12,"gas":false,"components":"C","ratios":1,"hydrate":false},{"id":"SUB-004","name":"窒素","formula":"N","kind":"原子","molarMass":14,"gas":false,"components":"N","ratios":1,"hydrate":false},{"id":"SUB-005","name":"酸素","formula":"O","kind":"原子","molarMass":16,"gas":false,"components":"O","ratios":1,"hydrate":false},{"id":"SUB-006","name":"フッ素","formula":"F","kind":"原子","molarMass":19,"gas":false,"components":"F","ratios":1,"hydrate":false},{"id":"SUB-007","name":"ナトリウム","formula":"Na","kind":"原子","molarMass":23,"gas":false,"components":"Na","ratios":1,"hydrate":false},{"id":"SUB-008","name":"マグネシウム","formula":"Mg","kind":"原子","molarMass":24,"gas":false,"components":"Mg","ratios":1,"hydrate":false},{"id":"SUB-009","name":"アルミニウム","formula":"Al","kind":"原子","molarMass":27,"gas":false,"components":"Al","ratios":1,"hydrate":false},{"id":"SUB-010","name":"ケイ素","formula":"Si","kind":"原子","molarMass":28,"gas":false,"components":"Si","ratios":1,"hydrate":false},{"id":"SUB-011","name":"リン","formula":"P","kind":"原子","molarMass":31,"gas":false,"components":"P","ratios":1,"hydrate":false},{"id":"SUB-012","name":"硫黄","formula":"S","kind":"原子","molarMass":32,"gas":false,"components":"S","ratios":1,"hydrate":false},{"id":"SUB-013","name":"塩素","formula":"Cl","kind":"原子","molarMass":35.5,"gas":false,"components":"Cl","ratios":1,"hydrate":false},{"id":"SUB-014","name":"カリウム","formula":"K","kind":"原子","molarMass":39,"gas":false,"components":"K","ratios":1,"hydrate":false},{"id":"SUB-015","name":"カルシウム","formula":"Ca","kind":"原子","molarMass":40,"gas":false,"components":"Ca","ratios":1,"hydrate":false},{"id":"SUB-016","name":"マンガン","formula":"Mn","kind":"原子","molarMass":55,"gas":false,"components":"Mn","ratios":1,"hydrate":false},{"id":"SUB-017","name":"鉄","formula":"Fe","kind":"原子","molarMass":56,"gas":false,"components":"Fe","ratios":1,"hydrate":false},{"id":"SUB-018","name":"銅","formula":"Cu","kind":"原子","molarMass":64,"gas":false,"components":"Cu","ratios":1,"hydrate":false},{"id":"SUB-019","name":"亜鉛","formula":"Zn","kind":"原子","molarMass":65,"gas":false,"components":"Zn","ratios":1,"hydrate":false},{"id":"SUB-020","name":"銀","formula":"Ag","kind":"原子","molarMass":108,"gas":false,"components":"Ag","ratios":1,"hydrate":false},{"id":"SUB-021","name":"ヨウ素","formula":"I","kind":"原子","molarMass":127,"gas":false,"components":"I","ratios":1,"hydrate":false},{"id":"SUB-022","name":"バリウム","formula":"Ba","kind":"原子","molarMass":137,"gas":false,"components":"Ba","ratios":1,"hydrate":false},{"id":"SUB-023","name":"鉛","formula":"Pb","kind":"原子","molarMass":207,"gas":false,"components":"Pb","ratios":1,"hydrate":false},{"id":"SUB-024","name":"水素","formula":"H₂","kind":"分子","molarMass":2,"gas":true,"components":"H","ratios":2,"hydrate":false},{"id":"SUB-025","name":"窒素","formula":"N₂","kind":"分子","molarMass":28,"gas":true,"components":"N","ratios":2,"hydrate":false},{"id":"SUB-026","name":"酸素","formula":"O₂","kind":"分子","molarMass":32,"gas":true,"components":"O","ratios":2,"hydrate":false},{"id":"SUB-027","name":"塩素","formula":"Cl2","kind":"分子","molarMass":71,"gas":true,"components":"Cl","ratios":2,"hydrate":false},{"id":"SUB-028","name":"ヨウ素","formula":"I2","kind":"分子","molarMass":254,"gas":false,"components":"I","ratios":2,"hydrate":false},{"id":"SUB-029","name":"水","formula":"H₂O","kind":"分子","molarMass":18,"gas":false,"components":"H,O","ratios":"H2,O1","hydrate":false},{"id":"SUB-030","name":"アンモニア","formula":"NH₃","kind":"分子","molarMass":17,"gas":true,"components":"N,H","ratios":"N1,H3","hydrate":false},{"id":"SUB-031","name":"二酸化炭素","formula":"CO₂","kind":"分子","molarMass":44,"gas":true,"components":"C,O","ratios":"C1,O2","hydrate":false},{"id":"SUB-032","name":"メタン","formula":"CH₄","kind":"分子","molarMass":16,"gas":true,"components":"C,H","ratios":"C1,H4","hydrate":false},{"id":"SUB-033","name":"塩化水素","formula":"HCl","kind":"分子","molarMass":36.5,"gas":true,"components":"H,Cl","ratios":"H1,Cl1","hydrate":false},{"id":"SUB-034","name":"硫化水素","formula":"H2S","kind":"分子","molarMass":34,"gas":true,"components":"H,S","ratios":"H2,S1","hydrate":false},{"id":"SUB-035","name":"フッ化水素","formula":"HF","kind":"分子","molarMass":20,"gas":true,"components":"H,F","ratios":"H1,F1","hydrate":false},{"id":"SUB-036","name":"オゾン","formula":"O3","kind":"分子","molarMass":48,"gas":true,"components":"O","ratios":"O3","hydrate":false},{"id":"SUB-037","name":"二酸化硫黄","formula":"SO2","kind":"分子","molarMass":64,"gas":true,"components":"S,O","ratios":"S1,O2","hydrate":false},{"id":"SUB-038","name":"硫酸","formula":"H₂SO₄","kind":"分子","molarMass":98,"gas":false,"components":"H+,SO42-","ratios":"H+2,SO42-1","hydrate":false},{"id":"SUB-039","name":"一酸化窒素","formula":"NO","kind":"分子","molarMass":30,"gas":true,"components":"N,O","ratios":"N1,O1","hydrate":false},{"id":"SUB-040","name":"二酸化窒素","formula":"NO2","kind":"分子","molarMass":46,"gas":true,"components":"N,O","ratios":"N1,O2","hydrate":false},{"id":"SUB-041","name":"硝酸","formula":"HNO3","kind":"分子","molarMass":63,"gas":false,"components":"H+,NO3-","ratios":"H+1,NO3-1","hydrate":false},{"id":"SUB-042","name":"酢酸","formula":"CH3COOH","kind":"分子","molarMass":60,"gas":false,"components":"H+,CH3COO-","ratios":"H+1,CH3COO-1","hydrate":false},{"id":"SUB-043","name":"シュウ酸","formula":"C2H2O4","kind":"分子","molarMass":90,"gas":false,"components":"H+,C2O42-","ratios":"H+2,C2O42-1","hydrate":false},{"id":"SUB-044","name":"シュウ酸二水和物","formula":"C2H2O4・2H2O","kind":"分子","molarMass":126,"gas":false,"components":"H+,C2O42-,H2O","ratios":"H+2,C2O42-1,H2O2","hydrate":true},{"id":"SUB-045","name":"リン酸","formula":"H3PO4","kind":"分子","molarMass":98,"gas":false,"components":"H+,PO43-","ratios":"H+3,PO43-1","hydrate":false},{"id":"SUB-046","name":"塩化ナトリウム","formula":"NaCl","kind":"イオン結晶","molarMass":58.5,"gas":false,"components":"Na+,Cl-","ratios":"Na+1,Cl-1","hydrate":false},{"id":"SUB-047","name":"水酸化ナトリウム","formula":"NaOH","kind":"イオン結晶","molarMass":40,"gas":false,"components":"Na+,OH-","ratios":"Na+1,OH-1","hydrate":false},{"id":"SUB-048","name":"炭酸ナトリウム","formula":"Na2CO3","kind":"イオン結晶","molarMass":106,"gas":false,"components":"Na+,CO32-","ratios":"Na+2,CO32-1","hydrate":false},{"id":"SUB-049","name":"炭酸水素ナトリウム","formula":"NaHCO3","kind":"イオン結晶","molarMass":84,"gas":false,"components":"Na+,HCO3-","ratios":"Na+1,HCO3-1","hydrate":false},{"id":"SUB-050","name":"酸化マグネシウム","formula":"MgO","kind":"イオン結晶","molarMass":40,"gas":false,"components":"Mg2+,O2-","ratios":"Mg2+1,O2-1","hydrate":false},{"id":"SUB-051","name":"酸化カルシウム","formula":"CaO","kind":"イオン結晶","molarMass":56,"gas":false,"components":"Ca2+,O2-","ratios":"Ca2+1,O2-1","hydrate":false},{"id":"SUB-052","name":"水酸化カルシウム","formula":"Ca(OH)2","kind":"イオン結晶","molarMass":74,"gas":false,"components":"Ca2+,OH-","ratios":"Ca2+1,OH-2","hydrate":false},{"id":"SUB-053","name":"炭酸カルシウム","formula":"CaCO₃","kind":"イオン結晶","molarMass":100,"gas":false,"components":"Ca2+,CO32-","ratios":"Ca2+1,CO32-1","hydrate":false},{"id":"SUB-054","name":"塩化カルシウム","formula":"CaCl₂","kind":"イオン結晶","molarMass":111,"gas":false,"components":"Ca2+,Cl-","ratios":"Ca2+1,Cl-2","hydrate":false},{"id":"SUB-055","name":"硫酸カルシウム","formula":"CaSO4","kind":"イオン結晶","molarMass":136,"gas":false,"components":"Ca2+,SO42-","ratios":"Ca2+1,SO42-1","hydrate":false},{"id":"SUB-056","name":"硫酸アンモニウム","formula":"(NH₄)₂SO₄","kind":"イオン結晶","molarMass":132,"gas":false,"components":"NH4+,SO42-","ratios":"NH4+2,SO42-1","hydrate":false},{"id":"SUB-057","name":"酸化アルミニウム","formula":"Al2O3","kind":"イオン結晶","molarMass":102,"gas":false,"components":"Al3+,O2-","ratios":"Al3+2,O2-3","hydrate":false},{"id":"SUB-058","name":"水酸化アルミニウム","formula":"Al(OH)3","kind":"イオン結晶","molarMass":78,"gas":false,"components":"Al3+,OH-","ratios":"Al3+1,OH-3","hydrate":false},{"id":"SUB-059","name":"ミョウバン","formula":"AlK(SO4)2・12H2O","kind":"イオン結晶","molarMass":474,"gas":false,"components":"Al3+,K+,SO42-,H2O","ratios":"Al3+1,K+1,SO42-2,H2O12","hydrate":true},{"id":"SUB-060","name":"塩化鉛","formula":"PbCl2","kind":"イオン結晶","molarMass":278,"gas":false,"components":"Pb2+,Cl-","ratios":"Pb2+1,Cl-2","hydrate":false},{"id":"SUB-061","name":"硫化鉛","formula":"PbS","kind":"イオン結晶","molarMass":239,"gas":false,"components":"Pb2+,S2-","ratios":"Pb2+1,S2-1","hydrate":false},{"id":"SUB-062","name":"硫酸鉛","formula":"PbSO4","kind":"イオン結晶","molarMass":303,"gas":false,"components":"Pb2+,SO42-","ratios":"Pb2+1,SO42-1","hydrate":false},{"id":"SUB-063","name":"酸化鉛(Ⅳ)","formula":"PbO2","kind":"イオン結晶","molarMass":239,"gas":false,"components":"Pb4+,O2-","ratios":"Pb4+1,O2-2","hydrate":false},{"id":"SUB-064","name":"酸化亜鉛","formula":"ZnO","kind":"イオン結晶","molarMass":81,"gas":false,"components":"Zn2+,O2-","ratios":"Zn2+1,O2-1","hydrate":false},{"id":"SUB-065","name":"水酸化亜鉛","formula":"Zn(OH)2","kind":"イオン結晶","molarMass":99,"gas":false,"components":"Zn2+,OH-","ratios":"Zn2+1,OH-2","hydrate":false},{"id":"SUB-066","name":"酸化銅(Ⅱ)","formula":"CuO","kind":"イオン結晶","molarMass":80,"gas":false,"components":"Cu2+,O2-","ratios":"Cu2+1,O2-1","hydrate":false},{"id":"SUB-067","name":"水酸化銅(Ⅱ)","formula":"Cu(OH)2","kind":"イオン結晶","molarMass":98,"gas":false,"components":"Cu2+,OH-","ratios":"Cu2+1,OH-2","hydrate":false},{"id":"SUB-068","name":"硫酸銅","formula":"CuSO₄","kind":"イオン結晶","molarMass":160,"gas":false,"components":"Cu2+,SO42-","ratios":"Cu2+1,SO42-1","hydrate":false},{"id":"SUB-069","name":"硫酸銅五水和物","formula":"CuSO₄・5H₂O","kind":"イオン結晶","molarMass":250,"gas":false,"components":"Cu2+,SO42-,H2O","ratios":"Cu2+1,SO42-1,H2O5","hydrate":true},{"id":"SUB-070","name":"酸化銀","formula":"Ag2O","kind":"イオン結晶","molarMass":232,"gas":false,"components":"Ag+,O2-","ratios":"Ag+2,O2-1","hydrate":false},{"id":"SUB-071","name":"硫化銀","formula":"Ag2S","kind":"イオン結晶","molarMass":248,"gas":false,"components":"Ag+,S2-","ratios":"Ag+2,S2-1","hydrate":false},{"id":"SUB-072","name":"塩化銀","formula":"AgCl","kind":"イオン結晶","molarMass":143.5,"gas":false,"components":"Ag+,Cl-","ratios":"Ag+1,Cl-1","hydrate":false},{"id":"SUB-073","name":"酸化鉄(Ⅱ)","formula":"FeO","kind":"イオン結晶","molarMass":72,"gas":false,"components":"Fe2+,O2-","ratios":"Fe2+1,O2-1","hydrate":false},{"id":"SUB-074","name":"酸化鉄(Ⅲ)","formula":"Fe2O3","kind":"イオン結晶","molarMass":160,"gas":false,"components":"Fe3+,O2-","ratios":"Fe3+2,O2-3","hydrate":false},{"id":"SUB-075","name":"酸化マンガン(Ⅳ)","formula":"MnO2","kind":"イオン結晶","molarMass":87,"gas":false,"components":"Mn4+,O2-","ratios":"Mn4+1,O2-2","hydrate":false}];
+const VALUE_SETS = [{"id":"N001","factor":0.1,"molText":"0.10","particleCoeff":"6.0","particleExp":22,"gasText":"2.24"},{"id":"N002","factor":0.25,"molText":"0.25","particleCoeff":"1.5","particleExp":23,"gasText":"5.60"},{"id":"N003","factor":0.5,"molText":"0.50","particleCoeff":"3.0","particleExp":23,"gasText":"11.2"},{"id":"N004","factor":1,"molText":"1.0","particleCoeff":"6.0","particleExp":23,"gasText":"22.4"},{"id":"N005","factor":1.5,"molText":"1.5","particleCoeff":"9.0","particleExp":23,"gasText":"33.6"},{"id":"N006","factor":2,"molText":"2.0","particleCoeff":"1.2","particleExp":24,"gasText":"44.8"},{"id":"N007","factor":2.5,"molText":"2.5","particleCoeff":"1.5","particleExp":24,"gasText":"56.0"},{"id":"N008","factor":3,"molText":"3.0","particleCoeff":"1.8","particleExp":24,"gasText":"67.2"},{"id":"N009","factor":10,"molText":"10","particleCoeff":"6.0","particleExp":24,"gasText":"224"}];
+const AVOGADRO = 6.0e23;
+const MOLAR_VOLUME = 22.4;
+const ATOMIC_MASSES = {H:1,C:12,N:14,O:16,Na:23,Mg:24,Al:27,S:32,Cl:35.5,K:39,Ca:40,Mn:55,Fe:56,Cu:64,Zn:65,Ag:108,I:127,Ba:137,Pb:207,F:19,Si:28,P:31,He:4};
+
+const LESSONS=[
+ {title:"有効数字とは",html:`<p>測定値や問題文の数値には、「どこまで確かに表されているか」という桁の情報があります。</p><div class="example"><strong>3.0</strong> は有効数字2桁、<strong>3</strong> は有効数字1桁です。</div><p>同じ数値でも、末尾の0には意味があります。</p>`},
+ {title:"0の数え方",html:`<p>先頭の0は数えません。途中や末尾の0は数える場合があります。</p><div class="example">0.050 → 2桁<br>1.020 → 4桁<br>0.00450 → 3桁</div>`},
+ {title:"掛け算・割り算",html:`<p>掛け算・割り算では、使った値のうち<strong>最も少ない有効数字</strong>に答えをそろえます。</p><div class="example">2.0 × 3.14 = 6.28 → <strong>6.3</strong></div>`},
+ {title:"足し算・引き算",html:`<p>足し算・引き算では、有効数字の桁数ではなく、<strong>小数点以下の位</strong>をそろえます。</p><div class="example">12.3 + 0.45 = 12.75 → <strong>12.8</strong></div>`},
+ {title:"途中で丸めない",html:`<p>途中計算で丸めると、最終結果がずれることがあります。</p><div class="example">途中は電卓の値を保ち、最後にだけ有効数字をそろえます。</div>`},
+ {title:"入力方法",html:`<p>通常の数値は「0.50」のように入力します。粒子数は係数と指数を分けて入力します。</p><div class="example">6.0 × 10^23 個 → 係数「6.0」、指数「23」、単位「個」</div><p>Ver.1では e表記（6.0e23）を採用しません。</p>`}
+];
+
+const UNIT_OPTIONS={
+ mol:["mol","g","L","個","mol/L"],
+ g:["g","mol","g/mol","L","%"],
+ L:["L","mL","mol","g","L/mol"],
+ particle:["個","mol","/mol","g","L"],
+ molarMass:["g/mol","g","mol","mol/g","g/L"],
+ concentration:["mol/L","mol","g/L","%","L/mol"],
+ percent:["%","mol/L","g","g/mL","mol"],
+ none:["単位なし","g/mol","g","mol","L"]
+};
+
+let state={questions:[],index:0,startTime:0,timerId:null,passes:2,hintsUsed:0,results:[],mode:"mode2",count:10,lastMaterial:null,lastType:null};
+
+// =========================================================
+// 2. STORAGE
+// All persisted values pass through these guarded primitives.
+// =========================================================
+function storageGet(key,fallback=null){try{const value=localStorage.getItem(key);return value===null?fallback:value}catch{return fallback}}
+function storageSet(key,value){try{localStorage.setItem(key,String(value));return true}catch{return false}}
+function storageRemove(key){try{localStorage.removeItem(key);return true}catch{return false}}
+
+let calcSpaceOpen=(()=>{const saved=storageGet('molMasterCalcSpaceOpen');if(saved!==null)return saved==='1';return false})();
+function applyCalcSpaceVisibility(){
+ const calc=document.getElementById('calcSpace'),button=document.getElementById('calcSpaceToggle');if(!calc)return;
+ const available=teacherSettings?.showCalcSpace!==false;calc.style.display=available&&calcSpaceOpen?'block':'none';
+ if(button){button.style.display=available?'inline-flex':'none';button.textContent=calcSpaceOpen?'計算スペースを隠す':'計算スペースを表示';button.setAttribute('aria-expanded',String(available&&calcSpaceOpen))}
+}
+
+function showScreenBase(id){
+ document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+ if(id==="records") renderRecords(30);
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)showScreen(b.dataset.go)});
+
+function formatFormula(s){
+ return String(s).replace(/([A-Za-z\)])(\d+)/g,(m,a,b)=>a+"<sub>"+b+"</sub>").replace(/・(\d+)/g,"・$1");
+}
+function cleanName(s){return s||""}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function sigDigitsFromText(text){
+ let s=String(text).trim().replace(/^[-+]/,"");
+ if(s.includes("×")) s=s.split("×")[0];
+ s=s.replace(".","");
+ s=s.replace(/^0+/,"");
+ return s.length||1;
+}
+function sigDigitsInput(text){
+ let s=String(text).trim().replace(/^[-+]/,"");
+ if(!/^\d*\.?\d+$/.test(s)) return 0;
+ s=s.replace(".","").replace(/^0+/,"");
+ return s.length||1;
+}
+function roundSig(value,sig){
+ if(value===0)return 0;
+ return Number(value.toPrecision(sig));
+}
+function displaySig(value,sig){
+ if(value===0)return "0";
+ const rounded=roundSig(value,sig);
+ const abs=Math.abs(rounded);
+ if(abs>=1e6||abs<0.001) return rounded.toExponential(sig-1);
+ const decimals=Math.max(0,sig-1-Math.floor(Math.log10(abs)));
+ return rounded.toFixed(decimals);
+}
+function parseRatioEntries(material){
+ const text=String(material.ratios||"");
+ return text.split(",").map(part=>{
+   const m=part.match(/^(.+?)(\d+)$/);
+   return m?{label:m[1],count:Number(m[2])}:null;
+ }).filter(Boolean);
+}
+function eligibleMaterials(filter){
+ let arr=MATERIALS.filter(m=>m.molarMass&&m.molarMass>0);
+ if(filter==="molecule") arr=arr.filter(m=>m.kind==="分子");
+ if(filter==="compound") arr=arr.filter(m=>m.kind==="分子"||m.kind==="イオン結晶");
+ if(filter==="gas") arr=arr.filter(m=>m.gas&&m.kind==="分子");
+ if(filter==="ionic") arr=arr.filter(m=>m.kind==="イオン結晶"&&parseRatioEntries(m).length>=2);
+ if(filter==="atom") arr=arr.filter(m=>m.kind==="原子");
+ return arr;
+}
+function chooseMaterial(filter){
+ let arr=eligibleMaterials(filter);
+ const noRepeat=arr.filter(m=>m.id!==state.lastMaterial);
+ return pick(noRepeat.length?noRepeat:arr);
+}
+function chooseValue(){return pick(VALUE_SETS)}
+function unitsFor(correctKey){
+ const arr=shuffle(UNIT_OPTIONS[correctKey]);
+ return arr;
+}
+function commonQ(base){
+ base.attempts=0;base.firstCorrect=false;base.hintsShown=0;base.passed=false;base.userFirst="";return base;
+}
+function qMolarMass(){
+ const m=chooseMaterial("compound");
+ return commonQ({
+  type:"molarMass",material:m,question:`${cleanName(m.name)} <span class="formula">${formatFormula(m.formula)}</span> の${m.kind==="分子"?"分子量":"式量"}を求めなさい。`,
+  answer:m.molarMass,answerText:String(m.molarMass),sig:null,unitKey:"none",unit:"単位なし",scientific:false,
+  hints:[`原子量表を使い、化学式に含まれる各原子の原子量を合計します。`,`下付き数字は、その原子が何個あるかを表します。`,`答えは ${m.kind==="分子"?"分子量":"式量"}。相対質量なので単位はありません。単位欄は「単位なし」を選びます。`],
+  explanation:`${formatFormula(m.formula)} を構成する原子量を合計すると ${m.molarMass} です。`
+ });
+}
+function qIsotope(){
+ const variants=[
+  {a:35,b:37,p:75,ans:35.5,el:"塩素"},
+  {a:10,b:11,p:20,ans:10.8,el:"ホウ素"},
+  {a:63,b:65,p:70,ans:63.6,el:"銅"}
+ ];
+ const v=pick(variants);
+ return commonQ({type:"isotope",question:`${v.el}には質量数${v.a}と${v.b}の同位体があり、質量数${v.a}の存在比が${v.p}%である。原子量を求めなさい。`,
+ answer:v.ans,answerText:String(v.ans),sig:3,unitKey:"none",unit:"単位なし",scientific:false,
+ hints:[`存在比を小数に直します。`,`加重平均：${v.a}×${v.p/100}＋${v.b}×${1-v.p/100}`,`2種類の寄与を足します。`],
+ explanation:`${v.a}×${v.p/100}＋${v.b}×${1-v.p/100}＝${v.ans}`
+ });
+}
+function qMassToMol(){
+ const m=chooseMaterial("compound"),v=chooseValue(),mass=m.molarMass*v.factor,sig=sigDigitsFromText(v.molText);
+ const massText=displaySig(mass,Math.min(3,Math.max(2,sig)));
+ return commonQ({type:"massToMol",material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量は何 mol か。`,
+ answer:v.factor,answerText:v.molText,sig:sigDigitsFromText(v.molText),unitKey:"mol",unit:"mol",scientific:false,
+ hints:[`質量 → 物質量 の変換です。`,`物質量 = 質量 ÷ モル質量`,`${massText} ÷ ${m.molarMass} を計算します。`],
+ explanation:`n = m/M = ${massText}/${m.molarMass} = ${v.molText} mol`
+ });
+}
+function qMolToMass(){
+ const m=chooseMaterial("compound"),v=chooseValue(),mass=m.molarMass*v.factor,sig=sigDigitsFromText(v.molText);
+ const ansText=displaySig(mass,sig);
+ return commonQ({type:"molToMass",material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${v.molText} mol の質量は何 g か。`,
+ answer:mass,answerText:ansText,sig:sigDigitsFromText(ansText),unitKey:"g",unit:"g",scientific:false,
+ hints:[`物質量 → 質量 の変換です。`,`質量 = 物質量 × モル質量`,`${v.molText} × ${m.molarMass} を計算します。`],
+ explanation:`m = nM = ${v.molText}×${m.molarMass} = ${ansText} g`
+ });
+}
+function qMolToParticles(){
+ const m=chooseMaterial("molecule"),v=chooseValue();
+ return commonQ({type:"molToParticles",material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${v.molText} mol に含まれる${m.name}分子の数はいくつか。`,
+ answer:Number(v.particleCoeff)*10**v.particleExp,answerCoeff:Number(v.particleCoeff),answerExp:v.particleExp,answerText:`${v.particleCoeff}×10^${v.particleExp}`,sig:sigDigitsFromText(v.particleCoeff),unitKey:"particle",unit:"個",scientific:true,
+ hints:[`物質量 → 粒子数 の変換です。`,`粒子数 = 物質量 × 6.0×10^23`,`${v.molText} × 6.0×10^23 を計算します。`],
+ explanation:`N = nNₐ = ${v.molText}×6.0×10^23 = ${v.particleCoeff}×10^${v.particleExp} 個`
+ });
+}
+function qParticlesToMol(){
+ const m=chooseMaterial("molecule"),v=chooseValue();
+ return commonQ({type:"particlesToMol",material:m,question:`${m.name}分子が ${v.particleCoeff}×10^${v.particleExp} 個ある。物質量は何 mol か。`,
+ answer:v.factor,answerText:v.molText,sig:sigDigitsFromText(v.molText),unitKey:"mol",unit:"mol",scientific:false,
+ hints:[`粒子数 → 物質量 の変換です。`,`物質量 = 粒子数 ÷ 6.0×10^23`,`(${v.particleCoeff}×10^${v.particleExp}) ÷ (6.0×10^23)`],
+ explanation:`n = N/Nₐ = ${v.particleCoeff}×10^${v.particleExp} ÷ 6.0×10^23 = ${v.molText} mol`
+ });
+}
+function qMolToGas(){
+ const m=chooseMaterial("gas"),v=chooseValue();
+ return commonQ({type:"molToGas",material:m,question:`標準状態で、${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${v.molText} mol の体積は何 L か。`,
+ answer:v.factor*MOLAR_VOLUME,answerText:v.gasText,sig:sigDigitsFromText(v.gasText),unitKey:"L",unit:"L",scientific:false,
+ hints:[`物質量 → 気体体積 の変換です。`,`標準状態では 1 mol = 22.4 L`,`${v.molText} × 22.4 を計算します。`],
+ explanation:`V = 22.4n = 22.4×${v.molText} = ${v.gasText} L`
+ });
+}
+function qGasToMol(){
+ const m=chooseMaterial("gas"),v=chooseValue();
+ return commonQ({type:"gasToMol",material:m,question:`標準状態で ${v.gasText} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,
+ answer:v.factor,answerText:v.molText,sig:sigDigitsFromText(v.molText),unitKey:"mol",unit:"mol",scientific:false,
+ hints:[`気体体積 → 物質量 の変換です。`,`物質量 = 気体体積 ÷ 22.4`,`${v.gasText} ÷ 22.4 を計算します。`],
+ explanation:`n = V/22.4 = ${v.gasText}/22.4 = ${v.molText} mol`
+ });
+}
+function qMassToParticles(){
+ const m=chooseMaterial("molecule"),v=chooseValue(),mass=m.molarMass*v.factor,massText=displaySig(mass,2);
+ return commonQ({type:"massToParticles",material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g に含まれる分子の数はいくつか。`,
+ answer:Number(v.particleCoeff)*10**v.particleExp,answerCoeff:Number(v.particleCoeff),answerExp:v.particleExp,answerText:`${v.particleCoeff}×10^${v.particleExp}`,sig:2,unitKey:"particle",unit:"個",scientific:true,
+ hints:[`質量 → 物質量 → 粒子数 の2段階です。`,`まず ${massText} ÷ ${m.molarMass} で物質量を求めます。`,`その物質量に 6.0×10^23 を掛けます。`],
+ explanation:`${massText}/${m.molarMass}=${v.molText} mol、したがって ${v.particleCoeff}×10^${v.particleExp} 個`
+ });
+}
+function qGasToMass(){
+ const m=chooseMaterial("gas"),v=chooseValue(),mass=m.molarMass*v.factor,ansText=displaySig(mass,3);
+ return commonQ({type:"gasToMass",material:m,question:`標準状態で ${v.gasText} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> の質量は何 g か。`,
+ answer:mass,answerText:ansText,sig:sigDigitsFromText(ansText),unitKey:"g",unit:"g",scientific:false,
+ hints:[`気体体積 → 物質量 → 質量 の2段階です。`,`まず ${v.gasText} ÷ 22.4 で物質量を求めます。`,`物質量にモル質量 ${m.molarMass} を掛けます。`],
+ explanation:`${v.gasText}/22.4=${v.molText} mol、${v.molText}×${m.molarMass}=${ansText} g`
+ });
+}
+function qAtomCount(){
+ const candidates=eligibleMaterials("compound").filter(m=>parseRatioEntries(m).some(x=>/^[A-Z][a-z]?$/.test(x.label)));
+ const m=pick(candidates),entry=pick(parseRatioEntries(m).filter(x=>/^[A-Z][a-z]?$/.test(x.label))),v=chooseValue();
+ let totalFactor=v.factor*entry.count;
+ let val=totalFactor*AVOGADRO,exp=Math.floor(Math.log10(val)),coeff=val/10**exp;
+ while(coeff>=10){coeff/=10;exp++}
+ const coeffText=coeff.toFixed(1);
+ return commonQ({type:"atomCount",material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${v.molText} mol に含まれる ${entry.label} 原子の数はいくつか。`,
+ answer:val,answerCoeff:coeff,answerExp:exp,answerText:`${coeffText}×10^${exp}`,sig:2,unitKey:"particle",unit:"個",scientific:true,
+ hints:[`まず、化学式1単位に ${entry.label} 原子が何個あるか確認します。`,` ${entry.label} 原子の物質量 = 化合物の物質量 × ${entry.count}`,`その物質量に 6.0×10^23 を掛けます。`],
+ explanation:`${entry.label}原子は1単位に${entry.count}個。${v.molText}×${entry.count} mol分なので、${coeffText}×10^${exp} 個`
+ });
+}
+function qIonCount(){
+ const m=chooseMaterial("ionic"),entry=pick(parseRatioEntries(m)),v=chooseValue();
+ let val=v.factor*entry.count*AVOGADRO,exp=Math.floor(Math.log10(val)),coeff=val/10**exp;while(coeff>=10){coeff/=10;exp++}
+ const coeffText=coeff.toFixed(1);
+ return commonQ({type:"ionCount",material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${v.molText} mol に含まれる ${entry.label} の数はいくつか。`,
+ answer:val,answerCoeff:coeff,answerExp:exp,answerText:`${coeffText}×10^${exp}`,sig:2,unitKey:"particle",unit:"個",scientific:true,
+ hints:[`化学式1単位に ${entry.label} が何個含まれるか確認します。`,` ${entry.label} の物質量 = ${v.molText} × ${entry.count}`,`最後に 6.0×10^23 を掛けます。`],
+ explanation:`${entry.label}は1式単位に${entry.count}個なので、${coeffText}×10^${exp} 個`
+ });
+}
+function qMolarConcentration(){
+ const m=chooseMaterial("compound"),v=chooseValue(),volume=pick([0.100,0.200,0.250,0.500]),conc=v.factor/volume,ansText=displaySig(conc,2);
+ return commonQ({type:"molarConcentration",material:m,question:`${m.name} ${v.molText} mol を水に溶かして ${displaySig(volume*1000,3)} mL の溶液にした。モル濃度は何 mol/L か。`,
+ answer:conc,answerText:ansText,sig:2,unitKey:"concentration",unit:"mol/L",scientific:false,
+ hints:[`mL を L に直します。`,`モル濃度 c = 物質量 n ÷ 溶液体積 V(L)`,`${v.molText} ÷ ${volume} を計算します。`],
+ explanation:`c=n/V=${v.molText}/${volume}=${ansText} mol/L`
+ });
+}
+function qMassPercent(){
+ const solute=pick([5,10,15,20,25]),solution=pick([50,100,200,250]),percent=solute/solution*100,ansText=displaySig(percent,2);
+ return commonQ({type:"massPercent",question:`溶質 ${solute}.0 g を含む溶液 ${solution}.0 g の質量パーセント濃度は何 % か。`,
+ answer:percent,answerText:ansText,sig:2,unitKey:"percent",unit:"%",scientific:false,
+ hints:[`質量パーセント濃度 = 溶質の質量 ÷ 溶液の質量 × 100`,`分母は溶媒ではなく溶液全体の質量です。`,`(${solute}/${solution})×100 を計算します。`],
+ explanation:`${solute}/${solution}×100=${ansText} %`
+ });
+}
+function qPercentToMolar(){
+ const m=pick(eligibleMaterials("compound").filter(x=>[40,58.5,60,98].includes(x.molarMass)));
+ const percent=pick([5,10,20]),density=pick([1.00,1.10,1.20]),massSolution=density*1000,solute=massSolution*percent/100,conc=solute/m.molarMass,ansText=displaySig(conc,2);
+ return commonQ({type:"percentToMolar",material:m,question:`質量パーセント濃度 ${percent}.0%、密度 ${density.toFixed(2)} g/mL の${m.name}水溶液のモル濃度を求めなさい。`,
+ answer:conc,answerText:ansText,sig:2,unitKey:"concentration",unit:"mol/L",scientific:false,
+ hints:[`溶液1.00 Lを考えます。`,`溶液の質量 = 密度 × 1000 mL。溶質の質量 = その質量 × ${percent/100}`,`溶質の物質量をモル質量 ${m.molarMass} で求めます。`],
+ explanation:`1.00 Lの溶液は${massSolution.toFixed(0)} g、溶質は${solute.toFixed(1)} g。${solute.toFixed(1)}/${m.molarMass}=${ansText} mol/L`
+ });
+}
+const QUESTION_BUILDERS={
+ mode1:[qMolarMass,qMolarMass,qIsotope],
+ mode2:[qMassToMol,qMolToMass,qMolToParticles,qParticlesToMol,qMolToGas,qGasToMol,qMassToParticles,qGasToMass,qAtomCount,qIonCount],
+ mode3:[qMolarConcentration,qMassPercent,qPercentToMolar],
+ mixed:[qMolarMass,qIsotope,qMassToMol,qMolToMass,qMolToParticles,qParticlesToMol,qMolToGas,qGasToMol,qMassToParticles,qGasToMass,qAtomCount,qIonCount,qMolarConcentration,qMassPercent,qPercentToMolar]
+};
+
+function renderConstants(){
+ const atoms=Object.entries(ATOMIC_MASSES).map(([k,v])=>`<div class="atom"><strong>${k}</strong><br>${v}</div>`).join("");
+ return `<h3>定数</h3><div class="constant"><span>アボガドロ定数</span><strong>6.0×10<sup>23</sup>/mol</strong></div><div class="constant"><span>気体モル体積</span><strong>22.4 L/mol</strong></div><div class="constant"><span>標準状態</span><strong>0 ℃・1.013×10<sup>5</sup> Pa</strong></div><h3>原子量表</h3><div class="atomic-grid">${atoms}</div>`;
+}
+document.getElementById("desktopConstants").innerHTML=renderConstants();
+document.getElementById("mobileConstants").innerHTML=renderConstants();
+
+let lessonIndex=0;
+function renderLesson(){
+ document.getElementById("lessonNav").innerHTML=LESSONS.map((x,i)=>`<button class="pill ${i===lessonIndex?"active":""}" data-lesson="${i}">${i+1}. ${x.title}</button>`).join("");
+ document.getElementById("lessonBody").innerHTML=`<h3>${LESSONS[lessonIndex].title}</h3>${LESSONS[lessonIndex].html}`;
+ document.getElementById("lessonPrev").disabled=lessonIndex===0;
+ document.getElementById("lessonNext").textContent=lessonIndex===LESSONS.length-1?"演習設定へ":"次へ";
+ document.querySelectorAll("[data-lesson]").forEach(b=>b.onclick=()=>{lessonIndex=Number(b.dataset.lesson);renderLesson()});
+}
+renderLesson();
+document.getElementById("lessonPrev").onclick=()=>{lessonIndex=Math.max(0,lessonIndex-1);renderLesson()};
+document.getElementById("lessonNext").onclick=()=>{if(lessonIndex===LESSONS.length-1)showScreen("setup");else{lessonIndex++;renderLesson()}};
+
+document.querySelectorAll(".readyCheck").forEach(c=>c.addEventListener("change",()=>{
+ document.getElementById("startPractice").disabled=!Array.from(document.querySelectorAll(".readyCheck")).every(x=>x.checked);
+}));
+function updateTimer(){
+ const sec=Math.floor((Date.now()-state.startTime)/1000);
+ document.getElementById("timer").textContent=`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
+}
+function currentQ(){return state.questions[state.index]}
+function renderQuestionBase(){
+ const q=currentQ();
+ document.getElementById("questionText").innerHTML=q.question;
+ document.getElementById("questionCounter").textContent=`${state.index+1} / ${state.questions.length}`;
+ document.getElementById("progressBar").style.width=`${state.index/state.questions.length*100}%`;
+ document.getElementById("normalAnswer").style.display=q.scientific?"none":"block";
+ document.getElementById("scientificAnswer").style.display=q.scientific?"block":"none";
+ document.getElementById("answerInput").value="";document.getElementById("coefficientInput").value="";document.getElementById("exponentInput").value="";
+ document.getElementById("unitSelect").innerHTML=`<option value="">単位を選択</option>`+unitsFor(q.unitKey).map(u=>`<option>${u}</option>`).join("");
+ document.getElementById("feedback").className="feedback";document.getElementById("feedback").textContent="";
+ [1,2,3].forEach(i=>{const el=document.getElementById("hint"+i);el.classList.remove("show");el.innerHTML=q.hints[i-1]});
+ document.getElementById("hintButton").textContent=`ヒントを見る（0/3）`;document.getElementById("hintButton").disabled=false;
+ document.getElementById("passButton").textContent=`パス（残り${state.passes}回）`;document.getElementById("passButton").disabled=state.passes<=0;
+ setTimeout(()=>q.scientific?document.getElementById("coefficientInput").focus():document.getElementById("answerInput").focus(),80);
+}
+function normalizedScientific(coeff,exp){
+ let c=Number(coeff),e=Number(exp);if(!Number.isFinite(c)||!Number.isInteger(e)||c===0)return null;
+ while(Math.abs(c)>=10){c/=10;e++}while(Math.abs(c)<1){c*=10;e--}
+ return {c,e,value:c*10**e};
+}
+function evaluateAnswerBase(q){
+ const unit=document.getElementById("unitSelect").value;
+ if(q.scientific){
+  const coeffText=document.getElementById("coefficientInput").value.trim(),expText=document.getElementById("exponentInput").value.trim();
+  const n=normalizedScientific(coeffText,expText),target=q.scientificAnswer;
+  if(!n||Math.abs(Number(coeffText))<1||Math.abs(Number(coeffText))>=10)return {ok:false,kind:"format",message:"係数は1以上10未満の科学的記数法で入力してください。",raw:`${coeffText}×10^${expText} ${unit}`};
+  if(!target)return {ok:false,kind:"format",message:"正答データを確認できません。",raw:`${coeffText}×10^${expText} ${unit}`};
+  const numericOk=n.e===target.exponent&&Math.abs(n.c-target.coefficient)<=Math.max(1e-12,Math.abs(target.coefficient)*1e-10);
+  if(!numericOk)return {ok:false,kind:"number",message:"数値が違います。変換ルートと計算を確認しましょう。",raw:`${coeffText}×10^${expText} ${unit}`};
+  if(unit!==q.unit)return {ok:false,kind:"unit",message:"数値は合っています。単位を確認してください。",raw:`${coeffText}×10^${expText} ${unit}`};
+  if(q.sigDigits&&sigDigitsInput(coeffText)!==q.sigDigits)return {ok:false,kind:"sig",message:`数値と単位は合っています。有効数字${q.sigDigits}桁にそろえてください。`,raw:`${coeffText}×10^${expText} ${unit}`};
+  return {ok:true,raw:`${coeffText}×10^${expText} ${unit}`};
+ }
+ const text=document.getElementById("answerInput").value.trim();
+ if(/[eE×*]/.test(text)||!/^[+-]?\d*\.?\d+$/.test(text))return {ok:false,kind:"format",message:"通常の小数形式で入力してください。e表記や分数は使いません。",raw:`${text} ${unit}`};
+ const val=Number(text);if(!Number.isFinite(val))return {ok:false,kind:"format",message:"数値を入力してください。",raw:`${text} ${unit}`};
+ const target=q.acceptedAnswer;
+ const tol=Math.max(1e-9,Math.abs(target)*1e-8);
+ if(!Number.isFinite(target)||Math.abs(val-target)>tol)return {ok:false,kind:"number",message:"数値が違います。式と計算を確認しましょう。",raw:`${text} ${unit}`};
+ if(unit!==q.unit)return {ok:false,kind:"unit",message:"数値は合っています。単位を確認してください。",raw:`${text} ${unit}`};
+ if(q.answerPolicy==='sigfig'&&q.sigDigits&&sigDigitsInput(text)!==q.sigDigits)return {ok:false,kind:"sig",message:`数値と単位は合っています。有効数字${q.sigDigits}桁にそろえてください。`,raw:`${text} ${unit}`};
+ return {ok:true,raw:`${text} ${unit}`};
+}
+document.getElementById("hintButton").onclick=()=>{
+ const q=currentQ();if(q.hintsShown>=3)return;
+ q.hintsShown++;state.hintsUsed++;document.getElementById("hint"+q.hintsShown).classList.add("show");
+ document.getElementById("hintButton").textContent=`ヒントを見る（${q.hintsShown}/3）`;
+ if(q.hintsShown>=3)document.getElementById("hintButton").disabled=true;
+};
+document.getElementById("passButton").onclick=()=>{
+ if(state.passes<=0)return;
+ const q=currentQ();q.passed=true;q.userFirst=q.userFirst||"パス";state.passes--;
+ state.questions.push(q);advanceQuestion(true);
+};
+function advanceQuestion(fromPass=false){
+ state.index++;
+ if(state.index>=state.questions.length){finishPractice();return}
+ renderQuestion();
+}
+function modeLabel(m){return {mode1:"原子量・分子量・式量",mode2:"物質量",mode3:"発展",mixed:"総合ミックス"}[m]}
+const STORAGE_SCHEMA_VERSION=2;
+function isPlainObject(v){return !!v&&typeof v==='object'&&!Array.isArray(v)}
+const MISS_LABELS={number:'数値',unit:'単位',sig:'有効数字',fixed:'指定された桁・表記',format:'入力形式'};
+function normalizedRanges(value){const a=Array.isArray(value)?value:String(value||'').split(',');return [...new Set(a.map(x=>String(x).trim()).filter(x=>x&&x!=='weak'))].sort()}
+function challengeKeyFor(count){return ({5:'beginner',10:'intermediate',15:'advanced',20:'oni'})[Number(count)]||String(count||'unknown')}
+function totalMissesOf(misses){return Object.keys(MISS_LABELS).reduce((n,k)=>n+(Number(misses?.[k])||0),0)}
+function comparisonKeyFor(r){const ranges=normalizedRanges(r.rangesNormalized||r.ranges||r.range);return [r.mode||'unknown',ranges.join('+')||'auto',Number(r.count)||0,r.challengeKey||challengeKeyFor(r.count)].join('|')}
+function normalizeRecord(r){
+ const misses=isPlainObject(r.misses)?Object.fromEntries(Object.keys(MISS_LABELS).map(k=>[k,Number(r.misses[k])||0])):{number:0,unit:0,sig:0,fixed:0,format:0};
+ const rangesNormalized=normalizedRanges(r.rangesNormalized||r.ranges||r.range),rate=Number(r.firstCorrectRate??r.rate)||0;
+ const out={...r,date:typeof r.date==='string'?r.date:new Date(0).toISOString(),rate,firstCorrectRate:rate,avg:Number(r.avg)||0,elapsed:Number(r.elapsed)||0,hints:Number(r.hints)||0,passes:Number(r.passes)||0,count:Number(r.count)||0,misses,rangesNormalized,challengeKey:r.challengeKey||challengeKeyFor(r.count),completed:r.completed!==false,failedEarly:!!r.failedEarly};
+ out.totalMisses=Number.isFinite(Number(r.totalMisses))?Number(r.totalMisses):totalMissesOf(misses);out.comparisonKey=r.comparisonKey||comparisonKeyFor(out);return out;
+}
+function getRecords(){try{const v=JSON.parse(storageGet("molMasterRecords","[]"));return Array.isArray(v)?v.filter(isPlainObject).map(normalizeRecord):[]}catch{return []}}
+function saveRecord(r){const a=getRecords();a.push(r);storageSet("molMasterRecords",JSON.stringify(a.slice(-200)));storageSet('molMasterStorageSchemaVersion',STORAGE_SCHEMA_VERSION)}
+function compareBest(a,b){return (b.firstCorrectRate-a.firstCorrectRate)||(a.totalMisses-b.totalMisses)||(a.hints-b.hints)||(a.elapsed-b.elapsed)}
+function buildProgressComparison(record,records=getRecords()){
+ const same=records.filter(x=>x.comparisonKey===record.comparisonKey),previous=same.at(-1)||null,best=same.slice().sort(compareBest)[0]||null;
+ let meaningfulBest=false,timeOnlyBest=false,bestReason='';
+ if(best){
+  if(record.firstCorrectRate>best.firstCorrectRate){meaningfulBest=true;bestReason='初回正答率が上がりました'}
+  else if(record.firstCorrectRate===best.firstCorrectRate&&record.totalMisses<best.totalMisses){meaningfulBest=true;bestReason='同じ正答率でミスが減りました'}
+  else if(record.firstCorrectRate===best.firstCorrectRate&&record.totalMisses===best.totalMisses&&record.hints<best.hints){meaningfulBest=true;bestReason='同じ正答率・ミス数でヒントが減りました'}
+  else if(record.firstCorrectRate===best.firstCorrectRate&&record.totalMisses===best.totalMisses&&record.hints===best.hints&&record.elapsed<best.elapsed)timeOnlyBest=true;
+ }
+ return {previous,best,meaningfulBest,timeOnlyBest,bestReason};
+}
+function buildSessionRecord(completed,elapsed,{failedEarly=false,reached=null}={}){
+ const misses={number:0,unit:0,sig:0,fixed:0,format:0};completed.forEach(q=>Object.keys(misses).forEach(k=>misses[k]+=q['miss_'+k]||0));
+ const firstCorrect=completed.filter(q=>q.firstCorrect).length,count=state.count,rangesNormalized=normalizedRanges(state.ranges||state.range);
+ return normalizeRecord({date:new Date().toISOString(),mode:state.mode,range:state.range,rangesNormalized,style:state.practiceStyle,practiceStyle:state.practiceStyle,count,challengeKey:state.challengeKey||challengeKeyFor(count),elapsed,avg:elapsed/Math.max(1,completed.length),firstCorrect,rate:firstCorrect/Math.max(1,count)*100,firstCorrectRate:firstCorrect/Math.max(1,count)*100,misses,totalMisses:totalMissesOf(misses),hints:state.hintsUsed,passes:state.initialPasses-state.passes,completed:!failedEarly,failedEarly,reached:reached??completed.length});
+}
+function renderRecordsBase(days){
+ document.querySelectorAll("[data-days]").forEach(b=>b.classList.toggle("active",Number(b.dataset.days)===days));
+ const cutoff=Date.now()-days*86400000,records=getRecords().filter(r=>new Date(r.date).getTime()>=cutoff);
+ const sum=document.getElementById("recordSummary");
+ if(!records.length){sum.innerHTML=`<div class="empty">この期間の学習記録はありません。</div>`;drawChart([]);return}
+ const avgRate=records.reduce((s,r)=>s+r.firstCorrectRate,0)/records.length,hints=records.reduce((s,r)=>s+r.hints,0),misses=Object.fromEntries(Object.keys(MISS_LABELS).map(k=>[k,records.reduce((s,r)=>s+r.misses[k],0)]));
+ const missText=Object.entries(misses).filter(([,n])=>n>0).map(([k,n])=>`${MISS_LABELS[k]} ${n}回`).join('、')||'ミス記録なし';
+ const trend=records.slice(-5).map(r=>`${r.firstCorrectRate.toFixed(0)}%`).join(' → ');
+ sum.innerHTML=`<div class="grid result-kpis"><div class="kpi"><span>実施回数</span><strong>${records.length}</strong></div><div class="kpi"><span>平均初回正答率</span><strong>${avgRate.toFixed(0)}%</strong></div><div class="kpi"><span>ヒント使用</span><strong>${hints}回</strong></div><div class="kpi"><span>ミス傾向</span><strong>${missText}</strong></div></div><div class="note" id="recordTrendText"><strong>直近${Math.min(5,records.length)}回の初回正答率</strong><br>${trend}</div>`;
+ drawChart(records);
+}
+document.querySelectorAll("[data-days]").forEach(b=>b.onclick=()=>renderRecords(Number(b.dataset.days)));
+function drawChart(records){
+ const c=document.getElementById("recordChart"),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ ctx.font="14px sans-serif";ctx.fillStyle="#62778a";
+ if(!records.length){ctx.fillText("記録がたまると初回正答率の推移が表示されます。",30,50);return}
+ const pad={l:50,r:20,t:25,b:45},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+ ctx.strokeStyle="#d7e1ea";ctx.lineWidth=1;
+ for(let y=0;y<=100;y+=20){const py=pad.t+ph*(1-y/100);ctx.beginPath();ctx.moveTo(pad.l,py);ctx.lineTo(w-pad.r,py);ctx.stroke();ctx.fillStyle="#62778a";ctx.fillText(y+"%",8,py+5)}
+ const pts=records.map((r,i)=>({x:pad.l+(records.length===1?pw/2:pw*i/(records.length-1)),y:pad.t+ph*(1-r.rate/100)}));
+ ctx.strokeStyle="#176b87";ctx.lineWidth=3;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+ ctx.fillStyle="#176b87";pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fill()});
+ ctx.fillStyle="#62778a";ctx.fillText("実施順",w/2-20,h-12);
+}
+["answerInput","coefficientInput","exponentInput"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("submitAnswer").click()}));
+
+
+/* ===== Ver.1.1 追加機能 ===== */
+const DEFAULT_TEACHER_SETTINGS={sigPolicy:"strict",hints:true,enabledTypes:[]};
+let teacherSettings=loadTeacherSettings();
+let generationDifficulty=1;
+const TYPE_INFO={
+ molarMass:["分子量・式量",1],isotope:["同位体・原子量",2],massToMol:["質量→物質量",1],molToMass:["物質量→質量",1],
+ molToParticles:["物質量→粒子数",1],particlesToMol:["粒子数→物質量",1],molToGas:["物質量→気体体積",1],gasToMol:["気体体積→物質量",1],
+ massToParticles:["質量→粒子数",3],gasToMass:["気体体積→質量",3],atomCount:["化合物中の原子数",2],ionCount:["イオン数",2],
+ molarConcentration:["モル濃度",1],massPercent:["質量％濃度",1],percentToMolar:["質量％→モル濃度",3],
+ molarToPercent:["モル濃度→質量％",3],soluteMassMolar:["モル濃度→溶質質量",2],solutionVolumeMolar:["モル濃度→溶液体積",2],soluteMassPercent:["質量％→溶質質量",1]
+};
+function loadTeacherSettings(){try{const v=JSON.parse(storageGet("molMasterTeacherSettings","{}"));if(!isPlainObject(v))return {...DEFAULT_TEACHER_SETTINGS};const out={...DEFAULT_TEACHER_SETTINGS,...v};if(!Array.isArray(out.enabledTypes))out.enabledTypes=[];if(!['strict','warn','off'].includes(out.sigPolicy))out.sigPolicy='strict';return out}catch{return {...DEFAULT_TEACHER_SETTINGS}}}
+function saveTeacherSettings(){storageSet("molMasterTeacherSettings",JSON.stringify(teacherSettings));storageSet('molMasterStorageSchemaVersion',STORAGE_SCHEMA_VERSION)}
+function typeEnabled(type){return !teacherSettings.enabledTypes.length||teacherSettings.enabledTypes.includes(type)}
+
+// 難易度に応じて数値と物質を制御する
+const originalChooseMaterial=chooseMaterial;
+chooseValue=function(){
+ const easy=VALUE_SETS.filter(v=>[0.5,1,2].includes(v.factor));
+ const medium=VALUE_SETS.filter(v=>![0.1,10].includes(v.factor));
+ return pick(generationDifficulty===1?easy:generationDifficulty===2?medium:VALUE_SETS);
+};
+chooseMaterial=function(filter){
+ let arr=eligibleMaterials(filter);
+ if(generationDifficulty===1) arr=arr.filter(m=>m.molarMass<=100&&!m.hydrate) || arr;
+ if(generationDifficulty===2) arr=arr.filter(m=>m.molarMass<=180) || arr;
+ if(!arr.length) return originalChooseMaterial(filter);
+ const noRepeat=arr.filter(m=>m.id!==state.lastMaterial);
+ return pick(noRepeat.length?noRepeat:arr);
+};
+
+// 濃度問題の拡充
+function qMolarToPercent(){
+ const m=pick(eligibleMaterials("compound").filter(x=>[40,58.5,60,98].includes(x.molarMass)));
+ const density=pick([1.00,1.10,1.20]),conc=pick([0.50,1.0,2.0]);
+ const solute=conc*m.molarMass,solutionMass=density*1000,percent=solute/solutionMass*100,ansText=displaySig(percent,2);
+ return commonQ({type:"molarToPercent",material:m,question:`モル濃度 ${conc.toFixed(conc<1?2:1)} mol/L、密度 ${density.toFixed(2)} g/mL の${m.name}水溶液の質量パーセント濃度を求めなさい。`,answer:percent,answerText:ansText,sig:2,unitKey:"percent",unit:"%",scientific:false,hints:[`溶液1.00 Lを考えます。`,`溶質の質量 = モル濃度 × 1.00 L × モル質量`,`溶液の質量 = 密度 × 1000 mL。最後に溶質/溶液×100。`],explanation:`溶質は${displaySig(solute,3)} g、溶液は${solutionMass.toFixed(0)} g。${displaySig(solute,3)}/${solutionMass.toFixed(0)}×100=${ansText} %`});
+}
+function qSoluteMassMolar(){
+ const m=chooseMaterial("compound"),conc=pick([0.10,0.20,0.50,1.0]),vol=pick([0.100,0.200,0.250,0.500]);
+ const mass=conc*vol*m.molarMass,ansText=displaySig(mass,2);
+ return commonQ({type:"soluteMassMolar",material:m,question:`${m.name}水溶液 ${displaySig(vol*1000,3)} mL（${conc.toFixed(conc<1?2:1)} mol/L）をつくるのに必要な${m.name}の質量は何 g か。`,answer:mass,answerText:ansText,sig:2,unitKey:"g",unit:"g",scientific:false,hints:[`mLをLに直します。`,`物質量 n = cV`,`質量 m = nM。2段階で求めます。`],explanation:`n=${conc}×${vol}=${displaySig(conc*vol,3)} mol、m=nM=${ansText} g`});
+}
+function qSolutionVolumeMolar(){
+ const m=chooseMaterial("compound"),conc=pick([0.10,0.20,0.50,1.0]),mol=pick([0.025,0.050,0.100,0.200]);
+ const vol=mol/conc,ans=vol*1000,ansText=displaySig(ans,2);
+ return commonQ({type:"solutionVolumeMolar",material:m,question:`${m.name} ${displaySig(mol,2)} mol を用いて ${conc.toFixed(conc<1?2:1)} mol/L の水溶液をつくる。溶液の体積は何 mL か。`,answer:ans,answerText:ansText,sig:2,unitKey:"L",unit:"mL",scientific:false,hints:[`c=n/V を Vについて変形します。`,`V(L)=n/c`,`最後にLをmLへ直します。`],explanation:`V=${mol}/${conc}=${displaySig(vol,3)} L=${ansText} mL`});
+}
+function qSoluteMassPercent(){
+ const percent=pick([5,10,15,20]),solution=pick([100,200,250,500]),mass=percent/100*solution,ansText=displaySig(mass,2);
+ return commonQ({type:"soluteMassPercent",question:`質量パーセント濃度 ${percent}.0% の水溶液 ${solution}.0 g に含まれる溶質は何 g か。`,answer:mass,answerText:ansText,sig:2,unitKey:"g",unit:"g",scientific:false,hints:[`濃度を100で割り、小数にします。`,`溶質の質量 = 溶液の質量 × 濃度/100`,` ${solution}×${percent/100} を計算します。`],explanation:`${solution}×${percent/100}=${ansText} g`});
+}
+
+QUESTION_BUILDERS.mode3.push(qMolarToPercent,qSoluteMassMolar,qSolutionVolumeMolar,qSoluteMassPercent);
+QUESTION_BUILDERS.mixed.push(qMolarToPercent,qSoluteMassMolar,qSolutionVolumeMolar,qSoluteMassPercent);
+const BUILDER_BY_TYPE={};Object.values(QUESTION_BUILDERS).flat().forEach(b=>{try{generationDifficulty=1;const q=b();BUILDER_BY_TYPE[q.type]=b}catch(e){}});generationDifficulty=1;
+const RANGE_OPTIONS={
+ mode1:[['all','すべて'],['molarMass','分子量・式量'],['isotope','同位体・原子量']],
+ mode2:[['all','すべて'],['mass','質量と物質量'],['particle','粒子数と物質量'],['gas','気体体積と物質量'],['atomIon','原子数・イオン数'],['multi','総合変換']],
+ mode3:[['all','すべて'],['basicConc','モル濃度・質量％の基本'],['reverseConc','濃度から質量・体積を逆算'],['convertConc','質量％とモル濃度の相互変換']],
+ mixed:[['all','すべて']],weak:[['weak','学習記録から自動選択']]
+};
+const RANGE_TYPES={molarMass:['molarMass'],isotope:['isotope'],mass:['massToMol','molToMass'],particle:['molToParticles','particlesToMol'],gas:['molToGas','gasToMol'],atomIon:['atomCount','ionCount'],multi:['massToParticles','gasToMass'],basicConc:['molarConcentration','massPercent','soluteMassPercent'],reverseConc:['soluteMassMolar','solutionVolumeMolar'],convertConc:['percentToMolar','molarToPercent']};
+function updateRangeOptions(){
+ const mode=document.getElementById('modeSelect').value,sel=document.getElementById('rangeSelect');
+ sel.innerHTML=RANGE_OPTIONS[mode].map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
+ document.getElementById('rangeHelp').textContent=mode==='weak'?'誤答率の高い問題形式を優先して出題します。':'「すべて」では、序盤は基本問題、後半は応用問題へ進みます。';
+ document.getElementById('practiceStyle').value=mode==='weak'?'standard':document.getElementById('practiceStyle').value;
+}
+updateRangeOptions();
+
+function getWeakTypes(){
+ const stats=getQuestionStats();
+ return Object.entries(stats).filter(([t])=>BUILDER_BY_TYPE[t]&&typeEnabled(t)).sort((a,b)=>((b[1].wrong+1)/(b[1].seen+1))-((a[1].wrong+1)/(a[1].seen+1))).slice(0,6).map(x=>x[0]);
+}
+// じっくり練習：多段階問題では途中の物質量等を確認
+function guidedStep(q){
+ if(state.practiceStyle!=='guided')return null;
+ if(q.type==='massToParticles')return {label:'まず物質量を求める',answer:q.answer/AVOGADRO,unit:'mol',sig:2};
+ if(q.type==='gasToMass')return {label:'まず物質量を求める',answer:q.answer/q.material.molarMass,unit:'mol',sig:2};
+ if(q.type==='atomCount')return {label:'対象原子の物質量を求める',answer:q.answer/AVOGADRO,unit:'mol',sig:2};
+ if(q.type==='ionCount')return {label:'対象イオンの物質量を求める',answer:q.answer/AVOGADRO,unit:'mol',sig:2};
+ if(q.type==='percentToMolar')return {label:'1.00 L中の溶質質量を求める',answer:q.answer*q.material.molarMass,unit:'g',sig:2};
+ if(q.type==='molarToPercent')return {label:'1.00 L中の溶質質量を求める',answer:q.answer*(parseFloat(q.question.match(/密度 ([0-9.]+)/)?.[1]||1)*1000)/100,unit:'g',sig:2};
+ if(q.type==='soluteMassMolar')return {label:'まず溶質の物質量を求める',answer:q.answer/q.material.molarMass,unit:'mol',sig:2};
+ return null;
+}
+function renderQuestionGuided(){
+ renderQuestionBase();const q=currentQ(),level=q.difficulty||1,b=document.getElementById('difficultyBadge');
+ b.className=`difficulty-badge level${level}`;b.textContent=level===1?'基本':level===2?'標準':'応用';
+ document.getElementById('hintButton').style.display=teacherSettings.hints?'inline-flex':'none';
+ const step=guidedStep(q),panel=document.getElementById('stepPanel');q.stepDone=!step;
+ if(!step){panel.style.display='none';document.getElementById('submitAnswer').disabled=false;return}
+ panel.style.display='block';panel.className='step-panel';panel.innerHTML=`<strong>じっくり練習：途中段階</strong><p>${step.label}</p><div class="row"><input id="stepInput" type="text" inputmode="decimal" placeholder="数値" style="max-width:220px"><strong>${step.unit}</strong><button class="btn secondary" id="checkStep">確認する</button></div><div id="stepFeedback" class="mini-feedback"></div>`;
+ document.getElementById('submitAnswer').disabled=true;
+ document.getElementById('checkStep').onclick=()=>{const v=Number(document.getElementById('stepInput').value),tol=Math.max(1e-9,Math.abs(step.answer)*1e-6),f=document.getElementById('stepFeedback');if(Number.isFinite(v)&&Math.abs(v-step.answer)<=tol){q.stepDone=true;panel.classList.add('done');f.textContent='途中段階は正解です。最終の答えを求めましょう。';f.style.color='var(--ok)';document.getElementById('submitAnswer').disabled=false}else{f.textContent='まだ違います。変換式を確認してください。';f.style.color='var(--bad)'}};
+}
+
+// 有効数字の教員設定
+function evaluateAnswerConfigured(q){
+ const ev=evaluateAnswerBase(q);
+ if(ev.kind==='sig'&&teacherSettings.sigPolicy!=='strict'){
+  if(teacherSettings.sigPolicy==='warn')return {ok:true,raw:ev.raw,sigWarning:true};
+  if(teacherSettings.sigPolicy==='off')return {ok:true,raw:ev.raw};
+ }
+ return ev;
+}
+
+// 途中終了
+function quitToHome(){
+ if(!confirm('演習を途中で終了して最初の画面に戻りますか？\n途中の記録は保存されません。'))return;
+ clearInterval(state.timerId);state.timerId=null;state.questions=[];state.results=[];state.index=0;state.sessionEnding=false;state.sessionEnded=false;showScreen('home');
+}
+document.getElementById('quitPractice').onclick=quitToHome;
+
+// パス表示を設定値対応
+function finishPractice(){
+ clearInterval(state.timerId);state.timerId=null;const elapsed=Math.floor((Date.now()-state.startTime)/1000),completed=state.results.slice(-state.count);
+ updateQuestionStats(completed);const record=buildSessionRecord(completed,elapsed),comparison=buildProgressComparison(record);saveRecord(record);window.MOL_UI.renderResults(record,completed,comparison);showScreen('results');
+}
+function renderQuestionWithPass(){renderQuestionGuided();document.getElementById('passButton').textContent=`パス（残り${state.passes}回）`;document.getElementById('passButton').disabled=state.passes<=0}
+
+// 苦手統計
+function getQuestionStats(){try{const v=JSON.parse(storageGet('molMasterQuestionStats','{}'));return isPlainObject(v)?v:{}}catch{return {}}}
+function updateQuestionStats(completed){const s=getQuestionStats();completed.forEach(q=>{const old=isPlainObject(s[q.type])?s[q.type]:{},x={seen:Number(old.seen)||0,wrong:Number(old.wrong)||0,hints:Number(old.hints)||0};x.seen++;if(!q.firstCorrect)x.wrong++;x.hints+=q.hintsShown||0;s[q.type]=x});storageSet('molMasterQuestionStats',JSON.stringify(s));storageSet('molMasterStorageSchemaVersion',STORAGE_SCHEMA_VERSION)}
+function renderWeakSummary(){const el=document.getElementById('weakSummary'),stats=getQuestionStats(),types=getWeakTypes();if(!Object.keys(stats).length){el.innerHTML='<strong>苦手分析</strong><br>演習を完了すると、ここに苦手な問題形式が表示されます。';return}el.innerHTML='<strong>現在の復習候補</strong><br>'+types.map(t=>`${TYPE_INFO[t]?.[0]||t}（誤答 ${stats[t].wrong}/${stats[t].seen}回）`).join('、')}
+function renderRecords(days){renderRecordsBase(days);renderWeakSummary()}
+document.getElementById('startWeakReview').onclick=()=>{showScreen('setup');document.getElementById('modeSelect').value='weak';updateRangeOptions()};
+
+// 教員設定画面
+function renderTeacherSettings(){
+ document.getElementById('teacherSigPolicy').value=teacherSettings.sigPolicy;document.getElementById('teacherHint').value=teacherSettings.hints?'on':'off';
+ document.getElementById('teacherTypeChecks').innerHTML=Object.entries(TYPE_INFO).map(([t,v])=>`<label><input type="checkbox" data-teacher-type="${t}" ${typeEnabled(t)?'checked':''}> ${v[0]}</label>`).join('');
+}
+function showScreenWithTeacher(id){showScreenBase(id);if(id==='teacher')renderTeacherSettings()}
+document.getElementById('resetTeacherSettings').onclick=()=>{teacherSettings={...DEFAULT_TEACHER_SETTINGS};saveTeacherSettings();renderTeacherSettings()};
+
+// 記録削除時に苦手統計も選択可能
+document.getElementById('clearRecords').onclick=()=>{if(confirm('学習記録と苦手分析データを削除しますか？')){storageRemove('molMasterRecords');storageRemove('molMasterQuestionStats');renderRecords(30)}};
+
+
+
+
+</script>
+
+<style>
+/* ===== 学習支援・結果表示スタイル ===== */
+.stage-message{margin:8px 0 12px;padding:10px 12px;border-left:5px solid var(--brand);background:#f2f8fb;border-radius:10px;font-weight:800}
+.calc-space{margin:0 0 16px;background:#fbfcfd;border:1px solid var(--line);border-radius:14px;padding:12px}.calc-space textarea{min-height:96px;resize:vertical;line-height:1.55}.calc-tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.calc-tools button{padding:.45rem .68rem;min-width:42px}
+.support-links{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 14px}.support-panel{display:none;background:#fffbea;border:1px solid #ead58a;border-radius:12px;padding:12px;margin-bottom:12px}.support-panel.open{display:block}
+.answer-entry-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,210px);gap:12px;align-items:end}
+.answer-value-column,.answer-unit-column{min-width:0}
+.answer-unit-column select{width:100%}
+.review-label{display:inline-flex;align-items:center;gap:5px;padding:.25rem .55rem;border-radius:999px;font-weight:900}.review-label.ok{background:#e8f6f1;color:#0d644b}.review-label.retry{background:#fff2cb;color:#6d4700}.review-label.bad{background:#d83228;color:#fff;box-shadow:0 0 0 3px rgba(216,50,40,.12)}
+.review-item.needs-review{border:2px solid #e15b52;background:#fff5f4}.review-alert{background:#b42318;color:#fff;padding:13px 15px;border-radius:14px;font-weight:900;margin:14px 0}.result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.teacher-group{border:1px solid var(--line);border-radius:14px;margin:14px 0;overflow:hidden}.teacher-group summary{padding:14px 16px;font-weight:900;cursor:pointer;background:#f7fafc}.teacher-group-body{padding:14px}.toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.toggle-item{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}.toggle-item input{margin-top:4px;transform:scale(1.2)}.toggle-item small{display:block;color:var(--muted);margin-top:3px}
+.intro-roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.intro-roadmap .pill{white-space:normal;min-height:48px}.bridge-table{width:100%;border-collapse:collapse}.bridge-table th,.bridge-table td{border:1px solid var(--line);padding:8px;text-align:left}.formula-map{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;margin:12px 0}.formula-map>div{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.atomic-grid{grid-template-columns:repeat(3,1fr)}.atomic-item{display:grid;grid-template-columns:28px 1fr auto;gap:5px;align-items:center}.atomic-item small{color:var(--muted)}
+.mobile-bottom-actions{display:none}
+@media(max-width:900px){.practice-layout{grid-template-columns:1fr}.side-card{display:none}.mobile-constants{display:block}.toggle-grid{grid-template-columns:1fr}.intro-roadmap{grid-template-columns:repeat(2,1fr)}.calc-space textarea{min-height:88px}}
+@media(max-width:600px){body{font-size:16px}.app{padding:10px}.header{align-items:flex-start}.brand h1{font-size:1.45rem}.card{padding:15px}.question{font-size:1.18rem}.answer-box input,.answer-box select,.calc-space textarea{font-size:16px}.row.mobile-stack{gap:8px}.row.mobile-stack .btn{width:100%;min-height:48px}.scientific{grid-template-columns:minmax(0,1fr) auto 76px}.answer-entry-row{grid-template-columns:minmax(0,1fr) minmax(112px,34%);gap:8px}.intro-roadmap{grid-template-columns:1fr}.support-links .btn{flex:1 1 45%}.result-actions .btn{width:100%}.atomic-grid{grid-template-columns:repeat(2,1fr)}.teacher-grid{grid-template-columns:1fr}.formula-map{grid-template-columns:1fr}.formula-map .arrow{transform:rotate(90deg)}}
+@media(max-width:430px){.answer-entry-row:has(#scientificAnswer[style*="display: block"]){grid-template-columns:1fr}.answer-entry-row:has(#scientificAnswer[style*="display: block"]) .answer-unit-column{margin-top:2px}}
+</style>
+<script>
+
+
+
+/* =========================================================
+   6. SESSION MANAGEMENT / 7. RESULTS & LEARNING RECORDS
+   8. UI RENDERING / 9. EVENT BINDING / 10. INITIALIZATION
+   ========================================================= */
+(function(){
+const V12_DEFAULTS={
+ showStage:true,showSuccessNote:true,showTodayGain:true,showNextRecommendation:true,
+ showFormulaBreakdown:true,showCalcSpace:true,showCalcTools:true,keepCalcNotes:true,
+ showUnitSupport:true,showRelationMap:true,showUsedAtomicMasses:false,
+ confidenceInput:false,variantRetry:true
+};
+Object.keys(V12_DEFAULTS).forEach(k=>{if(teacherSettings[k]===undefined)teacherSettings[k]=V12_DEFAULTS[k]});
+saveTeacherSettings();
+
+// 入門編（全7章）
+LESSONS.splice(0,LESSONS.length,
+ {title:'中学校から高校化学へ',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>中学校で学んだ粒子・化学式・質量の考え方が、高校化学でどう発展するかをつかみます。</div><p>高校化学では、中学校で学んだ内容を捨てて新しく覚え直すのではありません。<strong>「粒子をどれだけ集めたか」</strong>を数値で扱えるように広げていきます。</p><table class="bridge-table"><tr><th>中学校での学び</th><th>高校化学での発展</th></tr><tr><td>原子・分子・イオン</td><td>粒子数と物質量 mol</td></tr><tr><td>化学式の右下の数字</td><td>組成・原子数・式量</td></tr><tr><td>化学変化の質量比</td><td>物質量の比・反応式の量的関係</td></tr><tr><td>水溶液の濃さ</td><td>質量％濃度・モル濃度</td></tr></table><p class="note">このアプリでは、まず「化学式を正しく読む」「molを量の中継点として使う」ことを中心に練習します。</p>`},
+ {title:'化学式の読み方',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>下付き数字・かっこ・結晶水を読み取り、原子の個数を数えられるようにします。</div><div class="lesson-key"><div><strong>H2O</strong><br>H：2個、O：1個</div><div><strong>Ca(OH)2</strong><br>Ca：1個、O：2個、H：2個</div><div><strong>(NH4)2SO4</strong><br>N：2個、H：8個、S：1個、O：4個</div><div><strong>CuSO4・5H2O</strong><br>結晶水5個分も含めて数える</div></div><p>かっこの外の数字は<strong>かっこの中全体</strong>に掛かります。分子量・式量だけでなく、原子数やイオン数の問題でも、この読み取りが土台になります。</p>`},
+ {title:'相対質量・原子量・分子量・式量',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>「相対的な質量」と「1 molあたりの質量」を混同しないようにします。</div><p><strong>相対質量</strong>は、12C原子1個の質量を12としたときの相対的な値です。原子量は同位体の存在比も考慮した平均的な相対質量です。</p><div class="lesson-key"><div><strong>原子量</strong><br>原子の相対的な質量<br><small>単位なし</small></div><div><strong>分子量</strong><br>分子をつくる原子量の合計<br><small>単位なし</small></div><div><strong>式量</strong><br>組成式などを構成する原子量の合計<br><small>単位なし</small></div><div><strong>モル質量</strong><br>1 molあたりの質量<br><small>g/mol</small></div></div><div class="example">H2O の分子量：18<br>H2O のモル質量：18 g/mol</div><p>数値が同じでも、意味と単位は異なります。</p>`},
+ {title:'物質量 mol とは',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>molを「公式の文字」ではなく、粒子をまとめて数える単位として理解します。</div><p>1ダースが12個を表すように、<strong>1 molは 6.0×10<sup>23</sup> 個</strong>の粒子を表します。</p><div class="example">1 mol ＝ 6.0×10<sup>23</sup> 個</div><p>物質量は、質量・粒子数・気体体積をつなぐ<strong>中継点</strong>です。</p><div class="lesson-map"><div class="box">質量<br><small>g</small></div><div class="arrow">⇄</div><div class="box">物質量<br><small>mol</small></div></div><div class="lesson-map"><div class="box">粒子数<br><small>個</small></div><div class="arrow">⇄</div><div class="box">物質量<br><small>mol</small></div></div><div class="lesson-map"><div class="box">標準状態の気体体積<br><small>L</small></div><div class="arrow">⇄</div><div class="box">物質量<br><small>mol</small></div></div><p class="note">「今わかっている量 → mol → 求める量」という流れを意識すると、公式の丸暗記を減らせます。</p>`},
+ {title:'単位と単位変換',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>計算前に単位をそろえ、答えの種類に合う単位を選べるようにします。</div><div class="lesson-key"><div>1000 mL ＝ <strong>1 L</strong></div><div>250 mL ＝ <strong>0.250 L</strong></div><div>1000 mg ＝ <strong>1 g</strong></div><div>1 mL ＝ <strong>1 cm³</strong></div></div><p>モル濃度では体積をLで扱います。粒子数なら「個」、質量なら「g」、物質量なら「mol」のように、<strong>単位そのものが何を求めたかを示します</strong>。</p><div class="example">0.50 mol/L × 0.200 L ＝ 0.100 mol</div>`},
+ {title:'有効数字',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>答えの数値だけでなく、必要な桁まで正しく表せるようにします。</div><p>高校化学では、計算結果を問題文の数値の精度に合わせます。</p><div class="lesson-key"><div><strong>0.00450</strong><br>有効数字3桁</div><div><strong>3.0</strong><br>有効数字2桁</div><div><strong>2.0×3.14</strong><br>6.28 → <strong>6.3</strong></div><div><strong>途中計算</strong><br>途中では丸めず、最後に丸める</div></div><p>このアプリでは、数値が合っていても必要な桁が違う場合は「有効数字を確認しましょう」と区別して知らせます。</p><p class="note">一部の問題では「小数第1位まで」などの指定を明示します。その場合は問題文の指定を優先します。</p>`},
+ {title:'計算の考え方・演習への準備',html:`<div class="lesson-goal"><strong>この章のねらい：</strong>「何を求めるか」を先に確認し、molを経由する計算の流れをつかみます。</div><div class="example">物質量 ＝ 質量 ÷ モル質量<br>粒子数 ＝ 物質量 × 6.0×10<sup>23</sup><br>標準状態の気体体積 ＝ 物質量 × 22.4 L/mol</div><p>公式を丸暗記するより、<strong>出発点とゴールを確認してから変換</strong>します。</p><div class="mode-preview"><div><strong>モード1</strong><br>相対質量・原子量・分子量・式量</div><div><strong>モード2</strong><br>質量・粒子数・気体体積とmol</div><div><strong>モード3</strong><br>濃度・溶解度<br><small>詳しい手順は演習中のヒントで確認</small></div><div><strong>モード4（発展）</strong><br>反応式と量的関係<br><small>molの基本が定着してから挑戦</small></div></div><p class="note">濃度・溶解度・反応式の詳しい計算手順は、入門編では詰め込みません。必要になったときに各モードのヒントで学びます。</p>`}
+);
+
+const PHASE4_CHECKS=[
+ [
+  {q:'高校化学で、非常に多い粒子をまとめて扱う量はどれですか。',opts:['物質量 mol','密度','温度'],ans:0,ex:'高校では、非常に多い粒子を物質量 molでまとめて扱います。'}
+ ],
+ [
+  {q:'Ca(OH)2 に含まれるO原子は何個ですか。',opts:['1個','2個','3個'],ans:1,ex:'かっこの外の2がOH全体に掛かるため、Oは2個です。'},
+  {q:'(NH4)2SO4 に含まれるN原子は何個ですか。',opts:['1個','2個','4個'],ans:1,ex:'NH4全体が2組あるため、Nは2個です。'}
+ ],
+ [
+  {q:'H2Oの「分子量18」と「モル質量18 g/mol」の関係として正しいものは？',opts:['意味も単位も同じ','数値は同じだが意味と単位が異なる','モル質量には単位がない'],ans:1,ex:'分子量は相対値で単位なし、モル質量は1 molあたりの質量でg/molです。'},
+  {q:'原子量について正しい説明はどれですか。',opts:['原子1個の質量をgで表した値','同位体の存在比も考慮した相対的な質量','必ず整数になる値'],ans:1,ex:'原子量は同位体の存在比を考慮した平均的な相対質量です。'}
+ ],
+ [
+  {q:'0.50 molの粒子は何個ですか。',opts:['3.0×10^23個','6.0×10^23個','1.2×10^24個'],ans:0,ex:'0.50×6.0×10^23＝3.0×10^23個です。'},
+  {q:'質量から粒子数を求めたいとき、最初に求めると便利なのは？',opts:['密度','物質量 mol','温度'],ans:1,ex:'質量→mol→粒子数という順で変換すると整理しやすくなります。'}
+ ],
+ [
+  {q:'250 mLは何Lですか。',opts:['0.0250 L','0.250 L','2.50 L'],ans:1,ex:'1000 mL＝1 Lなので、250 mL＝0.250 Lです。'},
+  {q:'モル濃度の単位として正しいものは？',opts:['mol/L','g/mol','L/mol'],ans:0,ex:'モル濃度は溶液1 Lあたりの物質量なのでmol/Lです。'}
+ ],
+ [
+  {q:'0.00450 の有効数字は何桁ですか。',opts:['2桁','3桁','5桁'],ans:1,ex:'先頭の0は数えず、4・5・末尾の0を数えるので3桁です。'},
+  {q:'2.0×3.14 を有効数字に合わせると？',opts:['6.28','6.3','6'],ans:1,ex:'掛け算では最も少ない有効数字2桁に合わせ、6.3です。'},
+  {q:'途中計算の扱いとして適切なのは？',opts:['毎回丸める','最後まで値を保持し、最後に丸める','必ず整数にする'],ans:1,ex:'途中で丸めると誤差が大きくなるため、最後にまとめて丸めます。'}
+ ],
+ [
+  {q:'18 gのH2O（モル質量18 g/mol）は何molですか。',opts:['0.50 mol','1.0 mol','18 mol'],ans:1,ex:'18 g ÷ 18 g/mol＝1.0 molです。'},
+  {q:'標準状態で0.50 molの気体の体積は？',opts:['5.6 L','11.2 L','22.4 L'],ans:1,ex:'0.50×22.4＝11.2 Lです。'},
+  {q:'反応式の量的関係へ進む前に、最優先で安定させたい内容は？',opts:['molと質量・粒子数・気体体積の変換','反応式を全部暗記する','周期表を全部暗記する'],ans:0,ex:'モード4ではmol比を使うため、まずモード2の基本変換を安定させることが重要です。'}
+ ]
+];
+
+function renderPhase4Checks(){
+ const checks=PHASE4_CHECKS[lessonIndex]||[];
+ const body=document.getElementById('lessonBody');
+ if(!checks.length)return;
+ const wrap=document.createElement('div');
+ wrap.className='intro-checks';
+ wrap.innerHTML=checks.map((c,ci)=>`<div class="intro-check">
+   <div class="intro-check-title"><strong>確認問題</strong><span class="intro-check-index">${ci+1}/${checks.length}</span></div>
+   <p>${c.q}</p>
+   <div class="intro-options">${c.opts.map((o,oi)=>`<button class="intro-option" data-p4-check="${ci}" data-p4-option="${oi}">${o}</button>`).join('')}</div>
+   <button class="btn secondary" data-p4-submit="${ci}">答え合わせ</button>
+   <div class="mini-feedback" data-p4-feedback="${ci}"></div>
+ </div>`).join('');
+ body.appendChild(wrap);
+ const selected=new Map();
+ wrap.querySelectorAll('[data-p4-check]').forEach(btn=>{
+  btn.onclick=()=>{
+   const ci=Number(btn.dataset.p4Check),oi=Number(btn.dataset.p4Option);
+   selected.set(ci,oi);
+   wrap.querySelectorAll(`[data-p4-check="${ci}"]`).forEach(x=>x.classList.remove('selected'));
+   btn.classList.add('selected');
+  };
+ });
+ wrap.querySelectorAll('[data-p4-submit]').forEach(btn=>{
+  btn.onclick=()=>{
+   const ci=Number(btn.dataset.p4Submit),c=checks[ci],f=wrap.querySelector(`[data-p4-feedback="${ci}"]`);
+   if(!selected.has(ci)){f.textContent='選択肢を選んでください。';f.style.color='var(--bad)';return}
+   const ok=selected.get(ci)===c.ans;
+   f.textContent=(ok?'正解です。':'もう一度確認しましょう。')+' '+c.ex;
+   f.style.color=ok?'var(--ok)':'var(--bad)';
+  };
+ });
+}
+
+renderLesson=function(){
+ const l=LESSONS[lessonIndex];
+ document.getElementById('lessonNav').innerHTML=LESSONS.map((x,i)=>`<button class="pill ${i===lessonIndex?'active':''}" data-lesson="${i}">${i+1}. ${x.title}</button>`).join('');
+ document.getElementById('lessonBody').innerHTML=`<div class="lesson-progress"><strong>第${lessonIndex+1}章 / ${LESSONS.length}章</strong><span>${l.title}</span></div><h3>${l.title}</h3>${l.html}`;
+ document.querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>{lessonIndex=Number(b.dataset.lesson);renderLesson()});
+ renderPhase4Checks();
+ document.getElementById('lessonPrev').disabled=lessonIndex===0;
+ document.getElementById('lessonNext').textContent=lessonIndex===LESSONS.length-1?'演習設定へ':'次へ';
+};
+document.getElementById('lessonPrev').onclick=()=>{if(lessonIndex>0){lessonIndex--;renderLesson()}};
+document.getElementById('lessonNext').onclick=()=>{if(lessonIndex<LESSONS.length-1){lessonIndex++;renderLesson()}else showScreen('setup')};
+document.querySelector('#intro .section-title').textContent='入門編';
+document.querySelector('#home [data-go="intro"]').closest('.mode-card').querySelector('p').textContent='中高の接続、化学式、物質量、単位、有効数字を7章で確認します。';
+renderLesson();
+
+
+// 教員設定UI
+const teacherCard=document.querySelector('#teacher .card');
+teacherCard.querySelector('.teacher-grid').insertAdjacentHTML('afterend',`
+<details class="teacher-group"><summary>学習支援</summary><div class="teacher-group-body toggle-grid" id="supportToggles"></div></details>
+<details class="teacher-group"><summary>振り返り・学習意欲</summary><div class="teacher-group-body toggle-grid" id="motivationToggles"></div></details>
+<details class="teacher-group"><summary>演習操作</summary><div class="teacher-group-body toggle-grid" id="operationToggles"></div></details>`);
+const toggleDefs={
+ support:[
+  ['showUnitSupport','単位変換サポート','mL⇄Lなどを確認'],
+  ['showRelationMap','量の関係図','質量・mol・粒子数・気体体積の関係を確認'],
+  ['showFormulaBreakdown','化学式分解ヒント','元素ごとの個数を確認'],
+  ['showUsedAtomicMasses','この問題で使う原子量','必要な元素だけを表示']
+ ],
+ motivation:[
+  ['showStage','学習段階メッセージ','今取り組んでいる段階を表示'],
+  ['showSuccessNote','正解時の短い確認','解法の要点を1文で確認'],
+  ['showTodayGain','今日できるようになったこと','結果画面で成長を確認'],
+  ['showNextRecommendation','次のおすすめ学習','復習候補を1つ提示'],
+  ['confidenceInput','自信度入力','解答前に任意で自己評価']
+ ],
+ operation:[
+  ['showCalcSpace','計算スペース','画面上に途中式を残す'],
+  ['showCalcTools','計算補助記号ボタン','×・÷・＝などを入力'],
+  ['keepCalcNotes','問題別メモ保持','戻った問題でも復元'],
+  ['variantRetry','別数値・別物質で再挑戦','同じ解法を別条件で確認']
+ ]
+};
+function renderToggleGroup(id,defs){document.getElementById(id).innerHTML=defs.map(([k,l,d])=>`<label class="toggle-item"><input type="checkbox" data-v12-setting="${k}"><span><strong>${l}</strong><small>${d}</small></span></label>`).join('')}
+renderToggleGroup('supportToggles',toggleDefs.support);renderToggleGroup('motivationToggles',toggleDefs.motivation);renderToggleGroup('operationToggles',toggleDefs.operation);
+const renderTeacherOld=renderTeacherSettings;
+renderTeacherSettings=function(){renderTeacherOld();document.querySelectorAll('[data-v12-setting]').forEach(x=>x.checked=!!teacherSettings[x.dataset.v12Setting])};
+document.getElementById('saveTeacherSettings').onclick=()=>{
+ teacherSettings.sigPolicy=document.getElementById('teacherSigPolicy').value;teacherSettings.hints=document.getElementById('teacherHint').value==='on';teacherSettings.enabledTypes=Array.from(document.querySelectorAll('[data-teacher-type]:checked')).map(x=>x.dataset.teacherType);
+ document.querySelectorAll('[data-v12-setting]').forEach(x=>teacherSettings[x.dataset.v12Setting]=x.checked);saveTeacherSettings();alert('教員用設定を保存しました。')
+};
+document.getElementById('resetTeacherSettings').onclick=()=>{teacherSettings={...DEFAULT_TEACHER_SETTINGS,...V12_DEFAULTS};saveTeacherSettings();renderTeacherSettings()};
+
+// 原子番号順の原子量表
+const atomicNumbers={H:1,He:2,C:6,N:7,O:8,F:9,Na:11,Mg:12,Al:13,Si:14,P:15,S:16,Cl:17,K:19,Ca:20,Mn:25,Fe:26,Cu:29,Zn:30,Ag:47,I:53,Ba:56,Pb:82};
+constantsHtml=function(){const atoms=Object.entries(ATOMIC_MASSES).sort((a,b)=>atomicNumbers[a[0]]-atomicNumbers[b[0]]).map(([s,m])=>`<div class="atomic-item"><small>${atomicNumbers[s]}</small><strong>${s}</strong><span>${m}</span></div>`).join('');return `<h3>定数</h3><div class="constant"><span>アボガドロ定数</span><strong>6.0×10<sup>23</sup>/mol</strong></div><div class="constant"><span>気体モル体積</span><strong>22.4 L/mol</strong></div><div class="constant"><span>標準状態</span><strong>0 ℃・1.013×10<sup>5</sup> Pa</strong></div><h3>原子量表（原子番号順）</h3><div class="atomic-grid">${atoms}</div>`};
+document.getElementById('desktopConstants').innerHTML=constantsHtml();document.getElementById('mobileConstants').innerHTML=constantsHtml();
+
+// 化学式の複雑さ判定と段階別出題
+function elementCount(formula){const clean=String(formula).replace(/[₀-₉]/g,c=>'₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).replace(/・.*$/,'');return new Set(clean.match(/[A-Z][a-z]?/g)||[]).size}
+function formulaLevel(m){const f=String(m.formula);if(m.hydrate||f.includes('・'))return 4;if(f.includes('('))return 3;const n=elementCount(f);return n<=2?1:2}
+qMolarMass=function(){
+ let target=Math.min(4,generationDifficulty||1);if((generationDifficulty||1)>=3&&Math.random()<.35)target=4;
+ let arr=eligibleMaterials('compound').filter(m=>formulaLevel(m)===target);if(!arr.length)arr=eligibleMaterials('compound').filter(m=>formulaLevel(m)<=target);const m=pick(arr.filter(x=>x.id!==state.lastMaterial).length?arr.filter(x=>x.id!==state.lastMaterial):arr);
+ const level=formulaLevel(m),names=['','原子の種類が1～2種類','複数元素','かっこを含む化学式','総合・結晶水'];
+ return commonQ({type:'molarMass',material:m,formulaLevel:level,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> の${m.kind==='分子'?'分子量':'式量'}を求めなさい。`,answer:m.molarMass,answerText:String(m.molarMass),sig:null,unitKey:'none',unit:'単位なし',scientific:false,hints:[`${names[level]}の問題です。化学式中の各元素の個数を確認します。`,'原子量×個数を元素ごとに求め、すべて加えます。',m.hydrate?'結晶水の分も忘れずに加えます。':'かっこの外の数字は、かっこ内全体に掛かります。'],explanation:`${formatFormula(m.formula)} を構成する原子量を合計すると ${m.molarMass} です。`})
+};
+
+// 演習UI追加
+const answerBox=document.querySelector('#practice .answer-box');
+answerBox.insertAdjacentHTML('afterbegin',`<div id="stageMessage" class="stage-message"></div><div class="support-links" id="supportLinks"><button class="btn ghost" data-support="unit">単位変換</button><button class="btn ghost" data-support="relation">量の関係</button><button class="btn ghost" data-support="formula">化学式の読み方</button><button class="btn ghost" data-support="sig">有効数字</button></div><div id="supportPanel" class="support-panel"></div><button type="button" class="btn secondary" id="calcSpaceToggle" aria-controls="calcSpace">計算スペースを表示</button><div class="calc-space" id="calcSpace"><label for="calcNote">計算スペース（採点されません）</label><textarea id="calcNote" placeholder="例：63×2＝126\n126÷63＝2.0"></textarea><div class="calc-tools" id="calcTools">${['＋','－','×','÷','＝','(',')'].map(x=>`<button type="button" class="btn ghost" data-calc="${x}">${x}</button>`).join('')}<button type="button" class="btn ghost" id="clearCalc">消去</button></div></div><div id="confidenceWrap" style="display:none;margin-bottom:12px"><label for="confidenceSelect">解答前の自信度（任意）</label><select id="confidenceSelect"><option value="">選択しない</option><option>自信あり</option><option>少し不安</option><option>分からない</option></select></div>`);
+document.querySelectorAll('[data-calc]').forEach(b=>b.onclick=()=>{const t=document.getElementById('calcNote'),s=t.selectionStart,e=t.selectionEnd;t.value=t.value.slice(0,s)+b.dataset.calc+t.value.slice(e);t.focus();t.selectionStart=t.selectionEnd=s+b.dataset.calc.length;t.dispatchEvent(new Event('input'))});document.getElementById('clearCalc').onclick=()=>{document.getElementById('calcNote').value='';currentQ().calcNote=''};
+function supportHtml(kind,q){if(kind==='unit')return '<strong>単位変換</strong><br>1000 mL＝1 L、1000 mg＝1 g。モル濃度では体積をLに直します。';if(kind==='relation')return '<strong>量の関係</strong><br>質量 ÷ モル質量 ＝ 物質量<br>物質量 × 6.0×10²³ ＝ 粒子数<br>標準状態：物質量 × 22.4 ＝ 気体体積(L)';if(kind==='sig')return '<strong>有効数字</strong><br>途中では丸めず、最後に問題文で最も少ない桁数へそろえます。';return `<strong>化学式の読み方</strong><br>${q.material?formatFormula(q.material.formula):'下付き数字とかっこの外の数字を確認します。'}`}
+document.querySelectorAll('[data-support]').forEach(b=>b.onclick=()=>{const p=document.getElementById('supportPanel');p.innerHTML=supportHtml(b.dataset.support,currentQ());p.classList.toggle('open')});
+
+function stageText(q,i,n){if(q.type==='molarMass'){const l=q.formulaLevel||1;return ['','原子の種類が1～2種類の式を読む','複数の元素を漏れなく数える','かっこの外の数字を全体に掛ける','総合問題・結晶水に挑戦'][l]}const d=q.difficulty||1;return d===1?'基本変換を確認中':d===2?'複数段階の計算に挑戦':'有効数字を含む総合問題に挑戦'}
+function renderQuestionWithLearningUi(){
+ renderQuestionWithPass();const q=currentQ();
+ document.getElementById('stageMessage').style.display=teacherSettings.showStage?'block':'none';document.getElementById('stageMessage').textContent=stageText(q,state.index,state.count);
+ applyCalcSpaceVisibility();document.getElementById('calcTools').style.display=teacherSettings.showCalcTools?'flex':'none';document.getElementById('calcNote').value=teacherSettings.keepCalcNotes?(q.calcNote||''):'';document.getElementById('confidenceWrap').style.display=teacherSettings.confidenceInput?'block':'none';document.getElementById('confidenceSelect').value=q.confidence||'';
+ document.getElementById('supportLinks').style.display=(teacherSettings.showUnitSupport||teacherSettings.showRelationMap||teacherSettings.showFormulaBreakdown)?'flex':'none';document.querySelector('[data-support="unit"]').style.display=teacherSettings.showUnitSupport?'inline-flex':'none';document.querySelector('[data-support="relation"]').style.display=teacherSettings.showRelationMap?'inline-flex':'none';document.querySelector('[data-support="formula"]').style.display=teacherSettings.showFormulaBreakdown?'inline-flex':'none';document.getElementById('supportPanel').classList.remove('open');
+}
+document.getElementById('calcNote').addEventListener('input',e=>{if(currentQ())currentQ().calcNote=e.target.value});document.getElementById('confidenceSelect').addEventListener('change',e=>{if(currentQ())currentQ().confidence=e.target.value});
+
+// 正解時の短い確認をフィードバックへ追加（DOM変化を監視）
+const feedbackObserver=new MutationObserver(()=>{const q=currentQ(),f=document.getElementById('feedback');if(!q||!teacherSettings.showSuccessNote||!f.textContent.includes('正解'))return;if(f.dataset.v12done===String(state.index))return;let note=q.type==='molarMass'?'化学式から原子の個数を読み取り、原子量を合計できました。':q.type.includes('Mol')||q.type.includes('mol')?'求める量に合わせて、物質量を中心に変換できました。':'単位と数値を対応させて計算できました。';f.insertAdjacentHTML('beforeend',`<div><small>${note}</small></div>`);f.dataset.v12done=String(state.index)});feedbackObserver.observe(document.getElementById('feedback'),{childList:true,subtree:true,characterData:true});
+
+// 結果処理：集計済みレコードの比較・描画
+function escapeResultText(v){return String(v??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function elapsedText(sec){return `${Math.floor(sec/60)}分${String(sec%60).padStart(2,'0')}秒`}
+function missSummary(misses){return Object.entries(MISS_LABELS).filter(([k])=>misses[k]>0).map(([k,l])=>`${l} ${misses[k]}回`).join('、')||'なし'}
+function previousMessages(record,comparison){
+ const p=comparison.previous;if(!p)return ['今回の結果を記録しました。次回、同じ条件で比べられます。'];const out=[],delta=Math.round(record.firstCorrectRate-p.firstCorrectRate);
+ if(delta>0)out.push(`前回より初回正答率 +${delta}%`);else if(delta<0)out.push(`今回は初回正答率 ${record.firstCorrectRate.toFixed(0)}%。要復習を確認して次につなげましょう。`);else out.push('前回と同じ初回正答率です。');
+ const changes=Object.keys(MISS_LABELS).map(k=>({k,d:p.misses[k]-record.misses[k]})).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)),c=changes[0];if(c?.d>0)out.push(`${MISS_LABELS[c.k]}ミスが${c.d}回減りました。`);else if(c?.d<0)out.push(`今回は${MISS_LABELS[c.k]}ミスが${-c.d}回ありました。次は確認してから解答してみましょう。`);return out.slice(0,2);
+}
+function todayGain(record,completed,comparison){
+ if(comparison.previous){for(const k of Object.keys(MISS_LABELS))if(comparison.previous.misses[k]>record.misses[k])return `${MISS_LABELS[k]}ミスが前回より減りました。`}
+ const independent=completed.filter(q=>q.firstCorrect&&(q.hintsShown||0)===0),counts={};independent.forEach(q=>counts[q.type]=(counts[q.type]||0)+1);const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];if(top&&top[1]>=2)return `「${TYPE_INFO[top[0]]?.[0]||top[0]}」をヒントなしで正確に解けました。`;return '今回の結果を記録しました。次回と比べてみましょう。';
+}
+function nextRecommendation(record,completed){
+ const miss=Object.entries(record.misses).sort((a,b)=>b[1]-a[1])[0];if(miss&&miss[1]>0)return `${MISS_LABELS[miss[0]]}を確認してから、「苦手を別条件で復習」に取り組みましょう。`;
+ const weak=completed.filter(q=>!q.firstCorrect||q.passed||(q.hintsShown||0)>=2);if(weak.length)return `要復習の${TYPE_INFO[weak[0].type]?.[0]||weak[0].type}を別条件で確認しましょう。`;
+ if(record.firstCorrectRate>=80&&record.count<20)return '同じ範囲で、次のチャレンジを選ぶ準備ができています。設定画面で自分で選びましょう。';return '同じ範囲でもう一度取り組み、安定して解けるか確認しましょう。';
+}
+function applySessionSettings(record,modeOverride=null){
+ const mode=document.getElementById('modeSelect');mode.value=modeOverride||record.mode;mode.dispatchEvent(new Event('change'));document.getElementById('countSelect').value=String(record.count);document.getElementById('practiceStyle').value=record.practiceStyle||record.style||'standard';
+ setTimeout(()=>{if(!modeOverride){const wanted=new Set(record.rangesNormalized);document.querySelectorAll('#rangeChecklist input').forEach(x=>x.checked=wanted.has(x.value))}document.querySelectorAll('.readyCheck').forEach(x=>x.checked=true);document.getElementById('startPractice').disabled=false;document.getElementById('startPractice').click()},20);
+}
+function renderResults(r,completed,comparison=buildProgressComparison(normalizeRecord(r))){
+ r=normalizeRecord(r);const prev=previousMessages(r,comparison),items=[['初回正答率',`${r.firstCorrectRate.toFixed(0)}%`],['ミスの傾向',missSummary(r.misses)],['ヒント',`${r.hints}回`],['前回・自己ベスト',comparison.meaningfulBest?'自己ベスト更新！':prev[0]]];
+ document.getElementById('resultKpis').innerHTML=items.map(x=>`<div class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join('');
+ document.getElementById('resultComment').innerHTML=`${comparison.meaningfulBest?`<div class="review-alert">★ 自己ベスト更新！ ${comparison.bestReason}</div>`:''}<strong>${modeLabel(r.mode)}</strong><br>${prev.join('<br>')}${comparison.timeOnlyBest?'<br><small>正確さと自立度を保ったまま、所要時間も短くなりました。</small>':''}<hr><strong>今日できるようになったこと</strong><br>${todayGain(r,completed,comparison)}<hr><strong>次のおすすめ</strong><br>${nextRecommendation(r,completed)}<hr><small>所要時間 ${elapsedText(r.elapsed)}　パス ${r.passes}回</small>`;
+ const reviews=completed.map((q,i)=>{const failed=r.failedEarly&&i===completed.length-1,needs=!q.firstCorrect||q.passed||(q.hintsShown||0)>=2||failed,misses=Object.keys(MISS_LABELS).filter(k=>(q['miss_'+k]||0)>0).map(k=>MISS_LABELS[k]).join('、')||'なし',label=needs?'<span class="review-label bad">⚠ 要復習</span>':'<span class="review-label ok">○ 初回正解</span>',question=q.question.replace(/<[^>]+>/g,'');if(!needs)return `<div class="review-item"><strong>${label}　第${i+1}問｜${question}</strong></div>`;return `<details class="review-item needs-review" open><summary>${label}　第${i+1}問｜${question}</summary><div class="review-body"><p><strong>最初の入力：</strong>${escapeResultText(q.userFirst||'未入力')}</p><p><strong>正答：</strong>${q.answerText} ${q.unit}</p><p><strong>ミス分類：</strong>${misses}</p><p><strong>使用ヒント：</strong>${q.hintsShown||0}回${q.passed?'／パス使用':''}${failed?'／鬼モード終了問題':''}</p><p><strong>解説：</strong>${q.explanation}</p></div></details>`}).join('');
+ const need=completed.filter((q,i)=>!q.firstCorrect||q.passed||(q.hintsShown||0)>=2||(r.failedEarly&&i===completed.length-1)).length;document.getElementById('reviewList').innerHTML=`${need?`<div class="review-alert">⚠ 要復習：${need}問あります。</div>`:''}${reviews}`;
+ const row=document.getElementById('resultActions');row.className='result-actions';row.innerHTML='<button class="btn primary" id="retryWeak">苦手を別条件で復習</button><button class="btn secondary" id="retrySame">同じ範囲でもう一度</button><button class="btn ghost" data-go="home">トップへ</button><button class="pill" data-go="records">学習記録を見る</button>';
+ const weak=completed.filter(q=>!q.firstCorrect||q.passed||(q.hintsShown||0)>=2),retryWeak=row.querySelector('#retryWeak');retryWeak.style.display=teacherSettings.variantRetry&&weak.length?'inline-flex':'none';retryWeak.onclick=()=>{state.variantSource=weak;showScreen('setup');applySessionSettings(r,'weak')};row.querySelector('#retrySame').onclick=()=>{showScreen('setup');applySessionSettings(r)};
+}
+
+// Phase 7.2: ほかの責務ブロックから利用する正式UI関数を明示的に公開
+window.MOL_UI = window.MOL_UI || {};
+window.MOL_UI.renderQuestionWithLearningUi = renderQuestionWithLearningUi;
+window.MOL_UI.renderResults = renderResults;
+
+// 完了状態を記録
+const advanceOld=advanceQuestion;advanceQuestion=function(passed){const q=currentQ();if(q)q.completed=true;advanceOld(passed)};
+
+// 画面表示時に教員設定反映
+// showScreen はグローバルの [data-go] ナビゲーションから参照するため、
+// このIIFE内では定義せず、IIFE終了後にグローバル関数として定義する。
+
+// 演習UI・スマホUI
+(function(){
+  const isNarrow=()=>window.matchMedia('(max-width: 600px)').matches;
+
+  // 出題範囲の選択数を常時表示
+  function updateRangeSummary(){
+    const el=document.getElementById('rangeSelectedSummary');
+    if(!el)return;
+    const mode=document.getElementById('modeSelect')?.value;
+    if(mode==='weak'){el.textContent='自動選択';return}
+    const n=document.querySelectorAll('#rangeChecklist input:checked').length;
+    el.textContent=`${n}項目選択中`;
+  }
+  document.getElementById('rangeChecklist')?.addEventListener('change',updateRangeSummary);
+  document.getElementById('rangeAll')?.addEventListener('click',()=>setTimeout(updateRangeSummary,0));
+  document.getElementById('rangeClear')?.addEventListener('click',()=>setTimeout(updateRangeSummary,0));
+  document.getElementById('modeSelect')?.addEventListener('change',()=>setTimeout(updateRangeSummary,10));
+  setTimeout(updateRangeSummary,20);
+
+  // モバイル定数表の開閉状態を保存
+  const constantsDetails=document.getElementById('mobileConstantsDetails');
+  if(constantsDetails){
+    constantsDetails.open=storageGet('molMasterMobileConstantsOpen')==='1';
+    constantsDetails.addEventListener('toggle',()=>{
+      storageSet('molMasterMobileConstantsOpen',constantsDetails.open?'1':'0');
+    });
+  }
+
+  // 学習サポートのみを折りたたみ、計算スペースは独立操作にする
+  const support=document.getElementById('supportLinks');
+  const supportPanel=document.getElementById('supportPanel');
+  const calc=document.getElementById('calcSpace');
+  if(support&&supportPanel&&calc&&!document.getElementById('studyToolsDetails')){
+    const details=document.createElement('details');
+    details.id='studyToolsDetails';
+    details.className='study-tools';
+    details.innerHTML='<summary>学習サポート</summary><div class="study-tools-content"></div>';
+    support.parentNode.insertBefore(details,support);
+    const content=details.querySelector('.study-tools-content');
+    content.appendChild(support);
+    content.appendChild(supportPanel);
+    const savedStudyTools=storageGet('molMasterStudyToolsOpen');
+    details.open=savedStudyTools==='1';
+    details.addEventListener('toggle',()=>{
+      storageSet('molMasterStudyToolsOpen',details.open?'1':'0');
+    });
+  }
+  const calcToggle=document.getElementById('calcSpaceToggle');
+  if(calcToggle){
+    calcToggle.addEventListener('click',()=>{
+      calcSpaceOpen=!calcSpaceOpen;
+      storageSet('molMasterCalcSpaceOpen',calcSpaceOpen?'1':'0');
+      applyCalcSpaceVisibility();
+    });
+    applyCalcSpaceVisibility();
+  }
+
+  // 回答後のフィードバックを確実に視認
+  const submit=document.getElementById('submitAnswer');
+  if(submit){
+    submit.addEventListener('click',()=>{
+      setTimeout(()=>{
+        const fb=document.getElementById('feedback');
+        if(fb?.classList.contains('show')&&isNarrow()){
+          fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+        }
+      },40);
+    });
+  }
+
+  // ソフトウェアキーボード表示時に入力欄を画面内へ寄せる
+  ['answerInput','coefficientInput','exponentInput','unitSelect','calcNote'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('focus',e=>{
+      if(isNarrow())setTimeout(()=>e.target.scrollIntoView({behavior:'smooth',block:'center'}),250);
+    });
+  });
+
+  // モード4・鬼の注意を設定画面で簡潔に表示
+  const challenge=document.getElementById('challengeHelp');
+  function appendChallengeNote(){
+    if(!challenge)return;
+    const count=Number(document.getElementById('countSelect')?.value||10);
+    if(count===20){
+      challenge.innerHTML='鬼：パスなし。<strong>1回でもミスすると即終了</strong>。基礎が定着してからの挑戦がおすすめです。';
+    }
+  }
+  document.getElementById('countSelect')?.addEventListener('change',()=>setTimeout(appendChallengeNote,0));
+  appendChallengeNote();
+
+  // feedbackアクセシビリティ
+  const fb=document.getElementById('feedback');
+  if(fb){fb.setAttribute('aria-live','polite');fb.setAttribute('aria-atomic','true')}
+
+  // 学習サポートの開閉状態は画面幅にかかわらず利用者の選択を維持する。
+})();
+
+})();
+
+// グローバル画面遷移関数。
+// Phase 7の責務整理でIIFE内へ閉じ込めると、先に登録済みの[data-go]イベントから
+// 参照できなくなり、全ナビゲーションボタンが反応しなくなるためグローバルに置く。
+function showScreen(id){
+  showScreenWithTeacher(id);
+  if(id==='intro') renderLesson();
+}
+
+
+// =========================================================
+// 4. QUESTION GENERATORS / 5. GRADING
+// Integrated production engine (Phase 3B-3D behavior frozen)
+// =========================================================
+
+
+/* =========================================================
+ Mol Master Ver.1.3 production problem engine
+ Integrated problem-engine runtime (generation behavior frozen)
+ ========================================================= */
+
+/* =========================================================
+   問題生成基盤（大量生成テスト反映済み）
+   目的：問題パターン × 物質 × 数値 × 問い方 × 難易度 を分離し、
+         易→難の順序、重複抑制、計算負荷の制御を一元化する。
+   出題責務と採点ポリシーを分離する。
+   ========================================================= */
+(function(){
+'use strict';
+
+const PH3 = {
+  version: '1.3-phase3B',
+  coreFactors: [0.25,0.5,1,1.5,2,2.5,3],
+  factorsByDifficulty: {
+    1:[0.25,0.5,1,1.5,2],
+    2:[0.1,0.2,0.25,0.5,0.75,1,1.5,2,2.5,3],
+    3:[0.025,0.04,0.05,0.1,0.125,0.25,0.5,0.6,0.75,1,1.25,1.5,2,2.5,3,4],
+    4:[0.005,0.01,0.0125,0.025,0.03,0.04,0.05,0.075,0.09,0.1,0.25,0.5,0.55,0.75,0.9,1,1.5,2,2.5,3,4,5,6.5,7.5]
+  },
+  // 22.4 L/mol の自然な計算結果を扱うL問題。
+  gasLFactorsByDifficulty: {
+    1:[0.1,0.25,0.5,1,1.5,2],
+    2:[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3],
+    3:[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3,4,5],
+    4:[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3,4,5,7.5,10]
+  },
+  // 小体積はmLにして「きれいな整数」にする。
+  gasMlFactors:[0.005,0.01,0.025,0.04,0.05],
+  lastTwoTypes:[],
+  lastTwoMaterials:[]
+};
+
+const SUBSCRIPT_MAP={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+function ph3AsciiFormula(formula){
+  return String(formula||'').replace(/[₀-₉]/g,c=>SUBSCRIPT_MAP[c]||c).replace(/·/g,'・');
+}
+function ph3ParseSegment(segment){
+  let coefficient=1;
+  const lead=segment.match(/^(\d+)(?=[A-Z(])/);
+  if(lead){coefficient=Number(lead[1]);segment=segment.slice(lead[1].length)}
+  const stack=[{}];
+  let i=0;
+  function add(obj,el,n){obj[el]=(obj[el]||0)+n}
+  while(i<segment.length){
+    const ch=segment[i];
+    if(ch==='('){stack.push({});i++;continue}
+    if(ch===')'){
+      const group=stack.pop();i++;
+      let num='';while(i<segment.length&&/\d/.test(segment[i]))num+=segment[i++];
+      const mult=Number(num||1);Object.entries(group).forEach(([el,n])=>add(stack[stack.length-1],el,n*mult));continue;
+    }
+    if(/[A-Z]/.test(ch)){
+      let el=ch;i++;if(i<segment.length&&/[a-z]/.test(segment[i]))el+=segment[i++];
+      let num='';while(i<segment.length&&/\d/.test(segment[i]))num+=segment[i++];
+      add(stack[stack.length-1],el,Number(num||1));continue;
+    }
+    i++;
+  }
+  const out=stack[0];Object.keys(out).forEach(k=>out[k]*=coefficient);return out;
+}
+function ph3Atoms(material){
+  const f=ph3AsciiFormula(material.formula);
+  const total={};
+  f.split('・').filter(Boolean).forEach(part=>{
+    const map=ph3ParseSegment(part);Object.entries(map).forEach(([el,n])=>total[el]=(total[el]||0)+n);
+  });
+  return total;
+}
+function ph3Ions(material){
+  if(material.kind!=='イオン結晶')return [];
+  return parseRatioEntries(material).filter(x=>x&&x.label&&Number.isFinite(x.count));
+}
+function ph3FormulaLevel(material){
+  const f=ph3AsciiFormula(material.formula);
+  if(material.hydrate||f.includes('・'))return 4;
+  if(f.includes('('))return 3;
+  return Object.keys(ph3Atoms(material)).length<=2?1:2;
+}
+function ph3ParticleName(m){
+  if(m.kind==='原子')return `${m.name}原子`;
+  if(m.kind==='分子')return `${m.name}分子`;
+  return `${m.name}の式単位`;
+}
+function ph3MoleText(n){
+  const map=new Map([[0.005,'0.005'],[0.01,'0.010'],[0.0125,'0.0125'],[0.025,'0.025'],[0.03,'0.030'],[0.04,'0.040'],[0.05,'0.050'],[0.075,'0.075'],[0.09,'0.090'],[0.1,'0.10'],[0.125,'0.125'],[0.2,'0.20'],[0.25,'0.25'],[0.3,'0.30'],[0.4,'0.40'],[0.5,'0.50'],[0.55,'0.55'],[0.6,'0.60'],[0.7,'0.70'],[0.75,'0.75'],[0.8,'0.80'],[0.9,'0.90'],[1,'1.0'],[1.25,'1.25'],[1.5,'1.5'],[2,'2.0'],[2.5,'2.5'],[3,'3.0'],[4,'4.0'],[5,'5.0'],[6.5,'6.5'],[7.5,'7.5'],[10,'10']]);
+  return map.get(n) || String(n);
+}
+function ph3Sci(value){
+  if(!Number.isFinite(value)||value<=0)return {coeff:0,exp:0,text:'0'};
+  let exp=Math.floor(Math.log10(value));let coeff=value/10**exp;
+  coeff=roundSig(coeff,2);
+  if(coeff>=10){coeff/=10;exp++}
+  const coeffText=coeff.toFixed(1);
+  return {coeff,exp,text:`${coeffText}×10^${exp}`};
+}
+function ph3GasL(n){
+  const value=Number((n*22.4).toPrecision(12));return {value,text:String(value)};
+}
+function ph3GasMl(n){
+  const value=Number((n*22400).toPrecision(12));return {value,text:String(value)};
+}
+function ph3Pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function ph3DifficultySchedule(count){
+  if(count===10)return [1,1,1,2,2,2,3,3,4,4];
+  if(count===15)return [1,1,1,1,2,2,2,2,3,3,3,4,4,4,4];
+  if(count===20)return [1,1,1,1,1,2,2,2,2,2,3,3,3,3,4,4,4,4,4,4];
+  return Array.from({length:count},(_,i)=>i<count*.25?1:i<count*.5?2:i<count*.75?3:4);
+}
+function ph3Factor(d,{gasL=false,gasMl=false}={}){
+  if(gasMl)return ph3Pick(PH3.gasMlFactors);
+  if(gasL)return ph3Pick(PH3.gasLFactorsByDifficulty[d]||PH3.gasLFactorsByDifficulty[2]);
+  return ph3Pick(PH3.factorsByDifficulty[d]||PH3.factorsByDifficulty[2]);
+}
+function ph3Material(filter,d,load=1){
+  let arr=eligibleMaterials(filter);
+  // 2段階以上の問題では化学式の複雑さを同時に最大化しない。
+  const cap=Math.max(1,Math.min(4,d-(load-1)));
+  if(filter==='compound'||filter==='molecule'){
+    const limited=arr.filter(m=>ph3FormulaLevel(m)<=cap);if(limited.length)arr=limited;
+  }
+  const recent=new Set(PH3.lastTwoMaterials);
+  const fresh=arr.filter(m=>!recent.has(m.id));if(fresh.length)arr=fresh;
+  return ph3Pick(arr);
+}
+function ph3Remember(q){
+  PH3.lastTwoTypes.push(q.type);PH3.lastTwoTypes=PH3.lastTwoTypes.slice(-2);
+  if(q.material){PH3.lastTwoMaterials.push(q.material.id);PH3.lastTwoMaterials=PH3.lastTwoMaterials.slice(-2)}
+}
+function ph3MassText(mass,d){
+  const sig=d<=2?Math.min(3,Math.max(2,Math.ceil(Math.log10(Math.abs(mass)+1))+1)):3;
+  return displaySig(mass,sig);
+}
+function ph3BaseQ(obj){obj.phase3=true;return commonQ(obj)}
+
+function ph3QMolarMass(ctx){
+  const level=Math.max(1,Math.min(4,ctx.difficulty));
+  let arr=eligibleMaterials('compound').filter(m=>ph3FormulaLevel(m)===level);
+  if(!arr.length)arr=eligibleMaterials('compound').filter(m=>ph3FormulaLevel(m)<=level);
+  const recent=new Set(PH3.lastTwoMaterials);const fresh=arr.filter(m=>!recent.has(m.id));if(fresh.length)arr=fresh;
+  const m=ph3Pick(arr),term=m.kind==='分子'?'分子量':'式量';
+  return ph3BaseQ({type:'molarMass',material:m,formulaLevel:level,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> の${term}を求めなさい。`,answer:m.molarMass,answerText:String(m.molarMass),sig:null,unitKey:'none',unit:'単位なし',scientific:false,hints:[`化学式を元素ごとに分けます。`,`各元素について「原子量×個数」を求めます。`,level>=3?'かっこ・結晶水まで含めて、すべてを合計します。':'最後に各元素の値を合計します。'],explanation:`${formatFormula(m.formula)} の${term}は ${m.molarMass} です。`});
+}
+
+function ph3ExactText(value,maxDecimals=3){
+  for(let d=0;d<=maxDecimals;d++){
+    const scale=10**d;
+    if(Math.abs(value*scale-Math.round(value*scale))<1e-9){
+      return d===0?String(Math.round(value)):value.toFixed(d);
+    }
+  }
+  return null;
+}
+function ph3NaturalNumber(value){return Number(Number(value).toPrecision(12))}
+function ph3NaturalText(value){return String(ph3NaturalNumber(value))}
+function ph3FriendlyMassPair(filter,difficulty,load=1,{gasL=false}={}){
+  const maxDecimals=difficulty<=1?1:difficulty===2?2:3;
+  for(let tries=0;tries<80;tries++){
+    const m=ph3Material(filter,difficulty,load);
+    const n=ph3Factor(difficulty,{gasL});
+    const mass=m.molarMass*n;
+    const text=ph3ExactText(mass,maxDecimals);
+    if(text!==null&&mass>=0.2&&mass<=900)return {m,n,mass,text};
+  }
+  // フォールバックでも問題文と正答が食い違わないよう、最大4桁まで保持する。
+  const m=ph3Material(filter,difficulty,load),n=ph3Factor(difficulty,{gasL}),mass=m.molarMass*n;
+  return {m,n,mass,text:ph3ExactText(mass,4)||String(Math.round(mass*10000)/10000)};
+}
+function ph3QMassToMol(ctx){
+  const {m,n,text:massText}=ph3FriendlyMassPair('compound',ctx.difficulty,1);
+  const answerText=ph3MoleText(n);return ph3BaseQ({type:'massToMol',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量は何 mol か。`,answer:n,answerText,sig:sigDigitsFromText(answerText),unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の1段階です。',`物質量 = 質量 ÷ モル質量` ,`${massText} ÷ ${m.molarMass} を計算します。`],explanation:`${massText} ÷ ${m.molarMass} = ${answerText} mol`});
+}
+function ph3QMolToMass(ctx){
+  const {m,n,mass,text:massText}=ph3FriendlyMassPair('compound',ctx.difficulty,1);
+  const natural=ph3NaturalNumber(mass),text=ph3NaturalText(mass);return ph3BaseQ({type:'molToMass',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の質量は何 g か。`,answer:natural,answerText:text,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['物質量 → 質量 の1段階です。','質量 = 物質量 × モル質量',`${ph3MoleText(n)} × ${m.molarMass} を計算します。`],explanation:`${ph3MoleText(n)} × ${m.molarMass} = ${text} g`});
+}
+function ph3QMassToParticles(ctx){
+  const {m,n,text:massText}=ph3FriendlyMassPair('molecule',ctx.difficulty,2),ans=ph3Sci(n*AVOGADRO);
+  return ph3BaseQ({type:'massToParticles',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g に含まれる分子の数はいくつか。`,answer:n*AVOGADRO,answerCoeff:ans.coeff,answerExp:ans.exp,answerText:ans.text,sig:2,unitKey:'particle',unit:'個',scientific:true,hints:['質量 → 物質量 → 粒子数 の2段階です。',`まず ${massText} ÷ ${m.molarMass} で物質量を求めます。`,'その物質量に 6.0×10^23 を掛けます。'],explanation:`${massText} g = ${ph3MoleText(n)} mol、したがって ${ans.text} 個です。`});
+}
+function ph3QMolToGas(ctx){
+  const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasL:true}),gas=ph3GasL(n);
+  return ph3BaseQ({type:'molToGas',material:m,difficulty:ctx.difficulty,question:`標準状態で、${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の体積は何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,hints:['物質量 → 気体体積 の1段階です。','標準状態では 1 mol = 22.4 L を使います。',`${ph3MoleText(n)} × 22.4 を計算します。`],explanation:`${ph3MoleText(n)} mol × 22.4 L/mol = ${gas.text} L`});
+}
+function ph3QGasToMol(ctx){
+  const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasL:true}),gas=ph3GasL(n);
+  const answerText=ph3MoleText(n);return ph3BaseQ({type:'gasToMol',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,answer:n,answerText,sig:sigDigitsFromText(answerText),unitKey:'mol',unit:'mol',scientific:false,hints:['気体体積 → 物質量 の1段階です。','物質量 = 気体体積 ÷ 22.4',`${gas.text} ÷ 22.4 を計算します。`],explanation:`${gas.text} L ÷ 22.4 L/mol = ${answerText} mol`});
+}
+function ph3QGasToMass(ctx){
+  const {m,n,mass,text:massText}=ph3FriendlyMassPair('gas',ctx.difficulty,2,{gasL:true}),gas=ph3GasL(n);
+  const natural=ph3NaturalNumber(mass),text=ph3NaturalText(mass);return ph3BaseQ({type:'gasToMass',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> の質量は何 g か。`,answer:natural,answerText:text,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['気体体積 → 物質量 → 質量 の2段階です。',`まず ${gas.text} ÷ 22.4 で物質量を求めます。`,`物質量にモル質量 ${m.molarMass} g/mol を掛けます。`],explanation:`${gas.text} L = ${ph3MoleText(n)} mol、質量は ${text} g です。`});
+}
+function ph3QAtomCount(ctx){
+  let arr=eligibleMaterials('compound').filter(m=>Object.keys(ph3Atoms(m)).length>=2&&ph3FormulaLevel(m)<=Math.max(1,ctx.difficulty));
+  if(!arr.length)arr=eligibleMaterials('compound').filter(m=>Object.keys(ph3Atoms(m)).length>=2);
+  const recent=new Set(PH3.lastTwoMaterials),fresh=arr.filter(m=>!recent.has(m.id));if(fresh.length)arr=fresh;
+  const m=ph3Pick(arr),atoms=ph3Atoms(m),target=ph3Pick(Object.keys(atoms)),count=atoms[target],n=ph3Factor(ctx.difficulty),ans=ph3Sci(n*count*AVOGADRO);
+  return ph3BaseQ({type:'atomCount',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol に含まれる ${target} 原子の数はいくつか。`,answer:n*count*AVOGADRO,answerCoeff:ans.coeff,answerExp:ans.exp,answerText:ans.text,sig:2,unitKey:'particle',unit:'個',scientific:true,hints:[`まず化学式1単位に ${target} 原子が何個あるか確認します。`,`${target} 原子の物質量 = 化合物の物質量 × ${count}`,'その物質量に 6.0×10^23 を掛けます。'],explanation:`${target}原子は1単位に${count}個。したがって ${ans.text} 個です。`});
+}
+function ph3QIonCount(ctx){
+  const m=ph3Material('ionic',ctx.difficulty,2),ion=ph3Pick(ph3Ions(m)),n=ph3Factor(ctx.difficulty),ans=ph3Sci(n*ion.count*AVOGADRO);
+  return ph3BaseQ({type:'ionCount',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol に含まれる ${ion.label} の数はいくつか。`,answer:n*ion.count*AVOGADRO,answerCoeff:ans.coeff,answerExp:ans.exp,answerText:ans.text,sig:2,unitKey:'particle',unit:'個',scientific:true,hints:[`化学式1単位に ${ion.label} が何個含まれるか確認します。`,`${ion.label} の物質量 = 化合物の物質量 × ${ion.count}`,'最後に 6.0×10^23 を掛けます。'],explanation:`${ion.label} は1式単位に${ion.count}個なので、${ans.text} 個です。`});
+}
+
+function ph3QParticlesToMass(ctx){
+  const m=ph3Material('compound',ctx.difficulty,2),n=ph3Factor(ctx.difficulty),src=ph3Sci(n*AVOGADRO),mass=ph3NaturalNumber(m.molarMass*n),massText=ph3NaturalText(mass);
+  return ph3BaseQ({type:'particlesToMass',material:m,difficulty:ctx.difficulty,question:`${src.text} 個の${ph3ParticleName(m)}の質量は何 g か。`,answer:mass,answerText:massText,sig:null,unitKey:'g',unit:'g',scientific:false,hints:['粒子数 → 物質量 → 質量 の2段階です。',`まず粒子数を 6.0×10^23 で割って物質量を求めます。`,`物質量にモル質量 ${m.molarMass} g/mol を掛けます。`],explanation:`${src.text} 個 = ${ph3MoleText(n)} mol、したがって質量は ${massText} g です。`});
+}
+function ph3QMassToGas(ctx){
+  const {m,n,text:massText}=ph3FriendlyMassPair('gas',ctx.difficulty,2,{gasL:true}),gas=ph3GasL(n);
+  return ph3BaseQ({type:'massToGas',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の体積は、標準状態で何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,hints:['質量 → 物質量 → 気体体積 の2段階です。',`まず ${massText} ÷ ${m.molarMass} で物質量を求めます。`,'標準状態では 1 mol = 22.4 L を使います。'],explanation:`${massText} g = ${ph3MoleText(n)} mol、標準状態の体積は ${gas.text} L です。`});
+}
+function ph3QParticlesToGas(ctx){
+  const m=ph3Material('gas',ctx.difficulty,2),n=ph3Factor(ctx.difficulty,{gasL:true}),src=ph3Sci(n*AVOGADRO),gas=ph3GasL(n);
+  return ph3BaseQ({type:'particlesToGas',material:m,difficulty:ctx.difficulty,question:`${src.text} 個の${m.name}分子の体積は、標準状態で何 L か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'L',scientific:false,hints:['粒子数 → 物質量 → 気体体積 の2段階です。','粒子数を 6.0×10^23 で割ります。','求めた物質量に 22.4 L/mol を掛けます。'],explanation:`${src.text} 個 = ${ph3MoleText(n)} mol、体積は ${gas.text} L です。`});
+}
+function ph3QGasToParticles(ctx){
+  const m=ph3Material('gas',ctx.difficulty,2),n=ph3Factor(ctx.difficulty,{gasL:true}),gas=ph3GasL(n),ans=ph3Sci(n*AVOGADRO);
+  return ph3BaseQ({type:'gasToParticles',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何個の分子からなるか。`,answer:n*AVOGADRO,answerCoeff:ans.coeff,answerExp:ans.exp,answerText:ans.text,sig:2,unitKey:'particle',unit:'個',scientific:true,hints:['気体体積 → 物質量 → 粒子数 の2段階です。',`${gas.text} ÷ 22.4 で物質量を求めます。`,'その物質量に 6.0×10^23 を掛けます。'],explanation:`${gas.text} L = ${ph3MoleText(n)} mol、粒子数は ${ans.text} 個です。`});
+}
+function ph3QMolToGasMl(ctx){
+  const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasMl:true}),gas=ph3GasMl(n);
+  return ph3BaseQ({type:'molToGasMl',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol の体積は、標準状態で何 mL か。`,answer:gas.value,answerText:gas.text,sig:null,unitKey:'L',unit:'mL',scientific:false,hints:['物質量 → 気体体積 の変換です。','まずLで求めても、22.4 L = 22400 mL と考えても構いません。',`${ph3MoleText(n)} × 22400 を計算します。`],explanation:`${ph3MoleText(n)} mol × 22400 mL/mol = ${gas.text} mL`});
+}
+function ph3QGasMlToMol(ctx){
+  const m=ph3Material('gas',ctx.difficulty,1),n=ph3Factor(ctx.difficulty,{gasMl:true}),gas=ph3GasMl(n);
+  const answerText=ph3MoleText(n);return ph3BaseQ({type:'gasMlToMol',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gas.text} mL の${m.name} <span class="formula">${formatFormula(m.formula)}</span> は何 mol か。`,answer:n,answerText,sig:sigDigitsFromText(answerText),unitKey:'mol',unit:'mol',scientific:false,hints:['mLをLに直してから考えます。',`${gas.text} mL = ${(gas.value/1000).toString()} L`,'気体体積(L) ÷ 22.4 で物質量を求めます。'],explanation:`${gas.text} mL = ${gas.value/1000} L より、物質量は ${answerText} mol です。`});
+}
+function ph3QAtomCountMass(ctx){
+  const d=Math.max(1,ctx.difficulty-1),pair=ph3FriendlyMassPair('compound',d,3),m=pair.m,n=pair.n,massText=pair.text,atoms=ph3Atoms(m),target=ph3Pick(Object.keys(atoms)),count=atoms[target],ans=ph3Sci(n*count*AVOGADRO);
+  return ph3BaseQ({type:'atomCountMass',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g に含まれる ${target} 原子は何個か。`,answer:n*count*AVOGADRO,answerCoeff:ans.coeff,answerExp:ans.exp,answerText:ans.text,sig:2,unitKey:'particle',unit:'個',scientific:true,hints:['質量 → 化合物の物質量 → 特定原子の物質量 → 原子数 と進みます。',`${formatFormula(m.formula)} 1単位には ${target} 原子が ${count} 個あります。`,'最後に 6.0×10^23 を掛けます。'],explanation:`${massText} g は ${ph3MoleText(n)} mol。${target}原子は${count}倍なので ${ans.text} 個です。`});
+}
+function ph3QIonMol(ctx){
+  const m=ph3Material('ionic',ctx.difficulty,1),ions=ph3Ions(m),ion=ph3Pick(ions),n=ph3Factor(ctx.difficulty),ans=n*ion.count;
+  return ph3BaseQ({type:'ionMol',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${ph3MoleText(n)} mol に含まれる ${ion.label} の物質量は何 mol か。`,answer:ans,answerText:displaySig(ans,2),sig:2,unitKey:'mol',unit:'mol',scientific:false,hints:[`化学式1単位に ${ion.label} が何個あるか確認します。`,`化合物の物質量 × ${ion.count} で ${ion.label} の物質量を求めます。`,'粒子数に直す必要はありません。'],explanation:`${ion.label} は1式単位に${ion.count}個なので、${displaySig(ans,2)} mol です。`});
+}
+function ph3QIonCountMass(ctx){
+  const d=Math.max(1,ctx.difficulty-1),pair=ph3FriendlyMassPair('ionic',d,3),m=pair.m,n=pair.n,massText=pair.text,ion=ph3Pick(ph3Ions(m)),ans=ph3Sci(n*ion.count*AVOGADRO);
+  return ph3BaseQ({type:'ionCountMass',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g に含まれる ${ion.label} は何個か。`,answer:n*ion.count*AVOGADRO,answerCoeff:ans.coeff,answerExp:ans.exp,answerText:ans.text,sig:2,unitKey:'particle',unit:'個',scientific:true,hints:['質量 → 化合物の物質量 → イオンの物質量 → イオン数 の順です。',`1式単位に ${ion.label} が ${ion.count} 個含まれます。`,'最後にアボガドロ定数を掛けます。'],explanation:`${massText} g は ${ph3MoleText(n)} mol。${ion.label} は${ion.count}倍なので ${ans.text} 個です。`});
+}
+
+// 濃度：資料で見られる「問い方」のバリエーションを追加。ただし希釈はVer.1.3対象外。
+const PH3_PERCENT_TUPLES=[
+  {solvent:60,solute:20.0,percent:25},{solvent:100,solute:25.0,percent:20},{solvent:80,solute:20.0,percent:20},
+  {solvent:150,solute:50.0,percent:25},{solvent:120,solute:30.0,percent:20},{solvent:90,solute:10.0,percent:10}
+];
+function ph3QMassPercentSolvent(ctx){
+  const t=ph3Pick(PH3_PERCENT_TUPLES);
+  return ph3BaseQ({type:'massPercentSolvent',difficulty:ctx.difficulty,question:`水 ${t.solvent} g に溶質 ${t.solute} g を溶かした。できた水溶液の質量パーセント濃度は何 % か。`,answer:t.percent,answerText:String(t.percent),sig:null,unitKey:'percent',unit:'%',scientific:false,hints:['まず「溶液の質量＝水＋溶質」を求めます。','質量パーセント濃度＝溶質÷溶液×100','分母を水だけの質量にしないよう注意します。'],explanation:`溶液は ${t.solvent+t.solute} g。${t.solute}÷${t.solvent+t.solute}×100=${t.percent}% です。`});
+}
+function ph3QMolarFromMass(ctx){
+  const m=ph3Material('compound',ctx.difficulty,2),volume=ph3Pick([0.100,0.200,0.250,0.500]),targetConc=ph3Pick([0.10,0.20,0.40,0.50,0.75,1.0,1.5]),n=targetConc*volume,mass=n*m.molarMass,massText=ph3MassText(mass,ctx.difficulty),ansText=displaySig(targetConc,2);
+  return ph3BaseQ({type:'molarFromMass',material:m,difficulty:ctx.difficulty,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g を水に溶かして ${Math.round(volume*1000)} mL にした。この水溶液のモル濃度は何 mol/L か。`,answer:targetConc,answerText:ansText,sig:null,unitKey:'concentration',unit:'mol/L',scientific:false,hints:['質量 → 物質量 → モル濃度 の2段階です。',`まず質量をモル質量 ${m.molarMass} g/mol で割ります。`,'溶液体積をLに直し、物質量÷体積(L)を計算します。'],explanation:`${massText} g は ${displaySig(n,3)} mol、体積は ${volume} L なので ${ansText} mol/L です。`});
+}
+function ph3QMolarFromGas(ctx){
+  const m=ph3Material('gas',ctx.difficulty,2),solutionMl=ph3Pick([100,200,250,500]),targetConc=ph3Pick([0.20,0.40,0.50,0.70,1.0]),n=targetConc*(solutionMl/1000);
+  // 体積が教材ルールに合う値だけ採用。合わない場合は使いやすい物質量へ寄せる。
+  const gasRaw=n*22.4;const gasText=(Math.round(gasRaw*100)/100).toString();
+  return ph3BaseQ({type:'molarFromGas',material:m,difficulty:ctx.difficulty,question:`標準状態で ${gasText} L の${m.name} <span class="formula">${formatFormula(m.formula)}</span> を水に溶かして ${solutionMl} mL にした。この水溶液のモル濃度は何 mol/L か。`,answer:targetConc,answerText:displaySig(targetConc,2),sig:null,unitKey:'concentration',unit:'mol/L',scientific:false,hints:['気体体積 → 物質量 → モル濃度 の2段階です。','標準状態では気体体積÷22.4で物質量を求めます。','溶液体積をLに直して、物質量÷体積を計算します。'],explanation:`気体は ${displaySig(n,3)} mol、溶液体積は ${solutionMl/1000} L なので ${displaySig(targetConc,2)} mol/L です。`});
+}
+
+// 既存問題も「パターン」として包み、出題選択を一元化する。
+function ph3Wrap(oldBuilder,type,mode,range,minDifficulty,load=1,weight=1){return {id:type,type,mode,range,minDifficulty,load,weight,build:(ctx)=>{generationDifficulty=Math.min(3,ctx.difficulty);const q=oldBuilder();q.difficulty=ctx.difficulty;q.phase3=true;return q}}}
+const PH3_PATTERNS=[
+  {id:'molarMass',type:'molarMass',mode:'mode1',range:'molarMass',minDifficulty:1,load:1,weight:4,build:ph3QMolarMass},
+  ph3Wrap(qIsotope,'isotope','mode1','isotope',2,2,1),
+
+  {id:'massToMol',type:'massToMol',mode:'mode2',range:'mass',minDifficulty:1,load:1,weight:3,build:ph3QMassToMol},{id:'molToMass',type:'molToMass',mode:'mode2',range:'mass',minDifficulty:1,load:1,weight:3,build:ph3QMolToMass},
+  ph3Wrap(qMolToParticles,'molToParticles','mode2','particle',1,1,3),ph3Wrap(qParticlesToMol,'particlesToMol','mode2','particle',1,1,3),
+  {id:'molToGas',type:'molToGas',mode:'mode2',range:'gas',minDifficulty:1,load:1,weight:3,build:ph3QMolToGas},{id:'gasToMol',type:'gasToMol',mode:'mode2',range:'gas',minDifficulty:1,load:1,weight:3,build:ph3QGasToMol},
+  {id:'molToGasMl',type:'molToGasMl',mode:'mode2',range:'gas',minDifficulty:2,load:2,weight:1,build:ph3QMolToGasMl},
+  {id:'gasMlToMol',type:'gasMlToMol',mode:'mode2',range:'gas',minDifficulty:2,load:2,weight:1,build:ph3QGasMlToMol},
+  {id:'massToParticles',type:'massToParticles',mode:'mode2',range:'multi',minDifficulty:2,load:2,weight:2,build:ph3QMassToParticles},{id:'gasToMass',type:'gasToMass',mode:'mode2',range:'multi',minDifficulty:2,load:2,weight:2,build:ph3QGasToMass},
+  {id:'particlesToMass',type:'particlesToMass',mode:'mode2',range:'multi',minDifficulty:2,load:2,weight:2,build:ph3QParticlesToMass},
+  {id:'massToGas',type:'massToGas',mode:'mode2',range:'multi',minDifficulty:2,load:2,weight:2,build:ph3QMassToGas},
+  {id:'particlesToGas',type:'particlesToGas',mode:'mode2',range:'multi',minDifficulty:2,load:2,weight:2,build:ph3QParticlesToGas},
+  {id:'gasToParticles',type:'gasToParticles',mode:'mode2',range:'multi',minDifficulty:2,load:2,weight:2,build:ph3QGasToParticles},
+  {id:'atomCount',type:'atomCount',mode:'mode2',range:'atomIon',minDifficulty:1,load:2,weight:2,build:ph3QAtomCount},{id:'ionCount',type:'ionCount',mode:'mode2',range:'atomIon',minDifficulty:1,load:2,weight:2,build:ph3QIonCount},
+  {id:'ionMol',type:'ionMol',mode:'mode2',range:'atomIon',minDifficulty:2,load:2,weight:2,build:ph3QIonMol},
+  {id:'atomCountMass',type:'atomCountMass',mode:'mode2',range:'atomIon',minDifficulty:3,load:3,weight:2,build:ph3QAtomCountMass},
+  {id:'ionCountMass',type:'ionCountMass',mode:'mode2',range:'atomIon',minDifficulty:3,load:3,weight:2,build:ph3QIonCountMass},
+
+  ph3Wrap(qMolarConcentration,'molarConcentration','mode3','basicConc',1,1,2),ph3Wrap(qMassPercent,'massPercent','mode3','basicConc',1,1,2),
+  {id:'massPercentSolvent',type:'massPercentSolvent',mode:'mode3',range:'basicConc',minDifficulty:1,load:1,weight:2,build:ph3QMassPercentSolvent},
+  {id:'molarFromMass',type:'molarFromMass',mode:'mode3',range:'basicConc',minDifficulty:2,load:2,weight:2,build:ph3QMolarFromMass},
+  {id:'molarFromGas',type:'molarFromGas',mode:'mode3',range:'basicConc',minDifficulty:2,load:2,weight:1,build:ph3QMolarFromGas},
+  ph3Wrap(qSoluteMassPercent,'soluteMassPercent','mode3','basicConc',1,1,2),ph3Wrap(qSoluteMassMolar,'soluteMassMolar','mode3','reverseConc',2,2,2),
+  ph3Wrap(qSolutionVolumeMolar,'solutionVolumeMolar','mode3','reverseConc',2,2,2),ph3Wrap(qPercentToMolar,'percentToMolar','mode3','convertConc',3,3,2),
+  ph3Wrap(qMolarToPercent,'molarToPercent','mode3','convertConc',3,3,2)
+];
+
+function ph3WeightedPick(patterns,targetDifficulty){
+  const recentTypes=new Set(PH3.lastTwoTypes);
+  let weighted=[];
+  patterns.forEach(p=>{
+    let w=p.weight||1;
+    if(p.minDifficulty===targetDifficulty)w*=3;else if(p.minDifficulty===targetDifficulty-1)w*=1.7;
+    if(recentTypes.has(p.type))w*=0.15;
+    for(let i=0;i<Math.max(1,Math.round(w*4));i++)weighted.push(p);
+  });
+  return ph3Pick(weighted.length?weighted:patterns);
+}
+function ph3PatternsFor(mode,range,difficulty){
+  if(mode==='weak'){
+    const types=getWeakTypes();
+    const selected=PH3_PATTERNS.filter(p=>types.includes(p.type)&&p.minDifficulty<=difficulty);
+    return selected.length?selected:PH3_PATTERNS.filter(p=>p.mode==='mode2'&&p.minDifficulty<=difficulty);
+  }
+  let all=PH3_PATTERNS.filter(p=>p.mode===mode&&typeEnabled(p.type));
+  if(range&&range!=='all'){
+    const ranged=all.filter(p=>p.range===range);
+    if(!ranged.length)return [];
+    const allowed=ranged.filter(p=>p.minDifficulty<=difficulty);
+    if(allowed.length)return allowed;
+    const minimum=Math.min(...ranged.map(p=>p.minDifficulty));
+    return ranged.filter(p=>p.minDifficulty===minimum);
+  }
+  let arr=all.filter(p=>p.minDifficulty<=difficulty);
+  // 「すべて」の序盤では必ず基礎型を中心にする。
+  if(difficulty===1){const easy=arr.filter(p=>p.minDifficulty===1);if(easy.length)arr=easy}
+  return arr;
+}
+function ph3BuildQuestions(mode,count){
+  const range=document.getElementById('rangeSelect')?.value||'all';
+  const schedule=ph3DifficultySchedule(count);const qs=[];
+  PH3.lastTwoTypes=[];PH3.lastTwoMaterials=[];state.lastMaterial=null;state.lastType=null;
+  for(let i=0;i<count;i++){
+    const difficulty=schedule[i]||1;generationDifficulty=Math.min(3,difficulty);
+    let patterns=ph3PatternsFor(mode,range,difficulty);
+    if(!patterns.length)patterns=ph3PatternsFor(mode,'all',difficulty);
+    let q=null;
+    for(let tries=0;tries<40;tries++){
+      const p=ph3WeightedPick(patterns,difficulty);
+      try{q=p.build({difficulty,index:i,count,mode,range});}catch(err){console.warn('Phase3 builder error',p.id,err);continue}
+      if(!q)continue;
+      const duplicateType=PH3.lastTwoTypes.length&&PH3.lastTwoTypes[PH3.lastTwoTypes.length-1]===q.type;
+      const duplicateMat=q.material&&PH3.lastTwoMaterials.length&&PH3.lastTwoMaterials[PH3.lastTwoMaterials.length-1]===q.material.id;
+      if((duplicateType||duplicateMat)&&tries<25)continue;
+      break;
+    }
+    if(!q){q=qMassToMol();q.difficulty=difficulty;q.phase3=true}
+    q.phase3Pattern=q.type;q.phase3Slot=i+1;q.phase3Difficulty=difficulty;
+    qs.push(q);ph3Remember(q);state.lastType=q.type;state.lastMaterial=q.material?.id||null;
+  }
+  generationDifficulty=1;return qs;
+}
+
+// 新しい型を既存UI/教員設定/苦手分析へ登録
+Object.assign(TYPE_INFO,{
+  particlesToMass:['粒子数→質量',2],massToGas:['質量→気体体積',2],particlesToGas:['粒子数→気体体積',2],gasToParticles:['気体体積→粒子数',2],
+  molToGasMl:['物質量→気体体積(mL)',2],gasMlToMol:['気体体積(mL)→物質量',2],ionMol:['化合物→特定イオンの物質量',2],
+  atomCountMass:['質量→特定原子数',3],ionCountMass:['質量→特定イオン数',3],massPercentSolvent:['溶媒＋溶質→質量％',1],
+  molarFromMass:['質量→モル濃度',2],molarFromGas:['気体体積→モル濃度',2]
+});
+RANGE_TYPES.multi=['massToParticles','gasToMass','particlesToMass','massToGas','particlesToGas','gasToParticles'];
+RANGE_TYPES.gas=['molToGas','gasToMol','molToGasMl','gasMlToMol'];
+RANGE_TYPES.atomIon=['atomCount','ionCount','ionMol','atomCountMass','ionCountMass'];
+RANGE_TYPES.basicConc=['molarConcentration','massPercent','massPercentSolvent','molarFromMass','molarFromGas','soluteMassPercent'];
+PH3_PATTERNS.forEach(p=>{if(p.build)BUILDER_BY_TYPE[p.type]=()=>p.build({difficulty:Math.max(1,p.minDifficulty),index:0,count:10,mode:p.mode,range:p.range})});
+
+// 実際の出題入口をPhase3エンジンへ切替
+/* Phase3.7: intermediate assignment removed */
+
+// 開発確認用：コンソールから PHASE3_ENGINE.report() を実行できる。
+window.PHASE3_ENGINE={
+  patterns:PH3_PATTERNS,
+  atoms:ph3Atoms,
+  formulaLevel:ph3FormulaLevel,
+  schedule:ph3DifficultySchedule,
+  report(){
+    return {
+      version:PH3.version,
+      patternCount:PH3_PATTERNS.length,
+      mode1:PH3_PATTERNS.filter(p=>p.mode==='mode1').map(p=>p.type),
+      mode2:PH3_PATTERNS.filter(p=>p.mode==='mode2').map(p=>p.type),
+      mode3:PH3_PATTERNS.filter(p=>p.mode==='mode3').map(p=>p.type),
+      schedules:{q10:ph3DifficultySchedule(10),q15:ph3DifficultySchedule(15),q20:ph3DifficultySchedule(20)}
+    };
+  }
+};
+console.info('Mol Master Ver.1.3 Phase3 problem engine loaded',window.PHASE3_ENGINE.report());
+})();
+
+
+/* =========================================================
+   Reaction and answer-policy generators
+   - 出題範囲をチェックボックスで複数選択
+   - 解答値に応じて「有効数字」「小数第1位」の指示を問題文へ自動付与
+   - モード4：反応式と量的関係
+   - 総合ミックスをモード1～4から生成
+   ========================================================= */
+(function(){
+'use strict';
+const PH3C={version:'1.3-phase3C',selectedRanges:[],lastTypes:[],lastMaterials:[]};
+
+// ---------- 出題範囲（複数選択） ----------
+RANGE_OPTIONS.mode4=[['all','すべて']];
+const PH3C_RANGE_OPTIONS={
+ mode1:[['molarMass','分子量・式量'],['isotope','同位体・原子量']],
+ mode2:[['mass','質量と物質量'],['particle','粒子数と物質量'],['gas','気体体積と物質量'],['atomIon','原子数・イオン数'],['multi','総合変換']],
+ mode3:[['basicConc','濃度の基本'],['reverseConc','濃度から質量・体積を逆算'],['convertConc','質量％とモル濃度の相互変換']],
+ mode4:[['reactionEq','反応式・係数'],['reactionMol','係数比と物質量'],['reactionMassGas','質量・気体体積の量的関係'],['reactionLimit','過不足・限量試薬']],
+ mixed:[['mode1','原子量・分子量・式量'],['mode2','物質量'],['mode3','濃度・発展'],['mode4','反応式と量的関係']],
+ weak:[]
+};
+function ph3cSelectedRanges(){return Array.from(document.querySelectorAll('#rangeChecklist input:checked')).map(x=>x.value)}
+function ph3cRenderRanges(){
+ const mode=document.getElementById('modeSelect').value,box=document.getElementById('rangeChecklist'),opts=PH3C_RANGE_OPTIONS[mode]||[];
+ if(mode==='weak'){
+   box.innerHTML='<div class="note">これまでの誤答・ヒント利用をもとに、苦手形式を自動選択します。</div>';
+   document.getElementById('rangeHelp').textContent='範囲の手動選択はありません。';
+   document.getElementById('rangeAll').style.display='none';document.getElementById('rangeClear').style.display='none';return;
+ }
+ document.getElementById('rangeAll').style.display='inline-flex';document.getElementById('rangeClear').style.display='inline-flex';
+ box.innerHTML=opts.map(([v,l],i)=>`<label><input type="checkbox" value="${v}" ${i===0?'checked':''}> <span>${l}</span></label>`).join('');
+ document.getElementById('rangeHelp').textContent=mode==='mixed'?'選択したモードだけを混ぜて出題します。複数選択できます。':'選択した範囲だけから出題します。複数選択できます。';
+ ph3cSyncHiddenRange();
+ box.querySelectorAll('input').forEach(x=>x.addEventListener('change',ph3cSyncHiddenRange));
+}
+function ph3cSyncHiddenRange(){
+ const r=ph3cSelectedRanges();PH3C.selectedRanges=r;
+ const hidden=document.getElementById('rangeSelect');if(hidden)hidden.value=r.length===1?r[0]:'all';
+}
+
+ph3cRenderRanges();
+
+// ---------- 解答ポリシー ----------
+function ph3cAppendRule(q,text){if(text&&!q.question.includes('answer-rule'))q.question+=`<span class="answer-rule">${text}</span>`}
+function ph3cSigText(value,sig){return displaySig(value,sig)}
+function ph3cExactNaturalText(value){
+ return String(Number(Number(value).toPrecision(12)));
+}
+// 問題文で与える数値の表示を、解答ポリシーに合わせる。
+// exact: 自然表記 / sigfig: 指定有効数字 / fixed: 指定小数位
+function ph3cGivenValueText(value,{policy='exact',sig=null,decimals=null}={}){
+ if(policy==='sigfig'&&Number(sig)>0)return displaySig(value,Number(sig));
+ if(policy==='fixed'&&Number.isInteger(Number(decimals))&&Number(decimals)>=0)return Number(value).toFixed(Number(decimals));
+ return ph3cExactNaturalText(value);
+}
+function ph3cApplyAnswerPolicy(q){
+ if(!q)return q;
+ q.rawAnswer=(q.rawAnswer!==undefined)?q.rawAnswer:q.answer;
+ q.sigDigits=q.sigDigits||q.sig||null;
+ q.decimalPlaces=q.decimalPlaces??null;
+ if(q.answerPolicy==='fixed'&&q.decimalPlaces!==null){
+   q.acceptedAnswer=Number(q.displayAnswer);q.answer=q.acceptedAnswer;q.sigDigits=null;q.sig=null;return q;
+ }
+ if(q.scientific){
+   const sig=q.sigDigits||2;
+   let exponent=Math.floor(Math.log10(Math.abs(q.rawAnswer)));
+   let coefficient=roundSig(q.rawAnswer/10**exponent,sig);
+   if(Math.abs(coefficient)>=10){coefficient/=10;exponent++}
+   q.answerPolicy='scientific';q.sigDigits=sig;
+   q.scientificAnswer={coefficient,exponent};
+   q.acceptedAnswer=coefficient*10**exponent;
+   q.displayAnswer=`${coefficient.toFixed(sig-1)}×10^${exponent}`;
+   q.answerText=q.displayAnswer;q.answer=q.acceptedAnswer;
+   return q;
+ }
+ // 明示された有効数字問題
+ const sig=q.sigDigits||q.sig;
+ if(sig&&Number.isFinite(q.rawAnswer)){
+   const rounded=roundSig(q.rawAnswer,sig),display=ph3cSigText(q.rawAnswer,sig);
+   q.answerPolicy='sigfig';q.sigDigits=sig;q.sig=sig;q.displayAnswer=display;q.answerText=display;q.acceptedAnswer=rounded;q.answer=rounded;
+   if(Math.abs(rounded-q.rawAnswer)>Math.max(1e-12,Math.abs(q.rawAnswer)*1e-12)||q.roundingChallenge)ph3cAppendRule(q,`答えは有効数字${sig}桁で求めてください。`);
+   return q;
+ }
+ q.answerPolicy='exact';q.acceptedAnswer=q.rawAnswer;q.displayAnswer=q.answerText??String(q.rawAnswer);q.answerText=q.displayAnswer;q.answer=q.acceptedAnswer;
+ return q;
+}
+// fixed1は「値」だけでなく小数第1位表記も確認する（100 L以上の整数は例外）
+function evaluateAnswerPolicy(q){
+ const ev=evaluateAnswerConfigured(q);if(!q||q.answerPolicy!=='fixed'||q.scientific||!ev.ok)return ev;
+ const text=document.getElementById('answerInput').value.trim(),dec=q.decimalPlaces??1;
+ const re=new RegExp(`^[-+]?\\d+${dec?`\\.\\d{${dec}}`:''}$`);
+ if(!re.test(text))return {ok:false,kind:'fixed',message:dec?`数値と単位は合っています。小数第${dec}位まで書いてください。`:'整数で答えてください。',raw:ev.raw};
+ return ev;
+}
+
+// ---------- 割り切れない値も「丸め指示付き」で利用 ----------
+const PH3C_MASS_INPUTS=[5,7.5,12,13,18,25,35,50,65,75,90,100,120,130,150,180,200];
+function ph3cFlexibleMassToMol(ctx){
+ let m=eligibleMaterials('compound').filter(x=>!x.hydrate||ctx.difficulty>=3);
+ m=m[Math.floor(Math.random()*m.length)];
+ let mass=PH3C_MASS_INPUTS[Math.floor(Math.random()*PH3C_MASS_INPUTS.length)];
+ let raw=mass/m.molarMass;
+ // 序盤は従来通りきれいな値を優先。標準～応用では割り切れない値も採用。
+ if(ctx.difficulty===1){const n=[0.25,0.5,1,1.5,2][Math.floor(Math.random()*5)];mass=n*m.molarMass;raw=n}
+ const sig=2, rounded=roundSig(raw,sig), roundedNeeded=Math.abs(rounded-raw)>Math.max(1e-12,Math.abs(raw)*1e-12),massText=ph3cGivenValueText(mass,{policy:'sigfig',sig});
+ const q=commonQ({type:'massToMolFlexible',material:m,question:`${m.name} <span class="formula">${formatFormula(m.formula)}</span> ${massText} g の物質量は何 mol か。`,answer:raw,answerText:displaySig(raw,sig),sig,unitKey:'mol',unit:'mol',scientific:false,hints:['質量 → 物質量 の変換です。','物質量 = 質量 ÷ モル質量','割り切れない場合は途中で丸めず、最後に指定された桁へ丸めます。'],explanation:`${massText} ÷ ${m.molarMass} = ${raw.toPrecision(7)}… → 有効数字${sig}桁で ${displaySig(raw,sig)} mol`});
+ q.difficulty=ctx.difficulty;q.rawAnswer=raw;q.roundingChallenge=roundedNeeded;return ph3cApplyAnswerPolicy(q);
+}
+
+// ---------- 反応式と量的関係 ----------
+function ph3cAscii(s){const map={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};return String(s).replace(/[₀-₉]/g,c=>map[c])}
+function ph3cAtoms(formula){return window.PHASE3_ENGINE.atoms({formula:ph3cAscii(formula)})}
+function ph3cMolarMass(formula){const atoms=ph3cAtoms(formula);return Object.entries(atoms).reduce((sum,[el,n])=>sum+(ATOMIC_MASSES[el]||0)*n,0)}
+function ph3cSpecies(f,c,name,gas=false){return {formula:f,coeff:c,name:name||f,gas,molarMass:ph3cMolarMass(f)}}
+const PH3C_REACTIONS=[
+ {id:'h2burn',name:'水素の燃焼',s:[ph3cSpecies('H2',2,'水素',true),ph3cSpecies('O2',1,'酸素',true),ph3cSpecies('H2O',2,'水',false)],reactants:[0,1],products:[2]},
+ {id:'ch4burn',name:'メタンの完全燃焼',s:[ph3cSpecies('CH4',1,'メタン',true),ph3cSpecies('O2',2,'酸素',true),ph3cSpecies('CO2',1,'二酸化炭素',true),ph3cSpecies('H2O',2,'水',false)],reactants:[0,1],products:[2,3]},
+ {id:'c2h6burn',name:'エタンの完全燃焼',s:[ph3cSpecies('C2H6',2,'エタン',true),ph3cSpecies('O2',7,'酸素',true),ph3cSpecies('CO2',4,'二酸化炭素',true),ph3cSpecies('H2O',6,'水',false)],reactants:[0,1],products:[2,3]},
+ {id:'c3h8burn',name:'プロパンの完全燃焼',s:[ph3cSpecies('C3H8',1,'プロパン',true),ph3cSpecies('O2',5,'酸素',true),ph3cSpecies('CO2',3,'二酸化炭素',true),ph3cSpecies('H2O',4,'水',false)],reactants:[0,1],products:[2,3]},
+ {id:'ethanolburn',name:'エタノールの完全燃焼',s:[ph3cSpecies('C2H6O',1,'エタノール',false),ph3cSpecies('O2',3,'酸素',true),ph3cSpecies('CO2',2,'二酸化炭素',true),ph3cSpecies('H2O',3,'水',false)],reactants:[0,1],products:[2,3]},
+ {id:'mghcl',name:'マグネシウムと塩酸',s:[ph3cSpecies('Mg',1,'マグネシウム',false),ph3cSpecies('HCl',2,'塩化水素',false),ph3cSpecies('MgCl2',1,'塩化マグネシウム',false),ph3cSpecies('H2',1,'水素',true)],reactants:[0,1],products:[2,3]},
+ {id:'znhcl',name:'亜鉛と塩酸',s:[ph3cSpecies('Zn',1,'亜鉛',false),ph3cSpecies('HCl',2,'塩化水素',false),ph3cSpecies('ZnCl2',1,'塩化亜鉛',false),ph3cSpecies('H2',1,'水素',true)],reactants:[0,1],products:[2,3]},
+ {id:'caco3hcl',name:'炭酸カルシウムと塩酸',s:[ph3cSpecies('CaCO3',1,'炭酸カルシウム',false),ph3cSpecies('HCl',2,'塩化水素',false),ph3cSpecies('CaCl2',1,'塩化カルシウム',false),ph3cSpecies('CO2',1,'二酸化炭素',true),ph3cSpecies('H2O',1,'水',false)],reactants:[0,1],products:[2,3,4]},
+ {id:'haber',name:'アンモニア合成',s:[ph3cSpecies('N2',1,'窒素',true),ph3cSpecies('H2',3,'水素',true),ph3cSpecies('NH3',2,'アンモニア',true)],reactants:[0,1],products:[2]},
+ {id:'nh3oxid',name:'アンモニアの酸化',s:[ph3cSpecies('NH3',4,'アンモニア',true),ph3cSpecies('O2',5,'酸素',true),ph3cSpecies('NO',4,'一酸化窒素',true),ph3cSpecies('H2O',6,'水',false)],reactants:[0,1],products:[2,3]}
+];
+function ph3cReactionEq(r,withCoeff=true){return r.s.map((x,i)=>`${withCoeff&&(x.coeff!==1)?x.coeff+' ':''}${formatFormula(x.formula)}`).slice(0,r.reactants.length).join(' + ')+' → '+r.products.map(i=>{const x=r.s[i];return `${withCoeff&&(x.coeff!==1)?x.coeff+' ':''}${formatFormula(x.formula)}`}).join(' + ')}
+function ph3cReactionPick(){return PH3C_REACTIONS[Math.floor(Math.random()*PH3C_REACTIONS.length)]}
+function ph3cPick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function ph3cReactionCoefficient(ctx){
+ const r=ph3cReactionPick(),target=ph3cPick(r.s),ans=target.coeff;
+ return commonQ({type:'reactionCoefficient',question:`次の反応式の係数を最小の整数比でそろえたとき、<strong>${formatFormula(target.formula)}</strong> の係数はいくつか。<span class="reaction-eq">${ph3cReactionEq(r,false)}</span>`,answer:ans,answerText:String(ans),sig:null,unitKey:'none',unit:'単位なし',scientific:false,hints:['各元素の原子数が左右で等しくなるように係数をそろえます。','まず種類の少ない元素から合わせると整理しやすくなります。',`完成形：${ph3cReactionEq(r,true)}`],explanation:`係数をそろえると ${ph3cReactionEq(r,true)}。したがって ${formatFormula(target.formula)} の係数は ${ans} です。`});
+}
+function ph3cReactionMol(ctx){
+ const r=ph3cReactionPick(),from=ph3cPick(r.reactants.map(i=>r.s[i])),to=ph3cPick(r.products.map(i=>r.s[i])),n=ph3cPick([0.25,0.5,1,1.5,2]);
+ const raw=n*to.coeff/from.coeff, sig=2;let q=commonQ({type:'reactionMolRatio',question:`<span class="reaction-eq">${ph3cReactionEq(r,true)}</span>${from.name} ${displaySig(n,2)} mol が過不足なく反応するとき、${to.name}は何 mol 生じるか。`,answer:raw,answerText:displaySig(raw,sig),sig:null,unitKey:'mol',unit:'mol',scientific:false,hints:['反応式の係数比は物質量の比です。',`${from.name}:${to.name} = ${from.coeff}:${to.coeff}`,'与えられた物質量に係数比を掛けます。'],explanation:`${from.name}:${to.name}=${from.coeff}:${to.coeff} より、${displaySig(raw,3)} mol です。`});
+ if(Math.abs(raw-roundSig(raw,sig))>1e-12){q.sig=sig;q.roundingChallenge=true}return ph3cApplyAnswerPolicy(q);
+}
+function ph3cReactionGas(ctx){
+ let choices=PH3C_REACTIONS.filter(r=>r.reactants.some(i=>r.s[i].gas)&&r.products.some(i=>r.s[i].gas));const r=ph3cPick(choices);
+ const from=ph3cPick(r.reactants.map(i=>r.s[i]).filter(x=>x.gas)),to=ph3cPick(r.products.map(i=>r.s[i]).filter(x=>x.gas));
+ const fromMol=ph3cPick([0.25,0.5,0.75,1,1.5,2]),fromVol=fromMol*22.4,toMol=fromMol*to.coeff/from.coeff,toVol=toMol*22.4;
+ let q=commonQ({type:'reactionGasVolume',question:`<span class="reaction-eq">${ph3cReactionEq(r,true)}</span>標準状態で ${ph3cExactNaturalText(fromVol)} L の${from.name}が過不足なく反応するとき、${to.name}は標準状態で何 L 生じるか。`,answer:toVol,answerText:ph3cExactNaturalText(toVol),sig:null,unitKey:'L',unit:'L',scientific:false,hints:['同温・同圧の気体では、反応式の係数比を体積比として使えます。',`${from.name}:${to.name}=${from.coeff}:${to.coeff}`,'与えられた体積に係数比を掛けます。'],explanation:`気体の体積比は係数比と同じなので ${ph3cExactNaturalText(toVol)} L です。`});return ph3cApplyAnswerPolicy(q);
+}
+function ph3cReactionMassGas(ctx){
+ // 質量を与える反応物は、添付演習と同様に固体試料を中心にする。
+ const massFriendly=new Set(['Mg','Zn','CaCO3']);
+ let choices=PH3C_REACTIONS.filter(r=>r.reactants.some(i=>massFriendly.has(r.s[i].formula))&&r.products.some(i=>r.s[i].gas));
+ const r=ph3cPick(choices),from=ph3cPick(r.reactants.map(i=>r.s[i]).filter(x=>massFriendly.has(x.formula))),to=ph3cPick(r.products.map(i=>r.s[i]).filter(x=>x.gas));
+ const fromMol=ph3cPick([0.25,0.5,1,1.5,2]),mass=fromMol*from.molarMass,toMol=fromMol*to.coeff/from.coeff,toVol=toMol*22.4;
+ let q=commonQ({type:'reactionMassToGas',question:`<span class="reaction-eq">${ph3cReactionEq(r,true)}</span>${from.name} ${ph3cGivenValueText(mass,{policy:'exact'})} g が過不足なく反応するとき、${to.name}は標準状態で何 L 生じるか。`,answer:toVol,answerText:ph3cExactNaturalText(toVol),sig:null,unitKey:'L',unit:'L',scientific:false,hints:[`まず ${from.name} の質量を物質量に直します。`,'次に反応式の係数比で生成物の物質量を求めます。','最後に 1 mol = 22.4 L を使います。'],explanation:`${from.name}は ${displaySig(fromMol,3)} mol。係数比から${to.name}は ${displaySig(toMol,3)} mol、体積は ${ph3cExactNaturalText(toVol)} L です。`});return ph3cApplyAnswerPolicy(q);
+}
+function ph3cReactionLimit(ctx){
+ const r=ph3cPick(PH3C_REACTIONS.filter(x=>x.reactants.length===2)),a=r.s[r.reactants[0]],b=r.s[r.reactants[1]];
+ const extent=ph3cPick([0.20,0.25,0.50]);
+ const limiting=Math.random()<.5?'a':'b';
+ const excessExtra=ph3cPick([0.10,0.20,0.25]);
+ const aMol=extent*a.coeff+(limiting==='a'?0:excessExtra),bMol=extent*b.coeff+(limiting==='b'?0:excessExtra);
+ const leftover=limiting==='a'?b:a,left=limiting==='a'?excessExtra:excessExtra;
+ let q=commonQ({type:'reactionLimitingLeftover',question:`<span class="reaction-eq">${ph3cReactionEq(r,true)}</span>${a.name} ${displaySig(aMol,3)} mol と ${b.name} ${displaySig(bMol,3)} mol を完全に反応させる。反応後に余る<strong>${leftover.name}</strong>は何 mol か。`,answer:left,answerText:displaySig(left,2),sig:null,unitKey:'mol',unit:'mol',scientific:false,hints:['まず、それぞれの物質量を反応式の係数で割って比較します。','値が小さい方が先に使い切られる物質です。','反応に使われる量を係数比で求め、最初の量から引きます。'],explanation:`係数比に従って反応すると、${leftover.name}が ${displaySig(left,2)} mol 余ります。`});return ph3cApplyAnswerPolicy(q);
+}
+const PH3C_REACTION_PATTERNS=[
+ {type:'reactionCoefficient',mode:'mode4',range:'reactionEq',minDifficulty:1,weight:3,build:ph3cReactionCoefficient},
+ {type:'reactionMolRatio',mode:'mode4',range:'reactionMol',minDifficulty:1,weight:3,build:ph3cReactionMol},
+ {type:'reactionGasVolume',mode:'mode4',range:'reactionMassGas',minDifficulty:2,weight:2,build:ph3cReactionGas},
+ {type:'reactionMassToGas',mode:'mode4',range:'reactionMassGas',minDifficulty:2,weight:3,build:ph3cReactionMassGas},
+ {type:'reactionLimitingLeftover',mode:'mode4',range:'reactionLimit',minDifficulty:3,weight:2,build:ph3cReactionLimit}
+];
+Object.assign(TYPE_INFO,{reactionCoefficient:['反応式の係数',1],reactionMolRatio:['反応式の係数比',1],reactionGasVolume:['気体の体積比',2],reactionMassToGas:['質量→反応→気体体積',2],reactionLimitingLeftover:['過不足・限量試薬',3],massToMolFlexible:['質量→物質量（丸めあり）',2]});
+PH3C_REACTION_PATTERNS.forEach(p=>BUILDER_BY_TYPE[p.type]=()=>p.build({difficulty:p.minDifficulty,index:0,count:10,mode:'mode4',range:p.range}));
+BUILDER_BY_TYPE.massToMolFlexible=()=>ph3cFlexibleMassToMol({difficulty:2,index:0,count:10,mode:'mode2',range:'mass'});
+
+function ph3cSchedule(count){if(count===10)return [1,1,1,2,2,2,3,3,4,4];if(count===15)return [1,1,1,1,2,2,2,2,3,3,3,4,4,4,4];return [1,1,1,1,1,2,2,2,2,2,3,3,3,3,4,4,4,4,4,4]}
+function ph3cBasePatterns(){return window.PHASE3_ENGINE.patterns||[]}
+function ph3cAllPatterns(){
+ let base=ph3cBasePatterns().slice();
+ // 標準～応用に割り切れない質量→molを追加
+ base.push({type:'massToMolFlexible',mode:'mode2',range:'mass',minDifficulty:2,weight:2,build:ph3cFlexibleMassToMol});
+ return base.concat(PH3C_REACTION_PATTERNS);
+}
+function ph3cPatternPool(mode,ranges,difficulty){
+ let all=ph3cAllPatterns().filter(p=>typeEnabled(p.type));
+ if(mode==='weak'){
+   const weak=new Set(getWeakTypes());let p=all.filter(x=>weak.has(x.type)&&x.minDifficulty<=difficulty);return p.length?p:all.filter(x=>x.mode==='mode2'&&x.minDifficulty<=difficulty);
+ }
+ if(mode==='mixed'){
+   const modes=ranges.length?ranges:['mode1','mode2','mode3','mode4'];
+   all=all.filter(p=>modes.includes(p.mode));
+ }else{
+   all=all.filter(p=>p.mode===mode);
+   if(ranges.length)all=all.filter(p=>ranges.includes(p.range));
+ }
+ let allowed=all.filter(p=>p.minDifficulty<=difficulty);
+ if(!allowed.length&&all.length){const min=Math.min(...all.map(p=>p.minDifficulty));allowed=all.filter(p=>p.minDifficulty===min)}
+ if(difficulty===1){const easy=allowed.filter(p=>p.minDifficulty===1);if(easy.length)allowed=easy}
+ return allowed;
+}
+function ph3cWeighted(patterns,d){let arr=[];patterns.forEach(p=>{let w=p.weight||1;if(p.minDifficulty===d)w*=2.5;if(PH3C.lastTypes.includes(p.type))w*=.2;for(let i=0;i<Math.max(1,Math.round(w*4));i++)arr.push(p)});return ph3cPick(arr.length?arr:patterns)}
+function ph3cBuildQuestions(mode,count){
+ const ranges=ph3cSelectedRanges();PH3C.selectedRanges=ranges;const schedule=ph3cSchedule(count),qs=[];PH3C.lastTypes=[];PH3C.lastMaterials=[];
+ for(let i=0;i<count;i++){
+  const d=schedule[i]||1;let pool=ph3cPatternPool(mode,ranges,d),q=null;
+  if(!pool.length)pool=ph3cPatternPool(mode,[],d);
+  for(let t=0;t<50;t++){
+   const p=ph3cWeighted(pool,d);if(!p)break;
+   try{q=p.build({difficulty:d,index:i,count,mode,range:p.range})}catch(e){console.warn('Phase3C builder',p.type,e);continue}
+   q=ph3cApplyAnswerPolicy(q);q.difficulty=d;q.phase3C=true;
+   const mat=q.material?.id||q.material?.formula||'';
+   if(t<30&&(PH3C.lastTypes.slice(-1)[0]===q.type||(mat&&PH3C.lastMaterials.slice(-1)[0]===mat)))continue;
+   break;
+  }
+  if(!q){q=ph3cFlexibleMassToMol({difficulty:d,index:i,count,mode:'mode2',range:'mass'});q=ph3cApplyAnswerPolicy(q)}
+  qs.push(q);PH3C.lastTypes.push(q.type);if(PH3C.lastTypes.length>2)PH3C.lastTypes.shift();const mat=q.material?.id||q.material?.formula||'';if(mat){PH3C.lastMaterials.push(mat);if(PH3C.lastMaterials.length>2)PH3C.lastMaterials.shift()}
+ }
+ return qs;
+}
+/* Phase3.7: intermediate assignment removed */
+
+// startボタン：チェックされた複数範囲を使用
+/* Phase3.7: intermediate startPractice handler removed */
+modeLabel=function(m){return {mode1:'原子量・分子量・式量',mode2:'物質量',mode3:'濃度・発展',mode4:'反応式と量的関係',mixed:'総合ミックス',weak:'苦手問題を復習'}[m]||m};
+
+// UI説明を更新
+const modeCard=document.querySelector('#home [data-go="setup"]')?.closest('.mode-card')?.querySelector('p');if(modeCard)modeCard.textContent='4モード＋総合ミックス。複数の出題範囲をチェックして組み合わせられます。';
+
+window.PHASE3C_ENGINE={version:PH3C.version,reactions:PH3C_REACTIONS,reactionPatterns:PH3C_REACTION_PATTERNS,rangeOptions:PH3C_RANGE_OPTIONS,selectedRanges:ph3cSelectedRanges,build:ph3cBuildQuestions,applyAnswerPolicy:ph3cApplyAnswerPolicy,evaluateAnswer:evaluateAnswerPolicy,report(){return {version:PH3C.version,basePatterns:ph3cBasePatterns().length,reactionPatterns:PH3C_REACTION_PATTERNS.length,reactions:PH3C_REACTIONS.length,modes:['mode1','mode2','mode3','mode4','mixed','weak']}}};
+console.info('Mol Master Phase3-C loaded',window.PHASE3C_ENGINE.report());
+})();
+
+
+/* =========================================================
+   Advanced generators and challenge rules
+   2026-08-10
+   - モード1を「相対質量 / 同位体・原子量 / 分子量・式量」に細分化
+   - 5問(初級) / 10問(中級) / 15問(上級) / 20問(鬼)
+   - パス制限：初級0 / 中級2 / 上級1 / 鬼0
+   - 鬼は1回の誤答で即終了
+   - モード3に「固体の溶解度」を追加
+   - 割り切れない場合は問題文側で丸め指定を明示
+   ========================================================= */
+(function(){
+'use strict';
+
+const PH3D = {
+  version:'1.3-phase3D',
+  recentTypes:[],
+  recentMaterials:[]
+};
+
+const PH3D_CHALLENGE = {
+  5:{key:'beginner',label:'初級',passes:0,instantFail:false,desc:'5問・パスなし。基本問題中心。'},
+  10:{key:'intermediate',label:'中級',passes:2,instantFail:false,desc:'10問・パス2回まで。基本から標準へ。'},
+  15:{key:'advanced',label:'上級',passes:1,instantFail:false,desc:'15問・パス1回まで。標準から応用へ。'},
+  20:{key:'oni',label:'鬼',passes:0,instantFail:true,desc:'20問・パスなし。1回でもミスすると即終了。'}
+};
+
+const PH3D_RANGE_OPTIONS = {
+  mode1:[
+    ['relativeMass','相対質量'],
+    ['isotope','同位体・原子量'],
+    ['molarMass','分子量・式量']
+  ],
+  mode2:[
+    ['mass','質量と物質量'],
+    ['particle','粒子数と物質量'],
+    ['gas','気体体積と物質量'],
+    ['atomIon','原子数・イオン数'],
+    ['multi','総合変換']
+  ],
+  mode3:[
+    ['basicConc','濃度の基本'],
+    ['reverseConc','濃度から質量・体積を逆算'],
+    ['convertConc','質量％とモル濃度の相互変換'],
+    ['solubility','固体の溶解度']
+  ],
+  mode4:[
+    ['reactionEq','反応式・係数'],
+    ['reactionMol','係数比と物質量'],
+    ['reactionMassGas','質量・気体体積の量的関係'],
+    ['reactionLimit','過不足・限量試薬']
+  ],
+  mixed:[
+    ['mode1','原子量・分子量・式量'],
+    ['mode2','物質量'],
+    ['mode3','濃度・発展'],
+    ['mode4','反応式と量的関係']
+  ],
+  weak:[]
+};
+
+function ph3dSelectedRanges(){
+  return Array.from(document.querySelectorAll('#rangeChecklist input:checked')).map(x=>x.value);
+}
+function ph3dRenderRanges(){
+  const mode=document.getElementById('modeSelect').value;
+  const box=document.getElementById('rangeChecklist');
+  const opts=PH3D_RANGE_OPTIONS[mode]||[];
+  const allBtn=document.getElementById('rangeAll'),clearBtn=document.getElementById('rangeClear');
+  if(mode==='weak'){
+    box.innerHTML='<div class="note">これまでの誤答・ヒント利用をもとに、苦手形式を自動選択します。</div>';
+    document.getElementById('rangeHelp').textContent='範囲の手動選択はありません。';
+    allBtn.style.display='none';clearBtn.style.display='none';
+    return;
+  }
+  allBtn.style.display='inline-flex';clearBtn.style.display='inline-flex';
+  box.innerHTML=opts.map(([v,l],i)=>`<label><input type="checkbox" value="${v}" ${i===0?'checked':''}> <span>${l}</span></label>`).join('');
+  document.getElementById('rangeHelp').textContent =
+    mode==='mode1' ? '「相対質量」「同位体・原子量」「分子量・式量」を自由に組み合わせられます。' :
+    mode==='mode3' ? '濃度計算と固体の溶解度を自由に組み合わせられます。' :
+    mode==='mixed' ? '選択したモードだけを混ぜて出題します。' :
+    '選択した範囲だけから出題します。複数選択できます。';
+}
+document.getElementById('modeSelect').addEventListener('change',()=>setTimeout(ph3dRenderRanges,0));
+document.getElementById('rangeAll').onclick=()=>document.querySelectorAll('#rangeChecklist input').forEach(x=>x.checked=true);
+document.getElementById('rangeClear').onclick=()=>document.querySelectorAll('#rangeChecklist input').forEach(x=>x.checked=false);
+ph3dRenderRanges();
+
+// ---------- チャレンジルール ----------
+function ph3dChallenge(count){return PH3D_CHALLENGE[count]||PH3D_CHALLENGE[10]}
+function ph3dUpdateChallengeHelp(){
+  const count=Number(document.getElementById('countSelect').value);
+  const r=ph3dChallenge(count);
+  const el=document.getElementById('challengeHelp');
+  if(el)el.textContent=r.desc;
+}
+document.getElementById('countSelect').addEventListener('change',ph3dUpdateChallengeHelp);
+ph3dUpdateChallengeHelp();
+
+function ph3dSchedule(count){
+  if(count===5)  return [1,1,1,2,2];
+  if(count===10) return [1,1,1,2,2,2,3,3,3,3];
+  if(count===15) return [1,1,1,2,2,2,2,3,3,3,3,4,4,4,4];
+  // 鬼は「最初から理不尽」にはせず、中盤以降を強くする。
+  return [1,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4];
+}
+
+// ---------- 共通：小数桁指定 ----------
+function ph3dAppendRule(q,text){
+  if(text && !q.question.includes(text)) q.question += `<span class="answer-rule">${text}</span>`;
+}
+function ph3dFixed(value,decimals){
+  const p=10**decimals;
+  return (Math.round((value+Number.EPSILON)*p)/p).toFixed(decimals);
+}
+function ph3dApplyDecimalPolicy(q,decimals,label){
+  q.rawAnswer=(q.rawAnswer!==undefined)?q.rawAnswer:q.answer;
+  q.answerPolicy='fixed';
+  q.decimalPlaces=decimals;
+  q.displayAnswer=ph3dFixed(q.rawAnswer,decimals);
+  q.answerText=q.displayAnswer;
+  q.acceptedAnswer=Number(q.displayAnswer);q.answer=q.acceptedAnswer;q.sigDigits=null;q.sig=null;
+  ph3dAppendRule(q,label||`答えは小数第${decimals}位まで求めてください。`);
+  return q;
+}
+
+// ---------- モード1：相対質量 ----------
+const RELATIVE_MASS_CASES=[
+  {name:'塩素35Cl',mass:'5.808×10^-23',massN:5.808e-23,cMass:'1.993×10^-23',cMassN:1.993e-23,dec:2},
+  {name:'水素1H',mass:'1.674×10^-24',massN:1.674e-24,cMass:'1.993×10^-23',cMassN:1.993e-23,dec:2},
+  {name:'酸素16O',mass:'2.657×10^-23',massN:2.657e-23,cMass:'1.993×10^-23',cMassN:1.993e-23,dec:2}
+];
+function ph3dRelativeMassFromAtom(){
+  const v=RELATIVE_MASS_CASES[Math.floor(Math.random()*RELATIVE_MASS_CASES.length)];
+  const raw=12*v.massN/v.cMassN;
+  return ph3dApplyDecimalPolicy(commonQ({
+    type:'relativeMassFromAtom',
+    question:`<sup>12</sup>C原子1個の質量を ${v.cMass} g とする。${v.name} 原子1個の質量が ${v.mass} g のとき、この原子の相対質量を求めなさい。`,
+    answer:raw,answerText:String(raw),sig:null,unitKey:'none',unit:'単位なし',scientific:false,
+    hints:[
+      '相対質量は、12C原子の質量を12とした相対的な値です。',
+      '「X原子の質量 ÷ 12C原子の質量 × 12」で求めます。',
+      `12 × (${v.massN} ÷ ${v.cMassN}) を計算します。`
+    ],
+    explanation:`相対質量 = 12 × (${v.massN} ÷ ${v.cMassN}) = ${ph3dFixed(raw,v.dec)}`
+  }),v.dec,`答えは小数第${v.dec}位まで求めてください。`);
+}
+function ph3dRelativeMassRatio(){
+  const cases=[
+    {ratio:'1/12',ans:1.0,text:'12C原子1個の質量の1/12'},
+    {ratio:'1/3',ans:4.0,text:'12C原子1個の質量の1/3'},
+    {ratio:'4/3',ans:16.0,text:'12C原子1個の質量の4/3'},
+    {ratio:'2',ans:24.0,text:'12C原子1個の質量の2倍'}
+  ];
+  const v=cases[Math.floor(Math.random()*cases.length)];
+  return commonQ({
+    type:'relativeMassRatio',
+    question:`ある原子1個の質量は、<sup>12</sup>C原子1個の質量の<strong>${v.text.replace('12C原子1個の質量の','')}</strong>である。この原子の相対質量を求めなさい。`,
+    answer:v.ans,answerText:String(v.ans),sig:null,unitKey:'none',unit:'単位なし',scientific:false,
+    hints:['12Cの相対質量は12です。','質量の比は、そのまま相対質量の比になります。','12に問題文の倍率を掛けます。'],
+    explanation:`12Cの相対質量12に質量比 ${v.ratio} を掛けると ${v.ans} です。`
+  });
+}
+
+// ---------- モード1：同位体・原子量（存在比の逆算） ----------
+function ph3dIsotopeReverse(){
+  const cases=[
+    {el:'銅',a:63,b:65,avg:63.5,pa:75,pb:25},
+    {el:'ホウ素',a:10,b:11,avg:10.8,pa:20,pb:80},
+    {el:'塩素',a:35,b:37,avg:35.5,pa:75,pb:25}
+  ];
+  const v=cases[Math.floor(Math.random()*cases.length)];
+  return commonQ({
+    type:'isotopeReverse',
+    question:`${v.el}には質量数${v.a}と${v.b}の2種類の同位体がある。原子量が${v.avg}のとき、質量数${v.a}の同位体の存在比は何 % か。`,
+    answer:v.pa,answerText:String(v.pa),sig:null,unitKey:'percent',unit:'%',scientific:false,
+    hints:[
+      `質量数${v.a}の存在比を x、質量数${v.b}を 1−x とします。`,
+      `${v.a}x + ${v.b}(1-x) = ${v.avg}`,
+      'xを求め、最後に100を掛けて%にします。'
+    ],
+    explanation:`${v.a}x + ${v.b}(1-x) = ${v.avg} を解くと x=${v.pa/100}。したがって ${v.pa}% です。`
+  });
+}
+
+// ---------- モード3：固体の溶解度 ----------
+const SOLUBILITY_DATA=[
+  {solute:'硝酸カリウム',formula:'KNO3',temps:{10:22,20:32,25:38,40:64,50:85,70:137}},
+  {solute:'硫酸銅(Ⅱ)',formula:'CuSO4',temps:{20:20,60:40}}
+];
+function ph3dSolData(minTemps=1){
+  const choices=SOLUBILITY_DATA.filter(x=>Object.keys(x.temps).length>=minTemps);
+  return choices[Math.floor(Math.random()*choices.length)];
+}
+function ph3dPickTempPair(d){
+  const ts=Object.keys(d.temps).map(Number).sort((a,b)=>a-b);
+  const hi=ts[ts.length-1],lo=ts[Math.floor(Math.random()*(ts.length-1))];
+  return {lo,hi,sLo:d.temps[lo],sHi:d.temps[hi]};
+}
+function ph3dSolubilityPercent(){
+  const d=ph3dSolData(),temps=Object.keys(d.temps).map(Number);
+  const t=temps[Math.floor(Math.random()*temps.length)],s=d.temps[t];
+  const raw=s/(100+s)*100;
+  return ph3dApplyDecimalPolicy(commonQ({
+    type:'solubilityPercent',
+    question:`${t} ℃における${d.solute} ${formatFormula(d.formula)} の溶解度は ${s} g/水100 gである。${t} ℃の飽和水溶液の質量パーセント濃度は何 % か。`,
+    answer:raw,answerText:String(raw),sig:null,unitKey:'percent',unit:'%',scientific:false,
+    hints:['溶解度は「水100 gに溶ける溶質の最大質量」です。',`飽和水溶液の質量は 100+${s} g です。`,`質量% = ${s} ÷ (100+${s}) ×100`],
+    explanation:`${s}÷${100+s}×100 = ${ph3dFixed(raw,1)}%`
+  }),1,'答えは小数第1位まで求めてください。');
+}
+function ph3dSaturatedSolute(){
+  const d=ph3dSolData(),temps=Object.keys(d.temps).map(Number);
+  const t=temps[Math.floor(Math.random()*temps.length)],s=d.temps[t];
+  const total=[100,120,140,160,200,210,300][Math.floor(Math.random()*7)];
+  const raw=total*s/(100+s);
+  const decimals=(Math.abs(raw-Math.round(raw))<1e-10)?0:1;
+  const q=commonQ({
+    type:'saturatedSolute',
+    question:`${t} ℃で${d.solute} ${formatFormula(d.formula)} の溶解度は ${s} g/水100 gである。${t} ℃の飽和水溶液 ${total} g に含まれる${d.solute}は何 g か。`,
+    answer:raw,answerText:String(raw),sig:null,unitKey:'g',unit:'g',scientific:false,
+    hints:['飽和溶液では「溶質：溶液 = 溶解度：(100+溶解度)」です。',`${s}:${100+s} = x:${total}`,'比例式からxを求めます。'],
+    explanation:`${total}×${s}/${100+s} = ${decimals?ph3dFixed(raw,1):Math.round(raw)} g`
+  });
+  return decimals?ph3dApplyDecimalPolicy(q,1,'答えは小数第1位まで求めてください。'):q;
+}
+function ph3dCoolingCrystal(){
+  const d=ph3dSolData(2),p=ph3dPickTempPair(d);
+  const total=[100,120,140,160,200,210,300][Math.floor(Math.random()*7)];
+  const water=total*100/(100+p.sHi),solute=total*p.sHi/(100+p.sHi);
+  const finalDissolved=water*p.sLo/100,raw=Math.max(0,solute-finalDissolved);
+  return ph3dApplyDecimalPolicy(commonQ({
+    type:'solubilityCooling',
+    question:`${d.solute} ${formatFormula(d.formula)} の溶解度は、${p.hi} ℃で ${p.sHi} g/水100 g、${p.lo} ℃で ${p.sLo} g/水100 gである。${p.hi} ℃の飽和水溶液 ${total} g を ${p.lo} ℃まで冷却した。析出する結晶は何 g か。`,
+    answer:raw,answerText:String(raw),sig:null,unitKey:'g',unit:'g',scientific:false,
+    hints:['まず高温の飽和水溶液に含まれる水と溶質の質量を求めます。','冷却しても水の質量は変わりません。','低温で溶けていられる量を求め、高温時の溶質量から引きます。'],
+    explanation:`高温時の水は ${ph3dFixed(water,1)} g、溶質は ${ph3dFixed(solute,1)} g。低温で溶ける量は ${ph3dFixed(finalDissolved,1)} g なので、析出量は ${ph3dFixed(raw,1)} g です。`
+  }),1,'答えは小数第1位まで求めてください。');
+}
+function ph3dEvapCrystal(){
+  const d=ph3dSolData(),temps=Object.keys(d.temps).map(Number);
+  const t=temps[Math.floor(Math.random()*temps.length)],s=d.temps[t];
+  const total=[120,140,160,200,240][Math.floor(Math.random()*5)];
+  const water=total*100/(100+s),solute=total*s/(100+s);
+  const maxEvap=Math.max(5,Math.floor(water*0.45/5)*5);
+  const evap=[10,20,30,40,50].filter(x=>x<=maxEvap);
+  const e=evap.length?evap[Math.floor(Math.random()*evap.length)]:5;
+  const waterAfter=water-e,remain=waterAfter*s/100,raw=Math.max(0,solute-remain);
+  return ph3dApplyDecimalPolicy(commonQ({
+    type:'solubilityEvaporation',
+    question:`${t} ℃における${d.solute} ${formatFormula(d.formula)} の溶解度は ${s} g/水100 gである。${t} ℃の飽和水溶液 ${total} g から水 ${e} g を蒸発させ、再び${t} ℃に保った。析出する結晶は何 g か。`,
+    answer:raw,answerText:String(raw),sig:null,unitKey:'g',unit:'g',scientific:false,
+    hints:['最初の飽和水溶液に含まれる水と溶質を求めます。','蒸発するのは水だけです。','蒸発後の水に溶けていられる溶質量を求め、差を析出量とします。'],
+    explanation:`水は ${ph3dFixed(water,1)}→${ph3dFixed(waterAfter,1)} g。溶けていられる量は ${ph3dFixed(remain,1)} g なので、${ph3dFixed(raw,1)} g 析出します。`
+  }),1,'答えは小数第1位まで求めてください。');
+}
+function ph3dHydrateDissolve(){
+  // CuSO4・5H2O: 250 g中 CuSO4 160 g, 結晶水90 g
+  const s=[20,40][Math.floor(Math.random()*2)],t=s===40?60:20,water=[50,80,100][Math.floor(Math.random()*3)];
+  // x*160/250 = (s/100)*(water + x*90/250)
+  const raw=(s/100*water)/(160/250-(s/100)*(90/250));
+  return ph3dApplyDecimalPolicy(commonQ({
+    type:'solubilityHydrate',
+    question:`${t} ℃で硫酸銅(Ⅱ) CuSO4 の溶解度は ${s} g/水100 gである。硫酸銅(Ⅱ)五水和物 CuSO4・5H2O は、この温度の水 ${water} g に最大何 g 溶けるか。CuSO4=160、CuSO4・5H2O=250 とする。`,
+    answer:raw,answerText:String(raw),sig:null,unitKey:'g',unit:'g',scientific:false,
+    hints:['溶解度は「無水CuSO4の質量」で表します。','五水和物の中にはCuSO4だけでなく結晶水も含まれます。','五水和物x g中のCuSO4は160/250 x g、結晶水は90/250 x gです。'],
+    explanation:`x×160/250 = (${s}/100)×( ${water} + x×90/250 ) を解くと、x=${ph3dFixed(raw,1)} g です。`
+  }),1,'答えは小数第1位まで求めてください。');
+}
+
+const PH3D_PATTERNS=[
+  {type:'relativeMassFromAtom',mode:'mode1',range:'relativeMass',minDifficulty:1,weight:3,build:ph3dRelativeMassFromAtom},
+  {type:'relativeMassRatio',mode:'mode1',range:'relativeMass',minDifficulty:1,weight:2,build:ph3dRelativeMassRatio},
+  {type:'isotopeReverse',mode:'mode1',range:'isotope',minDifficulty:3,weight:2,build:ph3dIsotopeReverse},
+  {type:'solubilityPercent',mode:'mode3',range:'solubility',minDifficulty:1,weight:3,build:ph3dSolubilityPercent},
+  {type:'saturatedSolute',mode:'mode3',range:'solubility',minDifficulty:1,weight:3,build:ph3dSaturatedSolute},
+  {type:'solubilityCooling',mode:'mode3',range:'solubility',minDifficulty:2,weight:3,build:ph3dCoolingCrystal},
+  {type:'solubilityEvaporation',mode:'mode3',range:'solubility',minDifficulty:3,weight:2,build:ph3dEvapCrystal},
+  {type:'solubilityHydrate',mode:'mode3',range:'solubility',minDifficulty:4,weight:1,build:ph3dHydrateDissolve}
+];
+Object.assign(TYPE_INFO,{
+  relativeMassFromAtom:['相対質量（原子1個の質量）',1],
+  relativeMassRatio:['相対質量（質量比）',1],
+  isotopeReverse:['同位体存在比の逆算',3],
+  solubilityPercent:['溶解度→飽和溶液の質量%',1],
+  saturatedSolute:['飽和水溶液中の溶質量',1],
+  solubilityCooling:['冷却による結晶析出',2],
+  solubilityEvaporation:['蒸発による結晶析出',3],
+  solubilityHydrate:['水和物の溶解度',4]
+});
+PH3D_PATTERNS.forEach(p=>BUILDER_BY_TYPE[p.type]=()=>p.build({difficulty:p.minDifficulty,index:0,count:10,mode:p.mode,range:p.range}));
+
+function ph3dAllPatterns(){
+  const base=(window.PHASE3_ENGINE?.patterns||[]).slice();
+  const reaction=(window.PHASE3C_ENGINE?.reactionPatterns||[]).slice();
+  const flex=(typeof BUILDER_BY_TYPE.massToMolFlexible==='function')
+    ? [{type:'massToMolFlexible',mode:'mode2',range:'mass',minDifficulty:2,weight:2,build:()=>BUILDER_BY_TYPE.massToMolFlexible()}]
+    : [];
+  return base.concat(reaction,flex,PH3D_PATTERNS);
+}
+function ph3dPool(mode,ranges,difficulty){
+  let all=ph3dAllPatterns().filter(p=>typeEnabled(p.type));
+  if(mode==='weak'){
+    const weak=new Set(getWeakTypes());
+    let p=all.filter(x=>weak.has(x.type)&&x.minDifficulty<=difficulty);
+    return p.length?p:all.filter(x=>x.mode==='mode2'&&x.minDifficulty<=difficulty);
+  }
+  if(mode==='mixed'){
+    const modes=ranges.length?ranges:['mode1','mode2','mode3','mode4'];
+    all=all.filter(p=>modes.includes(p.mode));
+  }else{
+    all=all.filter(p=>p.mode===mode);
+    if(ranges.length)all=all.filter(p=>ranges.includes(p.range));
+  }
+  let allowed=all.filter(p=>p.minDifficulty<=difficulty);
+  if(!allowed.length&&all.length){
+    const min=Math.min(...all.map(p=>p.minDifficulty));
+    allowed=all.filter(p=>p.minDifficulty===min);
+  }
+  if(difficulty===1){
+    const easy=allowed.filter(p=>p.minDifficulty===1);
+    if(easy.length)allowed=easy;
+  }
+  return allowed;
+}
+function ph3dWeighted(patterns,d){
+  let pool=[];
+  patterns.forEach(p=>{
+    let w=p.weight||1;
+    if(p.minDifficulty===d)w*=2.5;
+    if(PH3D.recentTypes.slice(-1)[0]===p.type)w*=.2;
+    for(let i=0;i<Math.max(1,Math.round(w*4));i++)pool.push(p);
+  });
+  return pool[Math.floor(Math.random()*pool.length)]||patterns[0];
+}
+function ph3dBuildQuestions(mode,count){
+  const ranges=ph3dSelectedRanges(),schedule=ph3dSchedule(count),qs=[];
+  PH3D.recentTypes=[];PH3D.recentMaterials=[];
+  for(let i=0;i<count;i++){
+    const d=schedule[i]||1;let pool=ph3dPool(mode,ranges,d),q=null;
+    if(!pool.length)return null;
+    for(let attempt=0;attempt<60;attempt++){
+      const p=ph3dWeighted(pool,d);if(!p)break;
+      try{q=p.build({difficulty:d,index:i,count,mode,range:p.range})}catch(e){console.warn('Phase3D builder',p.type,e);continue}
+      // Phase3-Cの丸めポリシーも通す
+      if(window.PHASE3C_ENGINE?.applyAnswerPolicy)q=window.PHASE3C_ENGINE.applyAnswerPolicy(q);
+      q.difficulty=d;q.phase3D=true;
+      const mat=q.material?.id||q.material?.formula||'';
+      if(attempt<35 && (PH3D.recentTypes.slice(-1)[0]===q.type || (mat&&PH3D.recentMaterials.slice(-1)[0]===mat)))continue;
+      break;
+    }
+    if(!q)return null;
+    qs.push(q);
+    PH3D.recentTypes.push(q.type);if(PH3D.recentTypes.length>2)PH3D.recentTypes.shift();
+    const mat=q.material?.id||q.material?.formula||'';
+    if(mat){PH3D.recentMaterials.push(mat);if(PH3D.recentMaterials.length>2)PH3D.recentMaterials.shift()}
+  }
+  return qs;
+}
+function buildQuestions(mode,count){return ph3dBuildQuestions(mode,count)}
+
+// ---------- 小数桁指定の採点 ----------
+function evaluateAnswer(q){
+  const ev=window.PHASE3C_ENGINE.evaluateAnswer(q);
+  if(!q || q.answerPolicy!=='fixed' || !ev.ok || q.scientific)return ev;
+  const text=document.getElementById('answerInput').value.trim();
+  const dec=q.decimalPlaces??1;
+  const re=new RegExp(`^[-+]?\\d+${dec?`\\.\\d{${dec}}`:''}$`);
+  if(!re.test(text)){
+    return {ok:false,kind:'fixed',message:dec?`数値と単位は合っています。小数第${dec}位まで書いてください。`:'整数で答えてください。',raw:ev.raw};
+  }
+  return ev;
+}
+
+// ---------- 開始処理 ----------
+document.getElementById('startPractice').onclick=()=>{
+  const checked=document.querySelectorAll('.readyCheck:checked').length;
+  if(checked!==document.querySelectorAll('.readyCheck').length){alert('開始前の確認項目をチェックしてください。');return}
+  const mode=document.getElementById('modeSelect').value,ranges=ph3dSelectedRanges();
+  if(mode!=='weak'&&ranges.length===0){alert('出題範囲を1つ以上選択してください。');return}
+  state.mode=mode;state.ranges=ranges;state.range=ranges.join(',')||'weak';
+  state.practiceStyle=document.getElementById('practiceStyle').value;
+  state.count=Number(document.getElementById('countSelect').value);
+  const challenge=ph3dChallenge(state.count);
+  state.challengeKey=challenge.key;state.challengeLabel=challenge.label;state.instantFail=challenge.instantFail;
+  state.passes=challenge.passes;state.initialPasses=challenge.passes;
+  let generated=null;
+  if(state.mode==='weak'&&state.variantSource&&teacherSettings.variantRetry){
+    generated=ph37VariantRetryQuestions(state.variantSource,state.count).map(q=>window.PHASE3C_ENGINE.applyAnswerPolicy(q));
+    state.variantSource=null;
+  }else generated=buildQuestions(state.mode,state.count);
+  if(!generated||generated.length!==state.count){alert('現在の設定では出題できる問題がありません。\n出題範囲または教員設定を変更してください。');return}
+  state.questions=generated;state.index=0;state.startTime=Date.now();state.hintsUsed=0;state.results=[];state.sessionEnding=false;state.sessionEnded=false;
+  ['submitAnswer','answerInput','coefficientInput','exponentInput','unitSelect','hintButton'].forEach(id=>document.getElementById(id).disabled=false);
+  state.questions.forEach(q=>{q.attempts=0;q.hintsShown=0;q.passed=false;q.completed=false});
+  clearInterval(state.timerId);state.timerId=setInterval(updateTimer,1000);updateTimer();
+  showScreen('practice');renderQuestion();
+};
+
+// ---------- パス表示 ----------
+function renderQuestionWithChallenge(){
+  window.MOL_UI.renderQuestionWithLearningUi();
+  const c=ph3dChallenge(state.count||10),btn=document.getElementById('passButton');
+  if(c.passes===0){btn.textContent='パスなし';btn.disabled=true}
+  else{btn.textContent=`パス（残り${state.passes}回）`;btn.disabled=state.passes<=0}
+  const badge=document.getElementById('difficultyBadge');
+  if(badge)badge.title=`${c.label}：${c.desc}`;
+}
+
+// ---------- 鬼：誤答で即終了 ----------
+function ph3dFinishOni(q,ev){
+  if(state.sessionEnded)return;
+  state.sessionEnded=true;
+  clearInterval(state.timerId);state.timerId=null;
+  q.firstCorrect=false;q.completed=true;
+  state.results.push({...q});
+  const elapsed=Math.floor((Date.now()-state.startTime)/1000);
+  const completed=state.results.slice();
+  updateQuestionStats(completed);
+  const record=buildSessionRecord(completed,elapsed,{failedEarly:true,reached:state.index+1}),comparison=buildProgressComparison(record);
+  saveRecord(record);window.MOL_UI.renderResults(record,completed,comparison);showScreen('results');
+  const comment=document.getElementById('resultComment');
+  comment.insertAdjacentHTML('afterbegin',`<div class="review-alert">⚠ 鬼モード終了：第${state.index+1}問でミス<br>${ev.message}</div>`);
+}
+document.getElementById('submitAnswer').onclick=()=>{
+  if(state.sessionEnding||state.sessionEnded)return;
+  const q=currentQ(),ev=evaluateAnswer(q),fb=document.getElementById('feedback');
+  q.attempts++;if(q.attempts===1)q.userFirst=ev.raw;
+  if(ev.ok){
+    q.firstCorrect=q.attempts===1&&!q.passed;
+    fb.className='feedback show ok';fb.textContent=ev.sigWarning?`正解です。ただし、有効数字${q.sigDigits}桁なら ${q.displayAnswer} ${q.unit} のように表しましょう。`:'正解です。次の問題へ進みます。';
+    state.results.push({...q});document.getElementById('submitAnswer').disabled=true;
+    setTimeout(()=>{document.getElementById('submitAnswer').disabled=false;advanceQuestion()},700);
+  }else{
+    q['miss_'+ev.kind]=(q['miss_'+ev.kind]||0)+1;
+    fb.className='feedback show bad';fb.textContent=ev.message;
+    if(state.instantFail){
+      state.sessionEnding=true;
+      ['submitAnswer','answerInput','coefficientInput','exponentInput','unitSelect','hintButton','passButton'].forEach(id=>document.getElementById(id).disabled=true);
+      setTimeout(()=>ph3dFinishOni(q,ev),650);
+    }
+  }
+};
+
+// UI名称
+modeLabel=function(m){return {
+  mode1:'原子量・分子量・式量',
+  mode2:'物質量',
+  mode3:'濃度・溶解度',
+  mode4:'反応式と量的関係',
+  mixed:'総合ミックス',
+  weak:'苦手問題を復習'
+}[m]||m};
+
+window.PHASE3D_ENGINE={
+  version:PH3D.version,
+  ranges:PH3D_RANGE_OPTIONS,
+  challenge:PH3D_CHALLENGE,
+  patterns:PH3D_PATTERNS,
+  build:ph3dBuildQuestions,
+  renderQuestion:renderQuestionWithChallenge,
+  report(){
+    return {
+      version:PH3D.version,
+      addedPatterns:PH3D_PATTERNS.map(x=>x.type),
+      countRules:PH3D_CHALLENGE,
+      mode1Ranges:PH3D_RANGE_OPTIONS.mode1,
+      mode3Ranges:PH3D_RANGE_OPTIONS.mode3
+    };
+  }
+};
+console.info('Mol Master Phase3-D loaded',window.PHASE3D_ENGINE.report());
+})();
+
+
+// ---------- Phase3.7: 使用原子量の限定表示 ----------
+const PH37_ATOMIC_MAP=(()=>{
+  const map={};
+  try{
+    if(Array.isArray(ATOMIC_MASSES)){
+      ATOMIC_MASSES.forEach(x=>{
+        const symbol=x.symbol||x[0], value=x.mass??x.value??x[1];
+        if(symbol!==undefined&&value!==undefined)map[symbol]=value;
+      });
+    }else if(ATOMIC_MASSES&&typeof ATOMIC_MASSES==='object'){
+      Object.assign(map,ATOMIC_MASSES);
+    }
+  }catch(e){}
+  return map;
+})();
+function ph37UsedAtomicMasses(q){
+  if(!teacherSettings.showUsedAtomicMasses||!q)return '';
+  let formula=q.material?.formula||'';
+  if(!formula&&q.reaction){
+    formula=[...q.reaction.reactants,...q.reaction.products]
+      .map(i=>q.reaction.s[i]?.formula||'').join('・');
+  }
+  if(!formula)return '';
+  let atoms={};
+  try{atoms=window.PHASE3_ENGINE?.atoms?.(formula)||{}}catch(e){}
+  const parts=Object.keys(atoms).filter(el=>PH37_ATOMIC_MAP[el]!==undefined)
+    .map(el=>`${el}＝${PH37_ATOMIC_MAP[el]}`);
+  return parts.length?`<div class="used-atomic-masses"><strong>この問題で使う原子量：</strong> ${parts.join('　')}</div>`:'';
+}
+
+function phase72DecimalPlacesFromDisplay(value){
+  const text=String(value??'').trim();
+  if(!text || /[×eE^]/.test(text))return null;
+  const normalized=text.replace(/^[+-]/,'');
+  if(!/^\d+(?:\.\d+)?$/.test(normalized))return null;
+  const dot=normalized.indexOf('.');
+  return dot<0?0:normalized.length-dot-1;
+}
+function phase72AnswerFormatText(q){
+  if(!q)return '';
+  const policy=q.answerPolicy || (q.scientific?'scientific':'exact');
+
+  if(policy==='scientific' || q.scientific){
+    const sig=Number(q.sigDigits||q.sig||0);
+    return sig>0
+      ? `有効数字${sig}桁（a×10^n の形）`
+      : 'a×10^n の形';
+  }
+
+  if(policy==='sigfig'){
+    const sig=Number(q.sigDigits||q.sig||0);
+    return sig>0 ? `有効数字${sig}桁` : '有効数字に注意';
+  }
+
+  if(policy==='fixed'){
+    const dec=Number(q.decimalPlaces??0);
+    return dec<=0 ? '整数' : `小数第${dec}位まで`;
+  }
+
+  // exact（質量・気体体積など）も、その問題の正答表記から
+  // 「整数 / 小数第n位まで」を明示する。
+  const display=q.displayAnswer ?? q.answerText ?? q.acceptedAnswer ?? q.answer;
+  const dec=phase72DecimalPlacesFromDisplay(display);
+  if(dec===0)return '整数';
+  if(Number.isInteger(dec) && dec>0)return `小数第${dec}位まで`;
+
+  return '表示された数値形式で入力';
+}
+function phase72UpdateAnswerFormatGuide(q){
+  const el=document.getElementById('answerFormatGuide');
+  if(!el)return;
+  const text=phase72AnswerFormatText(q);
+  if(!text){el.classList.remove('show');el.textContent='';return}
+  el.innerHTML=`<span class="answer-format-label">解答形式：</span>${text}`;
+  el.classList.add('show');
+}
+
+function renderQuestion(){
+  window.PHASE3D_ENGINE.renderQuestion();
+  phase72UpdateAnswerFormatGuide(currentQ());
+  document.getElementById('usedAtomicMasses')?.remove();
+  const body=document.getElementById('questionBody');
+  const content=ph37UsedAtomicMasses(currentQ());
+  if(body&&content){
+    const wrap=document.createElement('div');
+    wrap.id='usedAtomicMasses';wrap.innerHTML=content;
+    body.insertAdjacentElement('afterend',wrap);
+  }
+}
+
+// ---------- Phase3.7: 別数値・別物質で再挑戦 ----------
+function ph37VariantRetryQuestions(sourceResults,count){
+  const weak=sourceResults.filter(q=>!q.firstCorrect||q.passed||q.hintsShown>=2);
+  const srcs=weak.length?weak:sourceResults;
+  if(!srcs.length)return [];
+  const out=[];
+  for(let i=0;i<count;i++){
+    const src=srcs[i%srcs.length],builder=BUILDER_BY_TYPE[src.type];
+    let q=null;
+    for(let a=0;a<30;a++){
+      try{q=builder?builder():null}catch(e){q=null}
+      if(!q)continue;
+      const materialChanged=src.material?.id?q.material?.id!==src.material.id:true;
+      const valueChanged=q.answer!==src.rawAnswer||q.question!==src.question;
+      if(materialChanged&&valueChanged)break;
+      q=null;
+    }
+    if(q)out.push(q);
+  }
+  return out;
+}
+window.PH37_VARIANT_RETRY=ph37VariantRetryQuestions;
+
+
+
+// =========================================================
+// 11. VALIDATION / DEVELOPMENT TESTS
+// Isolated from the production flow; removable for the RC build.
+// =========================================================
+
+
+
+/* =========================================================
+   Mol Master Ver.1.3 development validator
+   問題生成仕様 最終検証・凍結用バリデータ
+   生徒画面には表示しない。console と window.PHASE35_VALIDATOR から確認可能。
+   ========================================================= */
+(function(){
+'use strict';
+
+function nearly(a,b,tol=1e-9){ return Math.abs(a-b) <= tol*Math.max(1,Math.abs(a),Math.abs(b)); }
+
+function formulaCounts(formula){
+  try{
+    if(window.PHASE3_ENGINE && typeof window.PHASE3_ENGINE.atoms==='function'){
+      return window.PHASE3_ENGINE.atoms(String(formula).replace(/[₀-₉]/g,c=>({'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'}[c])));
+    }
+  }catch(e){}
+  return {};
+}
+
+function balanceReaction(reaction){
+  const left={},right={};
+  function add(dst,sp){
+    const atoms=formulaCounts(sp.formula);
+    Object.entries(atoms).forEach(([el,n])=>dst[el]=(dst[el]||0)+n*sp.coef);
+  }
+  reaction.reactants.forEach(i=>add(left,reaction.s[i]));
+  reaction.products.forEach(i=>add(right,reaction.s[i]));
+  const els=new Set([...Object.keys(left),...Object.keys(right)]);
+  return [...els].every(el=>(left[el]||0)===(right[el]||0));
+}
+
+function run(){
+  const tests=[];
+  const add=(name,ok,detail='')=>tests.push({name,ok:!!ok,detail});
+
+  // 1. モードと出題範囲
+  const ranges=window.PHASE3D_ENGINE?.ranges||{};
+  add('モード1が3範囲', JSON.stringify(ranges.mode1||[])===JSON.stringify([
+    ['relativeMass','相対質量'],['isotope','同位体・原子量'],['molarMass','分子量・式量']
+  ]));
+  add('モード3に固体の溶解度', (ranges.mode3||[]).some(x=>x[0]==='solubility'));
+  add('総合ミックスに4モード', (ranges.mixed||[]).length===4);
+
+  // 2. チャレンジルール
+  const c=window.PHASE3D_ENGINE?.challenge||{};
+  add('初級 5問・パスなし', c[5]?.passes===0 && c[5]?.instantFail===false);
+  add('中級 10問・パス2回', c[10]?.passes===2 && c[10]?.instantFail===false);
+  add('上級 15問・パス1回', c[15]?.passes===1 && c[15]?.instantFail===false);
+  add('鬼 20問・パスなし・1ミス終了', c[20]?.passes===0 && c[20]?.instantFail===true);
+
+  // 3. 必須問題パターン
+  const ptypes=new Set([
+    ...(window.PHASE3_ENGINE?.patterns||[]),
+    ...(window.PHASE3C_ENGINE?.reactionPatterns||[]),
+    ...(window.PHASE3D_ENGINE?.patterns||[])
+  ].map(x=>x.type));
+  [
+    'relativeMassFromAtom','relativeMassRatio','isotopeReverse',
+    'solubilityPercent','saturatedSolute','solubilityCooling',
+    'solubilityEvaporation','solubilityHydrate',
+    'reactionCoefficient','reactionMolRatio','reactionMassToGas','reactionLimitingLeftover'
+  ].forEach(t=>add(`問題パターン ${t}`,ptypes.has(t)));
+
+  // 4. 溶解度の代表計算（授業資料の数値に対応）
+  const kno3_70_300 = 300*137/(100+137);
+  add('KNO3 70℃飽和300g中の溶質 ≈173.4g', nearly(kno3_70_300,173.41772151898735));
+  const water_70_300 = 300*100/(100+137);
+  const precip_70to10 = kno3_70_300 - water_70_300*22/100;
+  add('KNO3 70→10℃ 300gで析出 ≈145.6g', nearly(precip_70to10,145.56962025316457));
+  const water_70_160 = 160*100/(100+137);
+  const solute_70_160 = 160*137/(100+137);
+  const precip_evap50 = solute_70_160 - (water_70_160-50)*137/100;
+  add('KNO3 70℃飽和160gから水50g蒸発で析出 68.5g', nearly(precip_evap50,68.5));
+  const cuso4_60_210=210*40/(100+40);
+  add('CuSO4 60℃飽和210g中の溶質 60g', nearly(cuso4_60_210,60));
+
+  // 5. 水和物の代表式
+  const hydrate=(0.40*80)/(160/250-0.40*(90/250));
+  add('CuSO4・5H2O 溶解度計算式が有限正値', Number.isFinite(hydrate)&&hydrate>0, String(hydrate));
+
+  // 6. 反応式係数の原子数保存
+  const reactions=window.PHASE3C_ENGINE?.reactions||[];
+  add('反応データが10件以上', reactions.length>=10, String(reactions.length));
+  reactions.forEach(r=>add(`反応式バランス ${r.id}`,balanceReaction(r)));
+
+  // 7. 代表的な化学式パーサ
+  const formulaExpected={
+    'Ca(OH)2':{Ca:1,O:2,H:2},
+    '(NH4)2SO4':{N:2,H:8,S:1,O:4},
+    'CuSO4・5H2O':{Cu:1,S:1,O:9,H:10},
+    'AlK(SO4)2・12H2O':{Al:1,K:1,S:2,O:20,H:24}
+  };
+  Object.entries(formulaExpected).forEach(([f,expected])=>{
+    const got=formulaCounts(f);
+    const ok=Object.keys(expected).every(k=>got[k]===expected[k]) &&
+             Object.keys(got).every(k=>expected[k]===got[k]);
+    add(`化学式解析 ${f}`,ok,JSON.stringify(got));
+  });
+
+  const pass=tests.filter(t=>t.ok).length;
+  const fail=tests.length-pass;
+  const result={version:'1.3-phase5',pass,fail,total:tests.length,tests,
+    frozenScopes:{
+      mode1:['relativeMass','isotope','molarMass'],
+      mode2:['mass','particle','gas','atomIon','multi'],
+      mode3:['basicConc','reverseConc','convertConc','solubility'],
+      mode4:['reactionEq','reactionMol','reactionMassGas','reactionLimit'],
+      challenge:{5:'初級/パス0',10:'中級/パス2',15:'上級/パス1',20:'鬼/パス0/1ミス終了'}
+    }
+  };
+  console.info('Mol Master Phase 3.5 validation',result);
+  return result;
+}
+
+window.PHASE35_VALIDATOR={run};
+setTimeout(()=>{
+  try{
+    const r=run();
+    if(r.fail>0) console.warn(`Phase 3.5 validation: ${r.fail}件の要確認があります`,r);
+  }catch(e){ console.error('Phase 3.5 validator failed',e); }
+},0);
+})();
+
+
+
+</script>
+
+
+
+
+
+
+
+</body>
+</html>
