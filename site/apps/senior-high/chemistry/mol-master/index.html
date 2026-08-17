@@ -99,6 +99,15 @@ canvas{width:100%;height:260px;border:1px solid var(--line);border-radius:14px;b
 .answer-rule{display:block;margin-top:9px;padding:7px 10px;border-radius:9px;background:#fff4db;border:1px solid #f1d184;color:#754c00;font-weight:700;font-size:.92rem}
 .reaction-eq{display:block;margin:.65rem 0;padding:.65rem .8rem;border-radius:10px;background:#edf7fa;font-weight:800;text-align:center}
 @media(max-width:600px){.range-checklist{grid-template-columns:1fr}.range-actions .btn{flex:1}.range-box{grid-column:1/-1}}
+
+.catalog-back-row{margin-bottom:14px}
+.catalog-back-btn{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;background:#fff;color:#1d4ed8;border:2px solid #2563eb;border-radius:14px;padding:.9rem 1.1rem;font-weight:800;box-shadow:0 6px 18px rgba(37,99,235,.08)}
+.catalog-back-btn:hover{background:#f8fbff}
+.catalog-back-btn:focus-visible{outline:3px solid rgba(37,99,235,.25);outline-offset:2px}
+@media(max-width:600px){
+  .catalog-back-row{margin-bottom:12px}
+  .catalog-back-btn{min-height:52px}
+}
 </style>
 
 <style id="phase37Styles">
@@ -213,6 +222,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="app">
+<div class="catalog-back-row"><a class="catalog-back-btn" href="../../../../">← 教材一覧へ戻る</a></div>
 <header class="header">
   <div class="brand"><h1>⚗️ モルマスター</h1><p>高校化学基礎｜原子量・物質量・濃度・溶解度・反応の量的関係</p></div>
   <div class="badge">Ver.1.0</div>
