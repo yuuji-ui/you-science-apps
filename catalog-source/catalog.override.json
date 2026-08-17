@@ -33,6 +33,19 @@
         "シミュレーション"
       ],
       "deprecatedMessage": null
+    },
+    "mol-master": {
+      "featured": false,
+      "hidden": false,
+      "sortOrder": 40,
+      "labels": [
+        "高校化学",
+        "化学基礎",
+        "物質量",
+        "計算練習"
+      ],
+      "deprecatedMessage": null
+      }
     }
   }
 }
